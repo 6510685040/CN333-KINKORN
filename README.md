@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # flutter101
 
 A new Flutter project.
@@ -14,3 +15,6 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+=======
+# CN333-KINKORN
+>>>>>>> 08cf37b35a203a59754c24a0396f1faf10018da9
