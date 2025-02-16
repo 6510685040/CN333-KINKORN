@@ -90,12 +90,14 @@ class ChooseCanteen extends StatelessWidget {
               screenHeight: screenHeight,
             ),
           ),
-
-          // Bottom Bar
-          // เรียกใช้งาน Bottom Bar ที่ทำเป็น Component แยกไว้
-          BottomBar(
-            screenHeight: screenHeight,
-            screenWidth: screenWidth,
+          Positioned(
+            bottom: 0, // Adjusted to ensure it's at the bottom
+            left: 0,
+            right: 0,
+            child: BottomBar(
+              screenHeight: screenHeight,
+              screenWidth: screenWidth,
+            ),
           ),
         ],
       ),

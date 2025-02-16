@@ -3,7 +3,8 @@ import 'package:kinkorn/customer/choose_menu.dart';
 import 'package:kinkorn/Screen/register_res.dart';
 import 'package:kinkorn/customer/choose_canteen.dart';
 import 'package:kinkorn/customer/summary_payment.dart';
-
+import 'package:kinkorn/template/curve_app_bar.dart';
+import 'package:kinkorn/template/bottom_bar.dart';
 
 
 
@@ -17,17 +18,13 @@ class ChooseRestaurantScreen extends StatelessWidget {
       backgroundColor: Color(0xFFFCF9CA),
       body: Stack(
         children: [
-          // Ellipse 1
-          Positioned(
-            left: -0.12 * screenWidth,
-            top: -0.15 * screenHeight,
-            child: Container(
-              width: 1.24 * screenWidth,
-              height: 0.37 * screenHeight,
-              decoration: BoxDecoration(
-                color: Color(0xFFAF1F1F),
-                borderRadius: BorderRadius.circular(300),
-              ),
+
+          const Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: CurveAppBar(
+              title: "",
             ),
           ),
 
@@ -243,68 +240,10 @@ class ChooseRestaurantScreen extends StatelessWidget {
               ),
             ),
           ),
-          // Bottom Bar
-          // Bottom Bar
-          Positioned(
-            left: 0,
-            bottom: 0, // เปลี่ยนจาก top เป็น bottom
-            child: SafeArea(
-              child: Container(
-                width: screenWidth,
-                height: 0.08 * screenHeight,
-                color: Color(0xFFAF1F1F),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    bottomBarItem(
-                      context,
-                      icon: Icons.home,
-                      label: "Home",
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => ChooseCanteen()),
-                        );
-                      },
-                    ),
-                    bottomBarItem(
-                      context,
-                      icon: Icons.shopping_cart,
-                      label: "Your Cart",
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => SummaryPayment()),
-                        );
-                      },
-                    ),
-                    bottomBarItem(
-                      context,
-                      icon: Icons.notifications,
-                      label: "Status",
-                      onTap: () {},
-                    ),
-                    bottomBarItem(
-                      context,
-                      icon: Icons.more_horiz,
-                      label: "More",
-                      onTap: () {},
-                    ),
-                    bottomBarItem(
-                      context,
-                      icon: Icons.person,
-                      label: "Restaurant",
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => RegisterRes()),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ),
+             
+             BottomBar(
+            screenHeight: screenHeight,
+            screenWidth: screenWidth,
           ),
 
 
@@ -314,23 +253,3 @@ class ChooseRestaurantScreen extends StatelessWidget {
   }
 }
 
-Widget bottomBarItem(BuildContext context,
-    {required IconData icon, required String label, required VoidCallback onTap}) {
-  return GestureDetector(
-    onTap: onTap,
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(icon, color: Colors.white),
-        Text(
-          label,
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 11,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ],
-    ),
-  );
-}

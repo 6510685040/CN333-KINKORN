@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:kinkorn/customer/choose_canteen.dart';
 
 class RegisterRes extends StatelessWidget {
   const RegisterRes({super.key});
@@ -17,39 +19,20 @@ class RegisterRes extends StatelessWidget {
           child: Stack(
             children: [
               Positioned(
-                left: 15 * screenWidth / 412,
-                top: 28 * screenHeight / 917,
-                child: Image.asset(
-                  'assets/image.png',
-                  width: 379 * screenWidth / 412,
-                  height: 101 * screenHeight / 917,
+                top: 40, // Adjusted logo position
+                left : 20,
+                child: SvgPicture.asset(
+                  'assets/images/logo.svg',
+                  width: 100,
+                  height: 100,
                 ),
               ),
               Positioned(
-                left: 43 * screenWidth / 412,
-                top: 177 * screenHeight / 917,
+                left: screenWidth * 0.1, // Use percentage-based positioning for responsiveness
+                top: screenHeight * 0.2, // Adjusted position based on screen height
                 child: Container(
-                  width: 326 * screenWidth / 412,
-                  height: 689 * screenHeight / 917,
-                  decoration: BoxDecoration(
-                    color: Color(0xFFFCF9CA),
-                    borderRadius: BorderRadius.circular(32),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.25),
-                        offset: Offset(0, 4),
-                        blurRadius: 4,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 43 * screenWidth / 412,
-                top: 177 * screenHeight / 917,
-                child: Container(
-                  width: 326 * screenWidth / 412,
-                  height: 689 * screenHeight / 917,
+                  width: screenWidth * 0.8, // Responsive width
+                  height: screenHeight * 0.6, // Responsive height
                   decoration: BoxDecoration(
                     color: Color(0xFFFCF9CA),
                     borderRadius: BorderRadius.circular(32),
@@ -66,7 +49,7 @@ class RegisterRes extends StatelessWidget {
               Positioned(
                 left: 0,
                 right: 0,
-                top: 225 * screenHeight / 917,
+                top: screenHeight * 0.25, // Adjusted title position
                 child: Align(
                   alignment: Alignment.center,
                   child: Text(
@@ -82,21 +65,20 @@ class RegisterRes extends StatelessWidget {
                 ),
               ),
               Positioned(
-                left: 147 * screenWidth / 412,
-                top: 269 * screenHeight / 917,
+                left: screenWidth * 0.35, // Adjusted logo position
+                top: screenHeight * 0.29,
                 child: Container(
-                  width: 120 * screenWidth / 412,
-                  height: 116 * screenHeight / 917,
+                  width: screenWidth * 0.3, // Responsive width
+                  height: screenHeight * 0.15, // Responsive height
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(20),
                   ),
                 ),
               ),
-              SizedBox(height: 10),
               Positioned(
-                left: 70 * screenWidth / 412,
-                top: 413 * screenHeight / 917,
+                left: screenWidth * 0.17, // Adjusted position for restaurant name label
+                top: screenHeight * 0.45,
                 child: Text(
                   'Restaurant Name',
                   style: TextStyle(
@@ -109,11 +91,11 @@ class RegisterRes extends StatelessWidget {
                 ),
               ),
               Positioned(
-                left: 67 * screenWidth / 412,
-                top: 439 * screenHeight / 917,
+                left: screenWidth * 0.16, // Adjusted input field position
+                top: screenHeight * 0.47,
                 child: Container(
-                  width: 282 * screenWidth / 412,
-                  height: 45 * screenHeight / 917,
+                  width: screenWidth * 0.7, // Responsive width
+                  height: screenHeight * 0.06, // Responsive height
                   decoration: BoxDecoration(
                     color: Colors.white,
                     border: Border.all(color: Color(0xFFD9D9D9)),
@@ -139,10 +121,9 @@ class RegisterRes extends StatelessWidget {
                   ),
                 ),
               ),
-              SizedBox(height: 10),  // เพิ่มเว้นระยะห่างจาก Restaurant Name ไป Category
               Positioned(
-                left: 70 * screenWidth / 412,
-                top: 510 * screenHeight / 917,
+                left: screenWidth * 0.17, // Adjusted position for category label
+                top: screenHeight * 0.56,
                 child: Text(
                   'Category',
                   style: TextStyle(
@@ -155,11 +136,11 @@ class RegisterRes extends StatelessWidget {
                 ),
               ),
               Positioned(
-                left: 67 * screenWidth / 412,
-                top: 536 * screenHeight / 917,
+                left: screenWidth * 0.16, // Adjusted position for category input field
+                top: screenHeight * 0.58,
                 child: Container(
-                  width: 282 * screenWidth / 412,
-                  height: 45 * screenHeight / 917,
+                  width: screenWidth * 0.7, // Responsive width
+                  height: screenHeight * 0.06, // Responsive height
                   decoration: BoxDecoration(
                     color: Colors.white,
                     border: Border.all(color: Color(0xFFD9D9D9)),
@@ -185,18 +166,20 @@ class RegisterRes extends StatelessWidget {
                   ),
                 ),
               ),
-
               Positioned(
-                left: 130 * screenWidth / 412,
-                top: 761 * screenHeight / 917,
+                left: screenWidth * 0.31, // Adjusted position for the Next button
+                top: screenHeight * 0.83, // Adjusted button position to fit screen height
                 child: GestureDetector(
                   onTap: () {
-                    // เพิ่ม onTap() ให้ปุ่ม Next ทำงานได้
-                    print("Next button tapped");
+                    // เปลี่ยนหน้ากลับไปยังหน้า Choose Canteen
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => ChooseCanteen()),
+                    );
                   },
                   child: Container(
-                    width: 152 * screenWidth / 412,
-                    height: 42 * screenHeight / 917,
+                    width: screenWidth * 0.37, // Responsive width
+                    height: screenHeight * 0.05, // Responsive height
                     decoration: BoxDecoration(
                       color: Color(0xFFAF1F1F),
                       borderRadius: BorderRadius.circular(64),
@@ -221,4 +204,4 @@ class RegisterRes extends StatelessWidget {
       ),
     );
   }
-} 
+}

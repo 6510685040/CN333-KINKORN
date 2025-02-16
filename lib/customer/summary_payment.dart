@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:kinkorn/template/curve_app_bar.dart';
+import 'package:kinkorn/template/bottom_bar.dart';
+
 
 class SummaryPayment extends StatelessWidget {
   const SummaryPayment({super.key});
@@ -9,45 +12,66 @@ class SummaryPayment extends StatelessWidget {
     double screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      appBar: AppBar(title: Text('Summary Payment')),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'Payment Summary',
-              style: TextStyle(
-                fontSize: screenWidth * 0.08,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFFAF1F1F),
+      body: Stack(
+        children: [
+          // ใช้ CurveAppBar
+          const Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: CurveAppBar(
+              title: "Payment Summary",
+            ),
+          ),
+
+          // เนื้อหาหลักของหน้า
+          Positioned(
+            top: 250, // เลื่อนลงมาให้พ้น CurveAppBar
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Column(
+                children: [
+                  Text(
+                    'Item: ข้าวกะเพราหมูสับ\nPrice: ฿45',
+                    style: TextStyle(
+                      fontSize: screenWidth * 0.06,
+                      color: Color(0xFFAF1F1F),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: 40),
+                  ElevatedButton(
+                    onPressed: () {
+                      // จัดการการชำระเงินหรือนำทางต่อไป
+                    },
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Color(0xFFAF1F1F),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                      textStyle: TextStyle(
+                        fontSize: screenWidth * 0.05,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    child: Text('Proceed to Payment'),
+                  ),
+                ],
               ),
             ),
-            SizedBox(height: 20),
-            Text(
-              'Item: ข้าวกะเพราหมูสับ\nPrice: ฿45',
-              style: TextStyle(
-                fontSize: screenWidth * 0.06,
-                color: Color(0xFFAF1F1F),
-              ),
+          ),
+          
+          Positioned(
+            bottom: 0, // Adjusted to ensure it's at the bottom
+            left: 0,
+            right: 0,
+            child: BottomBar(
+              screenHeight: screenHeight,
+              screenWidth: screenWidth,
             ),
-            SizedBox(height: 40),
-            ElevatedButton(
-              onPressed: () {
-                // Here you can handle the payment process or navigate further
-              },
-              child: Text('Proceed to Payment'),
-              style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.white,
-                backgroundColor: Color(0xFFAF1F1F),
-                padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-                textStyle: TextStyle(
-                  fontSize: screenWidth * 0.05,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
