@@ -18,22 +18,22 @@ class RegisterScreen extends StatelessWidget {
           children: [
             // Image 1
             Positioned(
-              left: screenWidth * 0.04, // 4% of screen width
-              top: screenHeight * 0.1, // 10% of screen height
+              left: screenWidth * 0.04, 
+              top: screenHeight * 0.1, 
               child: Image.asset(
                 'assets/image.png',
-                width: screenWidth * 0.92, // 92% of screen width
-                height: screenHeight * 0.11, // 11% of screen height
+                width: screenWidth * 0.92, 
+                height: screenHeight * 0.11,
                 fit: BoxFit.cover,
               ),
             ),
             // Rectangle 2 (Form container)
             Positioned(
-              left: screenWidth * 0.1, // 10% of screen width
-              top: screenHeight * 0.25, // 25% of screen height
+              left: screenWidth * 0.1, 
+              top: screenHeight * 0.25, 
               child: Container(
-                width: screenWidth * 0.8, // 80% of screen width
-                height: screenHeight * 0.7, // 70% of screen height
+                width: screenWidth * 0.8, 
+                height: screenHeight * 0.7, 
                 decoration: BoxDecoration(
                   color: const Color(0xFFFCF9CA),
                   boxShadow: [
