@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:kinkorn/Screen/register_res.dart';
 import 'package:kinkorn/customer/choose_restaurant.dart';
 import 'package:kinkorn/customer/summary_payment.dart';
+import 'package:kinkorn/template/curve_app_bar.dart';
+import 'package:kinkorn/template/bottom_bar.dart';
 
 class ChooseCanteen extends StatelessWidget {
   const ChooseCanteen({super.key});
@@ -14,24 +16,17 @@ class ChooseCanteen extends StatelessWidget {
     return Scaffold(
       body: Stack(
         children: [
-          // พื้นหลังสีเหลือง
           Container(
             width: screenWidth,
             height: screenHeight,
             color: Color(0xFFFCF9CA),
           ),
-
-          // Ellipse 1
-          Positioned(
-            left: -0.12 * screenWidth,
-            top: -0.15 * screenHeight,
-            child: Container(
-              width: 1.24 * screenWidth,
-              height: 0.37 * screenHeight,
-              decoration: BoxDecoration(
-                color: Color(0xFFAF1F1F),
-                borderRadius: BorderRadius.circular(300),
-              ),
+          const Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: CurveAppBar(
+              title: "",
             ),
           ),
 
@@ -50,24 +45,24 @@ class ChooseCanteen extends StatelessWidget {
             ),
           ),
           Positioned(
-          left: 36,
-          top: 210,
-          child: Container(
-            width: 340,
-            height: 32,
-            decoration: BoxDecoration(
-              color: Color(0xFFFDFDFD), // #FFFDFD
-              borderRadius: BorderRadius.circular(110),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.25),
-                  offset: Offset(0, 4),
-                  blurRadius: 4,
-                ),
-              ],
+            left: 36,
+            top: 210,
+            child: Container(
+              width: 340,
+              height: 32,
+              decoration: BoxDecoration(
+                color: Color(0xFFFDFDFD), // #FFFDFD
+                borderRadius: BorderRadius.circular(110),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.25),
+                    offset: Offset(0, 4),
+                    blurRadius: 4,
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
 
           // JC Canteen Box
           Positioned(
@@ -97,66 +92,10 @@ class ChooseCanteen extends StatelessWidget {
           ),
 
           // Bottom Bar
-          Positioned(
-            left: 0,
-            top: 0.92 * screenHeight,
-            child: Container(
-              width: screenWidth,
-              height: 0.08 * screenHeight,
-              color: Color(0xFFAF1F1F),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  bottomBarItem(
-                    context,
-                    icon: Icons.home,
-                    label: "Home",
-                    onTap: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => ChooseCanteen()),
-                      );
-                    },
-                  ),
-                  bottomBarItem(
-                    context,
-                    icon: Icons.shopping_cart,
-                    label: "Your Cart",
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => SummaryPayment()),
-                      );
-                    },
-                  ),
-                  bottomBarItem(
-                    context,
-                    icon: Icons.notifications,
-                    label: "Status",
-                    onTap: () {},
-                  ),
-                  bottomBarItem(
-                    context,
-                    icon: Icons.more_horiz,
-                    label: "More",
-                    onTap: () {},
-                  ),
-                  bottomBarItem(
-                    context,
-                    icon: Icons.person,
-                    label: "Restaurant",
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => RegisterRes()),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
+          // เรียกใช้งาน Bottom Bar ที่ทำเป็น Component แยกไว้
+          BottomBar(
+            screenHeight: screenHeight,
+            screenWidth: screenWidth,
           ),
         ],
       ),
@@ -239,30 +178,6 @@ class ChooseCanteen extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  // Bottom Bar Item Widget
-  Widget bottomBarItem(BuildContext context,
-      {required IconData icon,
-      required String label,
-      required VoidCallback onTap}) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, color: Colors.white),
-          Text(
-            label,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 11,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
       ),
     );
   }

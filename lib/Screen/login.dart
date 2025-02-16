@@ -1,8 +1,8 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'register.dart';
-import 'package:kinkorn/customer/choose_canteen.dart'; 
-
+import 'package:kinkorn/customer/choose_canteen.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -20,11 +20,10 @@ class LoginScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 // Logo หรือ รูปภาพด้านบน
-                Image.asset(
-                  'assets/image.png',
-                  width: 200,
+                SvgPicture.asset(
+                  'assets/images/logo.svg',
+                  width: 100,
                   height: 100,
-                  fit: BoxFit.cover,
                 ),
                 const SizedBox(height: 40),
 

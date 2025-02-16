@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'login.dart';
 
 class RegisterScreen extends StatelessWidget {
@@ -18,12 +19,12 @@ class RegisterScreen extends StatelessWidget {
           children: [
             // Image 1
             Positioned(
-              left: screenWidth * 0.04, 
-              top: screenHeight * 0.1, 
+              left: screenWidth * 0.04, // 4% of screen width
+              top: screenHeight * 0.1, // 10% of screen height
               child: Image.asset(
                 'assets/image.png',
-                width: screenWidth * 0.92, 
-                height: screenHeight * 0.11,
+                width: screenWidth * 0.92, // 92% of screen width
+                height: screenHeight * 0.11, // 11% of screen height
                 fit: BoxFit.cover,
               ),
             ),
