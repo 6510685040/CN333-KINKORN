@@ -8,6 +8,7 @@ import 'package:kinkorn/restaurant/neworder.dart';
 import 'package:kinkorn/restaurant/order_detailRestaurant.dart';
 import 'package:kinkorn/restaurant/preparing_order.dart';
 import 'package:kinkorn/restaurant/completed_order.dart';
+import 'package:kinkorn/restaurant/order_status.dart';
 
 void main() {
   runApp(MaterialApp(
@@ -16,7 +17,8 @@ void main() {
     //home: NewOrder(),
     //home: OrderdetailRestaurant(),
     //home: PreparingOrderRestaurant(),
-    home: CompletedOrderRestaurant(),
+    //home: CompletedOrderRestaurant(),
+    home: OrderStatusRestaurant(),
   ));
 }
 
