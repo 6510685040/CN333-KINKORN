@@ -56,7 +56,7 @@ class NewOrder extends StatelessWidget {
                     pickUpTime: "12:30",
                     totalPrice: "฿100.00",
                     statusText: "Waiting for order confirmation",
-                    statusColor: Colors.blue,
+                    statusColor: Color(0xFF203976),
                   ),
                   _buildOrderCard(
                     orderId: "tujc01250206002",
