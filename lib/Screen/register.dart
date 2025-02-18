@@ -3,8 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'login.dart';
 
 class RegisterScreen extends StatelessWidget {
-  const RegisterScreen({super.key});
-
+  final formkey = GlobalKey<FormState>();
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -22,7 +21,7 @@ class RegisterScreen extends StatelessWidget {
               left: screenWidth * 0.04, // 4% of screen width
               top: screenHeight * 0.1, // 10% of screen height
               child: Image.asset(
-                'assets/image.png',
+                'assets/images/logo.svg',
                 width: screenWidth * 0.92, // 92% of screen width
                 height: screenHeight * 0.11, // 11% of screen height
                 fit: BoxFit.cover,
@@ -30,11 +29,12 @@ class RegisterScreen extends StatelessWidget {
             ),
             // Rectangle 2 (Form container)
             Positioned(
-              left: screenWidth * 0.1, 
-              top: screenHeight * 0.25, 
+              key: formkey,
+              left: screenWidth * 0.1,
+              top: screenHeight * 0.25,
               child: Container(
-                width: screenWidth * 0.8, 
-                height: screenHeight * 0.7, 
+                width: screenWidth * 0.8,
+                height: screenHeight * 0.7,
                 decoration: BoxDecoration(
                   color: const Color(0xFFFCF9CA),
                   boxShadow: [
@@ -55,7 +55,7 @@ class RegisterScreen extends StatelessWidget {
                       const Text(
                         'Username',
                         style: TextStyle(
-                          fontFamily: 'Montserrat',
+                          fontFamily: ' Geist',
                           fontWeight: FontWeight.w600,
                           fontSize: 16,
                           color: Color(0xFFAF1F1F),
@@ -81,7 +81,7 @@ class RegisterScreen extends StatelessWidget {
                       const Text(
                         'Password',
                         style: TextStyle(
-                          fontFamily: 'Montserrat',
+                          fontFamily: ' Geist',
                           fontWeight: FontWeight.w600,
                           fontSize: 16,
                           color: Color(0xFFAF1F1F),
@@ -108,7 +108,7 @@ class RegisterScreen extends StatelessWidget {
                       const Text(
                         'Confirm Password',
                         style: TextStyle(
-                          fontFamily: 'Montserrat',
+                          fontFamily: ' Geist',
                           fontWeight: FontWeight.w600,
                           fontSize: 16,
                           color: Color(0xFFAF1F1F),
@@ -135,7 +135,7 @@ class RegisterScreen extends StatelessWidget {
                       const Text(
                         'First name',
                         style: TextStyle(
-                          fontFamily: 'Montserrat',
+                          fontFamily: ' Geist',
                           fontWeight: FontWeight.w600,
                           fontSize: 16,
                           color: Color(0xFFAF1F1F),
@@ -161,7 +161,7 @@ class RegisterScreen extends StatelessWidget {
                       const Text(
                         'Last name',
                         style: TextStyle(
-                          fontFamily: 'Montserrat',
+                          fontFamily: ' Geist',
                           fontWeight: FontWeight.w600,
                           fontSize: 16,
                           color: Color(0xFFAF1F1F),
@@ -170,7 +170,7 @@ class RegisterScreen extends StatelessWidget {
                       const SizedBox(height: 8),
                       TextFormField(
                         decoration: InputDecoration(
-                          hintText: 'Enter your last name',
+                          hintText: ' Geist',
                           contentPadding:
                               const EdgeInsets.symmetric(horizontal: 16),
                           filled: true,
@@ -187,7 +187,7 @@ class RegisterScreen extends StatelessWidget {
                       const Text(
                         'Email',
                         style: TextStyle(
-                          fontFamily: 'Montserrat',
+                          fontFamily: ' Geist',
                           fontWeight: FontWeight.w600,
                           fontSize: 16,
                           color: Color(0xFFAF1F1F),
@@ -213,7 +213,7 @@ class RegisterScreen extends StatelessWidget {
                       const Text(
                         'Mobile number',
                         style: TextStyle(
-                          fontFamily: 'Montserrat',
+                          fontFamily: ' Geist',
                           fontWeight: FontWeight.w600,
                           fontSize: 16,
                           color: Color(0xFFAF1F1F),
@@ -255,7 +255,7 @@ class RegisterScreen extends StatelessWidget {
                           child: const Text(
                             'Create Account',
                             style: TextStyle(
-                              fontFamily: 'Montserrat',
+                              fontFamily: ' Geist',
                               fontWeight: FontWeight.w600,
                               fontSize: 16,
                               color: Colors.white,

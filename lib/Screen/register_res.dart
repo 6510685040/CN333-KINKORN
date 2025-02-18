@@ -55,7 +55,7 @@ class RegisterRes extends StatelessWidget {
                   child: Text(
                     'Restaurant Register',
                     style: TextStyle(
-                      fontFamily: 'Montserrat',
+                      fontFamily: ' Geist',
                       fontWeight: FontWeight.w500,
                       fontSize: 16,
                       height: 20 / 16,
@@ -82,7 +82,7 @@ class RegisterRes extends StatelessWidget {
                 child: Text(
                   'Restaurant Name',
                   style: TextStyle(
-                    fontFamily: 'Montserrat',
+                    fontFamily: ' Geist',
                     fontWeight: FontWeight.w500,
                     fontSize: 16,
                     height: 20 / 16,
@@ -109,7 +109,7 @@ class RegisterRes extends StatelessWidget {
                         decoration: InputDecoration(
                           hintText: 'Enter your restaurant name',
                           hintStyle: TextStyle(
-                            fontFamily: 'Montserrat',
+                            fontFamily: ' Geist',
                             fontSize: 13,
                             fontWeight: FontWeight.w500,
                             color: Color(0xFFAF1F1F).withOpacity(0.8),
@@ -127,7 +127,7 @@ class RegisterRes extends StatelessWidget {
                 child: Text(
                   'Category',
                   style: TextStyle(
-                    fontFamily: 'Montserrat',
+                    fontFamily: ' Geist',
                     fontWeight: FontWeight.w500,
                     fontSize: 16,
                     height: 20 / 16,
@@ -154,7 +154,7 @@ class RegisterRes extends StatelessWidget {
                         decoration: InputDecoration(
                           hintText: 'Choose your restaurant category',
                           hintStyle: TextStyle(
-                            fontFamily: 'Montserrat',
+                            fontFamily: ' Geist',
                             fontSize: 13,
                             fontWeight: FontWeight.w500,
                             color: Color(0xFFAF1F1F).withOpacity(0.8),
@@ -188,7 +188,7 @@ class RegisterRes extends StatelessWidget {
                       child: Text(
                         'Next',
                         style: TextStyle(
-                          fontFamily: 'Montserrat',
+                          fontFamily: ' Geist',
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
                           color: Colors.white,
