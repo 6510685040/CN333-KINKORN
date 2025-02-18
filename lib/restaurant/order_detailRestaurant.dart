@@ -74,7 +74,7 @@ class OrderdetailRestaurant extends StatelessWidget {
                               Container(
                                 padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
                                 decoration: BoxDecoration(
-                                  color: Colors.blue[700],
+                                  color: Color(0xFF203976),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: const Text(
