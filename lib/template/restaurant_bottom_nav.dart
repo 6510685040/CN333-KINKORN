@@ -8,7 +8,7 @@ class CustomBottomNav extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8),
       decoration: const BoxDecoration(
-        color: Color(0xFFFFCC4D), // สีเหลืองตามดีไซน์
+        color: Color(0xFFFDDC5C), // สีเหลืองตามดีไซน์
         boxShadow: [
           BoxShadow(
             color: Colors.black26,
