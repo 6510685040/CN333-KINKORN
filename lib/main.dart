@@ -6,13 +6,15 @@ import 'package:kinkorn/restaurant/language_setting.dart';
 import 'package:kinkorn/restaurant/contactus_restaurant.dart';
 import 'package:kinkorn/restaurant/neworder.dart';
 import 'package:kinkorn/restaurant/order_detailRestaurant.dart';
+import 'package:kinkorn/restaurant/preparing_order.dart';
 
 void main() {
   runApp(MaterialApp(
     //home: LoginScreen(),
     //home: ContactUsRestaurant(), 
     //home: NewOrder(),
-    home: OrderdetailRestaurant(),
+    //home: OrderdetailRestaurant(),
+    home: PreparingOrderRestaurant(),
   ));
 }
 
