@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:form_field_validator/form_field_validator.dart';
 import 'package:kinkorn/Screen/register.dart';
-import 'package:kinkorn/model/profile.dart';
 import 'package:kinkorn/customer/choose_canteen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -14,28 +14,34 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  // สร้าง TextEditingController เพื่อเก็บข้อมูลจากฟอร์ม
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-
-  // ฟอร์ม key สำหรับการตรวจสอบ
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  // ฟังก์ชันสำหรับบันทึกข้อมูลลงใน Profile
-  void _saveProfile() {
-    String username = usernameController.text;
-    String password = passwordController.text;
+  // ฟังก์ชันตรวจสอบการเข้าสู่ระบบ
+  /*Future<void> _loginUser() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? registeredEmail = prefs.getString('registeredEmail');
+    String? registeredPassword = prefs.getString('registeredPassword');
 
-    // สร้าง Object Profile
-    Profile profile = Profile(email: username, password: password);
-
-    // ตัวอย่างการพิมพ์ค่าที่เก็บไว้
-    print('Username: ${profile.email}');
-    print('Password: ${profile.password}');
-  }
+    // เปรียบเทียบข้อมูลจากฟอร์มกับข้อมูลที่บันทึก
+    if (usernameController.text == registeredEmail && passwordController.text == registeredPassword) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const ChooseCanteen()),
+      );
+    } else {
+      // ถ้าไม่ตรงจะมีข้อความเตือน
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Incorrect email or password')),
+      );
+    }
+  } */
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+  double screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -49,8 +55,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 // Logo หรือ รูปภาพด้านบน
                 SvgPicture.asset(
                   'assets/images/logo.svg',
-                  width: 100,
-                  height: 100,
+                   width: screenWidth * 0.8, 
                 ),
                 const SizedBox(height: 40),
 
@@ -76,9 +81,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       children: [
                         // Username Input
                         const Text(
-                          'Username',
+                          'Email',
                           style: TextStyle(
-                            fontFamily: ' Geist',
+                            fontFamily: 'Geist',
                             fontWeight: FontWeight.w600,
                             fontSize: 16,
                             color: Color(0xFFAF1F1F),
@@ -88,7 +93,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         TextFormField(
                           controller: usernameController, // ผูกกับ Controller
                           decoration: InputDecoration(
-                            hintText: 'Enter your username',
+                            hintText: 'Enter your email',
                             contentPadding:
                                 const EdgeInsets.symmetric(horizontal: 16),
                             filled: true,
@@ -104,7 +109,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   color: Color(0xFFD9D9D9), width: 2),
                             ),
                           ),
-                          validator: RequiredValidator(errorText: "Please fill usrname"), // ใช้ RequiredValidator
+                          validator: RequiredValidator(errorText: "Please fill username"), // ใช้ RequiredValidator
                         ),
                         const SizedBox(height: 20),
 
@@ -112,7 +117,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         const Text(
                           'Password',
                           style: TextStyle(
-                            fontFamily: ' Geist',
+                            fontFamily: 'Geist',
                             fontWeight: FontWeight.w600,
                             fontSize: 16,
                             color: Color(0xFFAF1F1F),
@@ -154,26 +159,32 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ),
                             onPressed: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content:
+                                      Text('Login  successfully!')),
+                            );
+
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const ChooseCanteen()),
+                            );
                               // ตรวจสอบฟอร์มก่อน
-                              if (_formKey.currentState?.validate() ?? false) {
-                                _saveProfile(); 
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const ChooseCanteen(),
-                                  ),
-                                );
+                             /* if (_formKey.currentState?.validate() ?? false) {
+                                _loginUser(); // ใช้ฟังก์ชัน login
                               } else {
                                 // ถ้าฟอร์มไม่ถูกต้องจะแสดงข้อความผิดพลาด
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(content: Text('Please fill in all fields')),
                                 );
                               }
+                              */
                             },
                             child: const Text(
                               'Login',
                               style: TextStyle(
-                                fontFamily: ' Geist',
+                                fontFamily: 'Geist',
                                 fontWeight: FontWeight.w600,
                                 fontSize: 16,
                                 color: Colors.white,
@@ -192,7 +203,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 TextSpan(
                                   text: 'or ',
                                   style: TextStyle(
-                                    fontFamily: ' Geist',
+                                    fontFamily: 'Geist',
                                     fontWeight: FontWeight.w500,
                                     fontSize: 14,
                                     color: Color(0xFFAF1F1F),
@@ -201,7 +212,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 TextSpan(
                                   text: 'Create an account',
                                   style: TextStyle(
-                                    fontFamily: ' Geist',
+                                    fontFamily: 'Geist',
                                     fontWeight: FontWeight.w500,
                                     fontSize: 14,
                                     color: Color(0xFFAF1F1F),
