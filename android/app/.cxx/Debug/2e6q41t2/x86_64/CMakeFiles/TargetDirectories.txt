@@ -1,0 +1,2 @@
+C:/Users/User/Desktop/Nurse/CN333/CN333-KINKORN/android/app/.cxx/Debug/2e6q41t2/x86_64/CMakeFiles/edit_cache.dir
+C:/Users/User/Desktop/Nurse/CN333/CN333-KINKORN/android/app/.cxx/Debug/2e6q41t2/x86_64/CMakeFiles/rebuild_cache.dir
