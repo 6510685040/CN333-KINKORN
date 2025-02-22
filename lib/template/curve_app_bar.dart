@@ -9,7 +9,11 @@ class CurveAppBar extends StatelessWidget implements PreferredSizeWidget {
     super.key,
     required this.title,
     this.backgroundColor = const Color(0xFFB71C1C),
+<<<<<<< HEAD
     this.textColor = Colors.white,
+=======
+    this.textColor = const Color(0xFFFCF9CA),
+>>>>>>> b6e4b3030174274a19ac199aa70f1d4121b06625
   });
 
   @override
