@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-<<<<<<< HEAD
-=======
 import 'package:form_field_validator/form_field_validator.dart';
->>>>>>> b6e4b3030174274a19ac199aa70f1d4121b06625
 import 'login.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -38,24 +35,12 @@ Widget build(BuildContext context) {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-<<<<<<< HEAD
-            // Image 1
-            Positioned(
-              left: screenWidth * 0.04, // 4% of screen width
-              top: screenHeight * 0.1, // 10% of screen height
-              child: SvgPicture.asset(
-                'assets/images/logo.svg',
-                width: screenWidth * 0.92, // 92% of screen width
-                height: screenHeight * 0.11, // 11% of screen height
-                fit: BoxFit.cover,
-=======
             // โลโก้
             Padding(
               padding: EdgeInsets.only(top: screenHeight * 0.08), // ขยับลง 8%
               child: SvgPicture.asset(
                 'assets/images/logo.svg',
                 width: screenWidth * 0.8, 
->>>>>>> b6e4b3030174274a19ac199aa70f1d4121b06625
               ),
             ),
             const SizedBox(height: 30), 

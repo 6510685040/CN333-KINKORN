@@ -1,19 +1,12 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-<<<<<<< HEAD
-import 'register.dart';
-import 'package:kinkorn/customer/choose_canteen.dart';
-
-class LoginScreen extends StatelessWidget {
-=======
 import 'package:form_field_validator/form_field_validator.dart';
 import 'package:kinkorn/Screen/register.dart';
 import 'package:kinkorn/customer/choose_canteen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
->>>>>>> b6e4b3030174274a19ac199aa70f1d4121b06625
   const LoginScreen({super.key});
 
   @override
@@ -62,12 +55,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 // Logo หรือ รูปภาพด้านบน
                 SvgPicture.asset(
                   'assets/images/logo.svg',
-<<<<<<< HEAD
-                  width: 100,
-                  height: 100,
-=======
                    width: screenWidth * 0.8, 
->>>>>>> b6e4b3030174274a19ac199aa70f1d4121b06625
                 ),
                 const SizedBox(height: 40),
 
