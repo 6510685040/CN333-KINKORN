@@ -7,10 +7,14 @@ import 'package:kinkorn/customer/choose_canteen.dart';
 import 'package:kinkorn/customer/choose_menu.dart';
 import 'package:kinkorn/customer/choose_restaurant.dart';
 import 'package:kinkorn/restaurant/add_payment.dart';
+import 'package:kinkorn/restaurant/edit_payment.dart';
+import 'package:kinkorn/restaurant/sales_report.dart';
 
 void main() {
   runApp(MaterialApp(
     //home:  HomeScreen(),
     home:  AddPayment(),
+    //home:  EditPayment(),
+    //home: SalesReport(),
   ));
 }
