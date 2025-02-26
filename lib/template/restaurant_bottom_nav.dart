@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:kinkorn/restaurant/sales_report.dart';
+import 'package:kinkorn/restaurant/more_res.dart';
 
 class CustomBottomNav extends StatelessWidget {
   const CustomBottomNav({super.key});
@@ -22,8 +24,22 @@ class CustomBottomNav extends StatelessWidget {
         children: [
           _buildNavItem(Icons.home, "home"),
           _buildNavItem(Icons.notifications, "status"),
-          _buildNavItem(Icons.bar_chart, "sale report"),
-          _buildNavItem(Icons.menu, "more"),
+          GestureDetector(
+            onTap: () {
+              Navigator.push (context,
+                MaterialPageRoute(builder: (context) => SalesReport()),
+              );
+            },
+            child: _buildNavItem(Icons.bar_chart, "sale report"),
+          ),
+          GestureDetector(
+            onTap: () {
+              Navigator.push (context,
+                MaterialPageRoute(builder: (context) => MoreRes()),
+              );
+            },
+            child: _buildNavItem(Icons.menu, "more"),
+          ),
           _buildNavItem(Icons.logout, "customer"),
         ],
       ),
