@@ -23,10 +23,10 @@ void main() {
     //home:  EditPayment(),
     //home: SalesReport(),
     //home: StatusWaiting(),
-    home: StatusPreparing(),
+    //home: StatusPreparing(),
     //home: StatusComplete(),
     //home: ContactUs(),
-    //home: MoreRes(),
+    home: MoreRes(),
     //home: MoreCus(),
   ));
 }

@@ -188,7 +188,28 @@ class StatusComplete extends StatelessWidget {
                               elevation: 5, // ✅ ทำให้ปุ่มลอยขึ้น
                               shadowColor: Colors.black.withOpacity(0.3),
                             ),
-                            onPressed: () {},
+                            onPressed: () {
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    content: Image.network(
+                                      // รูปตัวอย่าง
+                                      'https://images.squarespace-cdn.com/content/v1/59bf8dc3e5dd5b141a2ba135/1631535919888-3XYMEBVRFIZ1HZ337LSA/Page365+%E0%B9%80%E0%B8%8A%E0%B9%87%E0%B8%84%E0%B8%AA%E0%B8%A5%E0%B8%B4%E0%B8%9B%E0%B9%82%E0%B8%AD%E0%B8%99%E0%B9%80%E0%B8%87%E0%B8%B4%E0%B8%99%E0%B8%AD%E0%B8%B1%E0%B8%95%E0%B9%82%E0%B8%99%E0%B8%A1%E0%B8%B1%E0%B8%95%E0%B8%B4.png',
+                                      fit: BoxFit.contain,
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: Text('Close'),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            },
                             child: const Padding(
                               padding: EdgeInsets.symmetric(vertical: 12),
                               child: Center(

@@ -38,8 +38,8 @@ class MoreRes extends StatelessWidget {
                                 padding: EdgeInsets.all(10),
                                 width: MediaQuery.of(context).size.width * 0.8,
                                 decoration: BoxDecoration(
-                                  color: Color(0xFFEEEEEC), // สีพื้นหลังของกรอบ
-                                  borderRadius: BorderRadius.circular(10), // มุมโค้งของกรอบ
+                                  color: Color(0xFFEEEEEC),
+                                  borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.start,
@@ -51,10 +51,10 @@ class MoreRes extends StatelessWidget {
                                       radius: 20,
                                       child: Icon(
                                         Icons.person, // ใช้ไอคอนรูปคน
-                                        color: Colors.red, // สีของไอคอน
+                                        color: Color(0xFFAF1F1F), // สีของไอคอน
                                       ),
                                     ),
-                                    SizedBox(width: 20),
+                                    const SizedBox(width: 20),
                                     // ส่วนของข้อความ
                                     Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -69,29 +69,37 @@ class MoreRes extends StatelessWidget {
                                           ),
                                         ),
                                         // ปุ่ม Edit and IconButton
-                                        Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            GestureDetector(
-                                              onTap: () {},
-                                              child: Text(
+                                        GestureDetector(
+                                          onTap: () {
+                                            /*Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) => ),
+                                            );*/
+                                          },
+                                          child: Row(
+                                            children: [
+                                              Text(
                                                 "Edit my profile",
                                                 style: TextStyle(
                                                   fontFamily: 'Montserrat',
                                                   fontSize: 14,
+                                                  fontWeight: FontWeight.bold,
                                                   color: Color(0xFFAF1F1F),
                                                 ),
                                               ),
-                                            ),
-                                            Align(
-                                              alignment: Alignment.center,
-                                              child: IconButton(
-                                                icon: const Icon(Icons.chevron_right, size: 20, color: Color(0xFFAF1F1F)),
-                                                onPressed: () {},
+                                              SizedBox(
+                                                  width:
+                                                      5), // เพิ่มระยะห่างเล็กน้อย
+                                              Icon(
+                                                Icons
+                                                    .chevron_right, // ไอคอนลูกศร >
+                                                size: 18, // ปรับขนาดให้ดูพอดี
+                                                color: Color(0xFFAF1F1F),
                                               ),
-                                            )
-                                          ],
-                                        )
+                                            ],
+                                          ),
+                                        ),
                                       ],
                                     ),
                                   ],
