@@ -23,7 +23,7 @@ class ContactUsRestaurant extends StatelessWidget {
             top: 40,
             left: 16,
             child: IconButton(
-              icon: const Icon(Icons.chevron_left, size: 40, color: Colors.white),
+              icon: const Icon(Icons.chevron_left, size: 40, color: Color(0xFFFCF9CA)),
               onPressed: () {
                 Navigator.pop(context); //รอแก้
               },
@@ -39,7 +39,7 @@ class ContactUsRestaurant extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 30,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: Color(0xFFFCF9CA),
                 ),
               ),
             ),

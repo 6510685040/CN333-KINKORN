@@ -13,12 +13,14 @@ import 'package:kinkorn/restaurant/order_status.dart';
 void main() {
   runApp(MaterialApp(
     //home: LoginScreen(),
-    //home: ContactUsRestaurant(), 
+    home: ContactUsRestaurant(), 
     //home: NewOrder(),
     //home: OrderdetailRestaurant(),
     //home: PreparingOrderRestaurant(),
     //home: CompletedOrderRestaurant(),
-    home: OrderStatusRestaurant(),
+    //home: OrderStatusRestaurant(),
+    //home: EditProfileRestaurant(),
+    //home: LanguageSettingRestaurant(),
   ));
 }
 

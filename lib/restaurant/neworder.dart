@@ -18,7 +18,7 @@ class NewOrder extends StatelessWidget {
             top: 40,
             left: 16,
             child: IconButton(
-              icon: const Icon(Icons.chevron_left, size: 30, color: Colors.white),
+              icon: const Icon(Icons.chevron_left, size: 30, color: Color(0xFFFCF9CA)),
               onPressed: () {
                 Navigator.pop(context);
               },
@@ -33,7 +33,7 @@ class NewOrder extends StatelessWidget {
             child: Center(
               child: Text(
                 'New Order',
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFFFCF9CA)),
               ),
             ),
           ),
