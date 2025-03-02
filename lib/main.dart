@@ -22,11 +22,11 @@ void main() {
     //home:  AddPayment(),
     //home:  EditPayment(),
     //home: SalesReport(),
-    //home: StatusWaiting(),
+    home: StatusWaiting(),
     //home: StatusPreparing(),
     //home: StatusComplete(),
     //home: ContactUs(),
-    home: MoreRes(),
+    //home: MoreRes(),
     //home: MoreCus(),
   ));
 }
