@@ -6,8 +6,9 @@ import 'package:kinkorn/customer/add_on.dart';
 import 'package:kinkorn/customer/choose_canteen.dart';
 import 'package:kinkorn/customer/choose_menu.dart';
 import 'package:kinkorn/customer/choose_restaurant.dart';
+
 void main() {
   runApp(MaterialApp(
-    home:  HomeScreen(),
+    home: HomeScreen(),
   ));
 }

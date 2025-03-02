@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:kinkorn/customer/choose_canteen.dart';
+import 'package:kinkorn/restaurant/homepage.dart';
 
 class RegisterRes extends StatelessWidget {
   const RegisterRes({super.key});
@@ -20,7 +21,7 @@ class RegisterRes extends StatelessWidget {
             children: [
               Positioned(
                 top: 40, // Adjusted logo position
-                left : 20,
+                left: 20,
                 child: SvgPicture.asset(
                   'assets/images/logo.svg',
                   width: 100,
@@ -28,8 +29,10 @@ class RegisterRes extends StatelessWidget {
                 ),
               ),
               Positioned(
-                left: screenWidth * 0.1, // Use percentage-based positioning for responsiveness
-                top: screenHeight * 0.2, // Adjusted position based on screen height
+                left: screenWidth *
+                    0.1, // Use percentage-based positioning for responsiveness
+                top: screenHeight *
+                    0.2, // Adjusted position based on screen height
                 child: Container(
                   width: screenWidth * 0.8, // Responsive width
                   height: screenHeight * 0.6, // Responsive height
@@ -77,7 +80,8 @@ class RegisterRes extends StatelessWidget {
                 ),
               ),
               Positioned(
-                left: screenWidth * 0.17, // Adjusted position for restaurant name label
+                left: screenWidth *
+                    0.17, // Adjusted position for restaurant name label
                 top: screenHeight * 0.45,
                 child: Text(
                   'Restaurant Name',
@@ -122,7 +126,8 @@ class RegisterRes extends StatelessWidget {
                 ),
               ),
               Positioned(
-                left: screenWidth * 0.17, // Adjusted position for category label
+                left:
+                    screenWidth * 0.17, // Adjusted position for category label
                 top: screenHeight * 0.56,
                 child: Text(
                   'Category',
@@ -136,7 +141,8 @@ class RegisterRes extends StatelessWidget {
                 ),
               ),
               Positioned(
-                left: screenWidth * 0.16, // Adjusted position for category input field
+                left: screenWidth *
+                    0.16, // Adjusted position for category input field
                 top: screenHeight * 0.58,
                 child: Container(
                   width: screenWidth * 0.7, // Responsive width
@@ -167,14 +173,15 @@ class RegisterRes extends StatelessWidget {
                 ),
               ),
               Positioned(
-                left: screenWidth * 0.31, // Adjusted position for the Next button
-                top: screenHeight * 0.83, // Adjusted button position to fit screen height
+                left: screenWidth * 0.31, // Adjust button position
+                top: screenHeight * 0.73, // Adjust height
                 child: GestureDetector(
                   onTap: () {
-                    // เปลี่ยนหน้ากลับไปยังหน้า Choose Canteen
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (context) => ChooseCanteen()),
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              RestaurantDashboard()), // Ensure this page exists
                     );
                   },
                   child: Container(
@@ -197,7 +204,7 @@ class RegisterRes extends StatelessWidget {
                     ),
                   ),
                 ),
-              ),
+              )
             ],
           ),
         ),
