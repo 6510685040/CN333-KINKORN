@@ -49,7 +49,7 @@ class LoginScreen extends StatelessWidget {
                       const Text(
                         'Username',
                         style: TextStyle(
-                          fontFamily: 'Montserrat',
+                          fontFamily: 'GeistFont',
                           fontWeight: FontWeight.w600,
                           fontSize: 16,
                           color: Color(0xFFAF1F1F),
@@ -81,7 +81,7 @@ class LoginScreen extends StatelessWidget {
                       const Text(
                         'Password',
                         style: TextStyle(
-                          fontFamily: 'Montserrat',
+                          fontFamily: 'GeistFont',
                           fontWeight: FontWeight.w600,
                           fontSize: 16,
                           color: Color(0xFFAF1F1F),
@@ -130,7 +130,7 @@ class LoginScreen extends StatelessWidget {
                           child: const Text(
                             'Login',
                             style: TextStyle(
-                              fontFamily: 'Montserrat',
+                              fontFamily: 'GeistFont',
                               fontWeight: FontWeight.w600,
                               fontSize: 16,
                               color: Colors.white,
@@ -149,7 +149,7 @@ class LoginScreen extends StatelessWidget {
                               TextSpan(
                                 text: 'or ',
                                 style: TextStyle(
-                                  fontFamily: 'Montserrat',
+                                  fontFamily: 'GeistFont',
                                   fontWeight: FontWeight.w500,
                                   fontSize: 14,
                                   color: Color(0xFFAF1F1F),
@@ -158,7 +158,7 @@ class LoginScreen extends StatelessWidget {
                               TextSpan(
                                 text: 'Create an account',
                                 style: TextStyle(
-                                  fontFamily: 'Montserrat',
+                                  fontFamily: 'GeistFont',
                                   fontWeight: FontWeight.w500,
                                   fontSize: 14,
                                   color: Color(0xFFAF1F1F),

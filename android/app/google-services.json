@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "173081640274",
+    "project_id": "cn333-kinkorn-267c8",
+    "storage_bucket": "cn333-kinkorn-267c8.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:173081640274:android:0c0ababed0eb3af4ca4e8b",
+        "android_client_info": {
+          "package_name": "com.example.flutter101"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC5-UIY4TlsQHeTeL9Q_fvJp3G7i9HR0OE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

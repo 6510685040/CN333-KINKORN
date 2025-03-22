@@ -1,0 +1,2 @@
+D:/KinkornFinal/CN333-KINKORN/android/app/.cxx/RelWithDebInfo/3v3l4g6v/x86_64/CMakeFiles/edit_cache.dir
+D:/KinkornFinal/CN333-KINKORN/android/app/.cxx/RelWithDebInfo/3v3l4g6v/x86_64/CMakeFiles/rebuild_cache.dir

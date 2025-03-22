@@ -1,0 +1,2 @@
+D:/KinkornFinal/CN333-KINKORN/android/app/.cxx/RelWithDebInfo/6k6e4b19/armeabi-v7a/CMakeFiles/edit_cache.dir
+D:/KinkornFinal/CN333-KINKORN/android/app/.cxx/RelWithDebInfo/6k6e4b19/armeabi-v7a/CMakeFiles/rebuild_cache.dir
