@@ -4,8 +4,15 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'register.dart';
 import 'package:kinkorn/customer/choose_canteen.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  bool _obscurePassword = true; // ตัวแปรสำหรับซ่อน/แสดงรหัสผ่าน
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +54,7 @@ class LoginScreen extends StatelessWidget {
                     children: [
                       // Username Input
                       const Text(
-                        'Username',
+                        'Email',
                         style: TextStyle(
                           fontFamily: 'GeistFont',
                           fontWeight: FontWeight.w600,
@@ -58,7 +65,7 @@ class LoginScreen extends StatelessWidget {
                       const SizedBox(height: 8),
                       TextFormField(
                         decoration: InputDecoration(
-                          hintText: 'Enter your username',
+                          hintText: 'Enter your Email',
                           contentPadding:
                               const EdgeInsets.symmetric(horizontal: 16),
                           filled: true,
@@ -89,7 +96,7 @@ class LoginScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       TextFormField(
-                        obscureText: true,
+                        obscureText: _obscurePassword, // สลับการแสดงรหัสผ่าน
                         decoration: InputDecoration(
                           hintText: 'Enter your password',
                           contentPadding:
@@ -105,6 +112,19 @@ class LoginScreen extends StatelessWidget {
                             borderRadius: BorderRadius.circular(24),
                             borderSide: const BorderSide(
                                 color: Color(0xFFD9D9D9), width: 2),
+                          ),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscurePassword
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                              color: const Color(0xFFAF1F1F),
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _obscurePassword = !_obscurePassword; // สลับการแสดงรหัสผ่าน
+                              });
+                            },
                           ),
                         ),
                       ),

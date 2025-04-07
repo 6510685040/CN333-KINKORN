@@ -38,6 +38,7 @@ dependencies:
   firebase_core: ^3.12.1
   firebase_auth: ^5.5.1
   form_field_validator: ^1.1.0
+  firebase_storage: ^12.4.4
   cloud_firestore: ^5.6.5
   auto_size_text: ^3.0.0
   image_picker: ^1.1.2

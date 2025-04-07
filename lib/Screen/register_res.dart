@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-import 'login.dart'; // นำเข้า LoginScreen
+import 'login.dart';
+import 'package:kinkorn/customer/choose_canteen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class RegisterRes extends StatefulWidget {
   const RegisterRes({super.key});
@@ -40,6 +43,9 @@ class _RegisterRestaurantScreenState extends State<RegisterRes> {
     "Sunday": false,
   };
 
+  // เพิ่มตัวแปรสำหรับเลือกประเภทโรงอาหาร
+  String? _selectedCanteen = 'sc canteen';
+
   Future<void> _pickImage() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
@@ -49,12 +55,46 @@ class _RegisterRestaurantScreenState extends State<RegisterRes> {
     }
   }
 
+  void fetchUserData() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      DocumentSnapshot userData = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+
+      if (userData.exists) {
+        setState(() {
+          restaurantNameController.text =
+              userData['firstName'] + "'s Restaurant";
+          ownerNameController.text =
+              userData['firstName'] + " " + userData['lastName'];
+        });
+      }
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchUserData();
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
+        appBar: AppBar(
+        backgroundColor: const Color(0xFFAF1F1F),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+      ),
       body: Container(
         width: double.infinity,
         height: double.infinity,
@@ -128,7 +168,6 @@ class _RegisterRestaurantScreenState extends State<RegisterRes> {
                       buildTextField("Owner Name", "Enter owner name",
                           ownerNameController),
 
-                      // 🕒 What Time Does the Restaurant Open?
                       const Text(
                         "What time does the restaurant open?",
                         style: TextStyle(
@@ -167,8 +206,6 @@ class _RegisterRestaurantScreenState extends State<RegisterRes> {
                         },
                       ),
                       const SizedBox(height: 20),
-
-                      // 📅 Choose Canteen Opening Days
                       const Text(
                         "Choose canteen opening days",
                         style: TextStyle(
@@ -191,9 +228,42 @@ class _RegisterRestaurantScreenState extends State<RegisterRes> {
                           );
                         }).toList(),
                       ),
+                      const SizedBox(height: 15),
+                      const Text(
+                        "Choose Canteen Type",
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                          color: Color(0xFFAF1F1F),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      DropdownButtonFormField<String>(
+                        value: _selectedCanteen,
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            _selectedCanteen = newValue;
+                          });
+                        },
+                        items: <String>['sc canteen', 'jc canteen']
+                            .map<DropdownMenuItem<String>>((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(24),
+                            borderSide: const BorderSide(
+                                color: Color(0xFFD9D9D9), width: 2),
+                          ),
+                        ),
+                      ),
                       const SizedBox(height: 20),
 
-                      // 🔹 Create Restaurant Button
                       Center(
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
@@ -204,22 +274,52 @@ class _RegisterRestaurantScreenState extends State<RegisterRes> {
                             ),
                           ),
                           onPressed: () async {
-                            // Add logic to save restaurant data here
                             if (_formKey.currentState?.validate() ?? false) {
-                              // Assuming you save the data successfully
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content: Text(
-                                        'Restaurant created successfully!')),
-                              );
+                              User? user = FirebaseAuth.instance.currentUser;
+                              if (user != null) {
+                                DocumentReference userRef = FirebaseFirestore
+                                    .instance
+                                    .collection('users')
+                                    .doc(user.uid);
 
-                              // Navigate to login screen
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) =>
-                                        const LoginScreen()), // Change to your login screen widget
-                              );
+                                DocumentSnapshot userDoc = await userRef.get();
+
+                                if (userDoc.exists) {
+                                  List<dynamic> currentRoles =
+                                      (userDoc['roles'] as List<dynamic>?) ?? [];
+
+                                  if (!currentRoles.contains('customer')) {
+                                    currentRoles.add('customer');
+                                  }
+
+                                  if (!currentRoles.contains('res')) {
+                                    currentRoles.add('res');
+                                  }
+
+                                  await userRef.update({
+                                    'restaurantName':
+                                        restaurantNameController.text,
+                                    'ownerName': ownerNameController.text,
+                                    'openingTime': openingTimeController.text,
+                                    'openingDays': selectedDays,
+                                    'canteenType': _selectedCanteen,  
+                                    'roles': currentRoles,
+                                  });
+
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content: Text(
+                                            'Restaurant registered successfully!')),
+                                  );
+
+                                  Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            const ChooseCanteen()),
+                                  );
+                                }
+                              }
                             }
                           },
                           child: const Text(
