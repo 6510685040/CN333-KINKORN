@@ -16,6 +16,6 @@ void main() async{
 /*WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   runApp(MaterialApp(
-    home: LoginScreen(),่ฟร
+    home: LoginScreen(),
   ));*/
   

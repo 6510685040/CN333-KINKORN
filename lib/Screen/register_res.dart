@@ -11,18 +11,18 @@ class RegisterRes extends StatefulWidget {
   const RegisterRes({super.key});
 
   @override
-  State<RegisterRes> createState() => _RegisterRestaurantScreenState();
+  State<RegisterRes> createState() => RegisterRestaurantScreenState();
 }
 
-class _RegisterRestaurantScreenState extends State<RegisterRes> {
-  final _formKey = GlobalKey<FormState>();
+class RegisterRestaurantScreenState extends State<RegisterRes> {
+  final formKey = GlobalKey<FormState>();
   final TextEditingController restaurantNameController =
       TextEditingController();
   final TextEditingController ownerNameController = TextEditingController();
   final TextEditingController openingTimeController = TextEditingController();
 
-  File? _image;
-  final ImagePicker _picker = ImagePicker();
+  File? image;
+  final ImagePicker picker = ImagePicker();
 
   final List<String> days = [
     "Monday",
@@ -43,41 +43,23 @@ class _RegisterRestaurantScreenState extends State<RegisterRes> {
     "Sunday": false,
   };
 
-  // เพิ่มตัวแปรสำหรับเลือกประเภทโรงอาหาร
-  String? _selectedCanteen = 'sc canteen';
+  
+  String? selectedCanteen ;
 
-  Future<void> _pickImage() async {
-    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+  Future<void> pickImage() async {
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       setState(() {
-        _image = File(pickedFile.path);
+        image = File(pickedFile.path);
       });
     }
   }
 
-  void fetchUserData() async {
-    User? user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      DocumentSnapshot userData = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .get();
-
-      if (userData.exists) {
-        setState(() {
-          restaurantNameController.text =
-              userData['firstName'] + "'s Restaurant";
-          ownerNameController.text =
-              userData['firstName'] + " " + userData['lastName'];
-        });
-      }
-    }
-  }
-
+  
   @override
   void initState() {
     super.initState();
-    fetchUserData();
+   
   }
 
   @override
@@ -126,7 +108,7 @@ class _RegisterRestaurantScreenState extends State<RegisterRes> {
                   borderRadius: BorderRadius.circular(32),
                 ),
                 child: Form(
-                  key: _formKey,
+                  key: formKey,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -140,28 +122,65 @@ class _RegisterRestaurantScreenState extends State<RegisterRes> {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      GestureDetector(
-                        onTap: _pickImage,
-                        child: _image == null
-                            ? Container(
-                                height: 100,
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                      color: const Color(0xFFD9D9D9)),
-                                ),
-                                child: const Center(
-                                    child: Icon(Icons.add_a_photo,
-                                        size: 40, color: Colors.grey)),
-                              )
-                            : ClipRRect(
+                      Align(
+                        alignment: Alignment.center,
+                      child: GestureDetector(
+                      
+                      onTap: pickImage, 
+                      child: image == null
+                          ? Container(
+                               height: MediaQuery.of(context).size.width * 0.3, 
+                               width: MediaQuery.of(context).size.width * 0.3,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
                                 borderRadius: BorderRadius.circular(16),
-                                child: Image.file(_image!,
-                                    height: 100, fit: BoxFit.cover),
+                                border: Border.all(color: const Color(0xFFD9D9D9)),
                               ),
+                              child: const Center(
+                                child: Icon(Icons.add_a_photo, size: 40, color: Colors.grey),
+                              ),
+                            )
+                          : Stack(
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(16),
+                                  child: Image.file(
+                                    image!,
+                                    height: MediaQuery.of(context).size.width * 0.3,
+                                    width: MediaQuery.of(context).size.width * 0.3,
+               
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                                Positioned(
+                                  top: 4,
+                                  right: 4,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.black54,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    padding: const EdgeInsets.all(4),
+                                    child: const Icon(
+                                      Icons.edit,
+                                      size: 20,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                    ),
                       ),
-                      const SizedBox(height: 20),
+                    const SizedBox(height: 8),
+                    Align(
+                      alignment: Alignment.center,
+                      child: Text( 'Tap image to change',
+                      style: TextStyle(color: Colors.grey[600], fontSize: 12),)
+                    ),
+                   
+
+                     const SizedBox(height: 20),
 
                       buildTextField("Restaurant Name", "Enter restaurant name",
                           restaurantNameController),
@@ -179,6 +198,12 @@ class _RegisterRestaurantScreenState extends State<RegisterRes> {
                       const SizedBox(height: 8),
                       TextFormField(
                         controller: openingTimeController,
+                         validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Please select opening time';
+                            }
+                            return null;
+                          },
                         decoration: InputDecoration(
                           hintText: "Select opening time",
                           contentPadding:
@@ -214,23 +239,46 @@ class _RegisterRestaurantScreenState extends State<RegisterRes> {
                           color: Color(0xFFAF1F1F),
                         ),
                       ),
-                      Column(
-                        children: days.map((day) {
-                          return CheckboxListTile(
-                            title: Text(day),
-                            value: selectedDays[day],
-                            activeColor: const Color(0xFFAF1F1F),
-                            onChanged: (bool? value) {
-                              setState(() {
-                                selectedDays[day] = value ?? false;
-                              });
-                            },
-                          );
-                        }).toList(),
-                      ),
+                      FormField<bool>(
+                          validator: (value) {
+                            if (!selectedDays.containsValue(true)) {
+                              return 'Please select at least one opening day';
+                            }
+                            return null;
+                          },
+                          builder: (FormFieldState<bool> field) {
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                ...days.map((day) {
+                                  return CheckboxListTile(
+                                    title: Text(day),
+                                    value: selectedDays[day],
+                                    activeColor: const Color(0xFFAF1F1F),
+                                    onChanged: (bool? value) {
+                                      setState(() {
+                                        selectedDays[day] = value ?? false;
+                                        field.didChange(value);
+                                      });
+                                    },
+                                  );
+                                }).toList(),
+                                if (field.hasError)
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 16.0),
+                                    child: Text(
+                                      field.errorText!,
+                                      style: const TextStyle(color: Colors.red),
+                                    ),
+                                  ),
+                              ],
+                            );
+                          },
+                        ),
+
                       const SizedBox(height: 15),
                       const Text(
-                        "Choose Canteen Type",
+                        "Choose Canteen",
                         style: TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: 16,
@@ -239,10 +287,17 @@ class _RegisterRestaurantScreenState extends State<RegisterRes> {
                       ),
                       const SizedBox(height: 10),
                       DropdownButtonFormField<String>(
-                        value: _selectedCanteen,
+                        value: selectedCanteen,
+                        hint: const Text("Choose canteen"),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please select a canteen';
+                          }
+                          return null;
+                        },
                         onChanged: (String? newValue) {
                           setState(() {
-                            _selectedCanteen = newValue;
+                            selectedCanteen = newValue;
                           });
                         },
                         items: <String>['sc canteen', 'jc canteen']
@@ -274,7 +329,7 @@ class _RegisterRestaurantScreenState extends State<RegisterRes> {
                             ),
                           ),
                           onPressed: () async {
-                            if (_formKey.currentState?.validate() ?? false) {
+                            if (formKey.currentState?.validate() ?? false) {
                               User? user = FirebaseAuth.instance.currentUser;
                               if (user != null) {
                                 DocumentReference userRef = FirebaseFirestore
@@ -302,7 +357,7 @@ class _RegisterRestaurantScreenState extends State<RegisterRes> {
                                     'ownerName': ownerNameController.text,
                                     'openingTime': openingTimeController.text,
                                     'openingDays': selectedDays,
-                                    'canteenType': _selectedCanteen,  
+                                    'canteenType': selectedCanteen,  
                                     'roles': currentRoles,
                                   });
 
@@ -350,12 +405,18 @@ class _RegisterRestaurantScreenState extends State<RegisterRes> {
       children: [
         Text(label,
             style: const TextStyle(
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w600, 
                 fontSize: 16,
                 color: Color(0xFFAF1F1F))),
         const SizedBox(height: 8),
         TextFormField(
           controller: controller,
+          validator: (value) {
+          if (value == null || value.trim().isEmpty) {
+            return 'Please enter $label';
+          }
+          return null;
+        },
           decoration: InputDecoration(
             hintText: hint,
             filled: true,
