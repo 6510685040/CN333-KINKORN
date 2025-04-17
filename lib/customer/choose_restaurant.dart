@@ -36,7 +36,7 @@ class ChooseRestaurantScreen extends StatelessWidget {
             child: Text(
               "Choose Restaurant....",
               style: TextStyle(
-                fontFamily: 'Montserrat',
+                fontFamily: ' Geist',
                 fontWeight: FontWeight.w700,
                 fontSize: screenWidth * 0.08,
                 color: Color(0xFFFCF9CA),
@@ -109,7 +109,7 @@ class ChooseRestaurantScreen extends StatelessWidget {
                           Text(
                             "ครัวสุขใจ - อาหารนานาชาติ",
                             style: TextStyle(
-                              fontFamily: 'Montserrat',
+                              fontFamily: ' Geist',
                               fontWeight: FontWeight.w600,
                               fontSize: screenWidth * 0.05,
                               color: Color(0xFFFCF9CA),
@@ -126,7 +126,7 @@ class ChooseRestaurantScreen extends StatelessWidget {
                             child: Text(
                               "open to order",
                               style: TextStyle(
-                                fontFamily: 'Montserrat',
+                                fontFamily: ' Geist',
                                 fontWeight: FontWeight.w600,
                                 fontSize: screenWidth * 0.03,
                                 color: Colors.white,
@@ -137,7 +137,7 @@ class ChooseRestaurantScreen extends StatelessWidget {
                           Text(
                             "Location : SC1/JC canteen",
                             style: TextStyle(
-                              fontFamily: 'Montserrat',
+                              fontFamily: ' Geist',
                               fontWeight: FontWeight.w600,
                               fontSize: screenWidth * 0.03,
                               color: Color(0xFFFCF9CA),
@@ -198,7 +198,7 @@ class ChooseRestaurantScreen extends StatelessWidget {
                           Text(
                             "ร้านครัวอร่อย",
                             style: TextStyle(
-                              fontFamily: 'Montserrat',
+                              fontFamily: ' Geist',
                               fontWeight: FontWeight.w600,
                               fontSize: screenWidth * 0.06,
                               color: Color(0xFFFCF9CA),
@@ -215,7 +215,7 @@ class ChooseRestaurantScreen extends StatelessWidget {
                             child: Text(
                               "open to order",
                               style: TextStyle(
-                                fontFamily: 'Montserrat',
+                                fontFamily: ' Geist',
                                 fontWeight: FontWeight.w600,
                                 fontSize: screenWidth * 0.03,
                                 color: Colors.white,
@@ -226,7 +226,7 @@ class ChooseRestaurantScreen extends StatelessWidget {
                           Text(
                             "Location : SC1/JC canteen",
                             style: TextStyle(
-                              fontFamily: 'Montserrat',
+                              fontFamily: ' Geist',
                               fontWeight: FontWeight.w600,
                               fontSize: screenWidth * 0.03,
                               color: Color(0xFFFCF9CA),

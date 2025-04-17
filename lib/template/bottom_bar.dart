@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kinkorn/Screen/register_res.dart';
 import 'package:kinkorn/customer/choose_canteen.dart';
 import 'package:kinkorn/customer/summary_payment.dart';
+import 'package:kinkorn/customer/more_cus.dart';
 
 class BottomBar extends StatelessWidget {
   final double screenHeight;
@@ -57,7 +58,12 @@ class BottomBar extends StatelessWidget {
               context,
               icon: Icons.more_horiz,
               label: "More",
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => MoreCus()),
+                );
+              },
             ),
             bottomBarItem(
               context,

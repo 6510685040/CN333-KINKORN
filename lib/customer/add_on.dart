@@ -56,7 +56,7 @@ class AddOn extends StatelessWidget {
                 Text(
                   'ข้าวกะเพราหมูสับ',  // Example food name
                   style: TextStyle(
-                    fontFamily: 'Montserrat',
+                    fontFamily: ' Geist',
                     fontWeight: FontWeight.bold,
                     fontSize: screenWidth * 0.08, // Adjust text size
                     color: Color(0xFFAF1F1F),
@@ -66,7 +66,7 @@ class AddOn extends StatelessWidget {
                 Text(
                   '฿45',
                   style: TextStyle(
-                    fontFamily: 'IBM Plex Sans Thai',
+                    fontFamily: ' Geist',
                     fontWeight: FontWeight.w600,
                     fontSize: screenWidth * 0.08, // Adjust price size
                     color: Color(0xFFAF1F1F),
@@ -106,7 +106,7 @@ class AddOn extends StatelessWidget {
                   child: Text(
                     'Add to Cart',
                     style: TextStyle(
-                      fontFamily: 'Montserrat',
+                      fontFamily: ' Geist',
                       fontWeight: FontWeight.bold,
                       fontSize: screenWidth * 0.05,
                       color: Colors.white,
