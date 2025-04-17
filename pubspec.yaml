@@ -75,6 +75,12 @@ flutter:
       fonts:
         - asset: assets/fonts/Geist-Regular.ttf
 
+flutter_plugin_android_lifecycle:
+  git:
+    url: https://github.com/flutter/plugins.git
+    path: packages/flutter_plugin_android_lifecycle
+
+
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 
