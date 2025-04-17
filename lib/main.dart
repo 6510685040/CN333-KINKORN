@@ -1,26 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:kinkorn/Screen/home.dart';
-import 'package:kinkorn/Screen/login.dart';
-import 'package:kinkorn/restaurant/edit_profile.dart';
-import 'package:kinkorn/restaurant/language_setting.dart';
-import 'package:kinkorn/restaurant/contactus_restaurant.dart';
-import 'package:kinkorn/restaurant/neworder.dart';
-import 'package:kinkorn/restaurant/order_detailRestaurant.dart';
-import 'package:kinkorn/restaurant/preparing_order.dart';
-import 'package:kinkorn/restaurant/completed_order.dart';
-import 'package:kinkorn/restaurant/order_status.dart';
 
-void main() {
-  runApp(MaterialApp(
-    //home: LoginScreen(),
-    home: ContactUsRestaurant(), 
-    //home: NewOrder(),
-    //home: OrderdetailRestaurant(),
-    //home: PreparingOrderRestaurant(),
-    //home: CompletedOrderRestaurant(),
-    //home: OrderStatusRestaurant(),
-    //home: EditProfileRestaurant(),
-    //home: LanguageSettingRestaurant(),
-  ));
+import 'package:kinkorn/customer/choose_canteen.dart';
+
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+
+  await FirebaseAppCheck.instance.activate(
+    androidProvider: AndroidProvider.playIntegrity,
+    appleProvider: AppleProvider.deviceCheck,
+  );
+
+  runApp(
+    const MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: HomeScreen(), 
+    ),
+  );
 }
-
