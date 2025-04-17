@@ -6,6 +6,8 @@ import 'login.dart';
 import 'package:kinkorn/customer/choose_canteen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+
 
 class RegisterRes extends StatefulWidget {
   const RegisterRes({super.key});
@@ -54,6 +56,22 @@ class RegisterRestaurantScreenState extends State<RegisterRes> {
       });
     }
   }
+
+  Future<String?> uploadImageToFirebase(File imageFile) async {
+  try {
+    final storageRef = FirebaseStorage.instance.ref();
+    final fileName = 'restaurant_logos/${DateTime.now().millisecondsSinceEpoch}.png';
+    final imageRef = storageRef.child(fileName);
+
+    await imageRef.putFile(imageFile);
+    final downloadURL = await imageRef.getDownloadURL();
+    return downloadURL;
+  } catch (e) {
+    print('Error uploading image: $e');
+    return null;
+  }
+}
+
 
   
   @override
@@ -112,7 +130,7 @@ class RegisterRestaurantScreenState extends State<RegisterRes> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // 🖼 Add Your Logo
+                    
                       const Text(
                         "Add Your Logo",
                         style: TextStyle(
@@ -329,6 +347,7 @@ class RegisterRestaurantScreenState extends State<RegisterRes> {
                             ),
                           ),
                           onPressed: () async {
+                            await Future.delayed(Duration(seconds: 2));
                             if (formKey.currentState?.validate() ?? false) {
                               User? user = FirebaseAuth.instance.currentUser;
                               if (user != null) {
@@ -338,6 +357,11 @@ class RegisterRestaurantScreenState extends State<RegisterRes> {
                                     .doc(user.uid);
 
                                 DocumentSnapshot userDoc = await userRef.get();
+                                
+                              String? imageLogoURL;
+                              if (image != null) {
+                                imageLogoURL= await uploadImageToFirebase(image!); 
+                              }
 
                                 if (userDoc.exists) {
                                   List<dynamic> currentRoles =
@@ -351,15 +375,19 @@ class RegisterRestaurantScreenState extends State<RegisterRes> {
                                     currentRoles.add('res');
                                   }
 
-                                  await userRef.update({
-                                    'restaurantName':
-                                        restaurantNameController.text,
-                                    'ownerName': ownerNameController.text,
-                                    'openingTime': openingTimeController.text,
-                                    'openingDays': selectedDays,
-                                    'canteenType': selectedCanteen,  
-                                    'roles': currentRoles,
-                                  });
+                                  try {
+                                    await userRef.update({
+                                      'restaurantName': restaurantNameController.text,
+                                      'ownerName': ownerNameController.text,
+                                      'openingTime': openingTimeController.text,
+                                      'openingDays': selectedDays,
+                                      'canteenType': selectedCanteen,
+                                      'roles': currentRoles,
+                                      'logoUrl': imageLogoURL,
+                                    });
+                                  } catch (e) {
+                                    print('Error updating Firestore: $e');
+                                  }
 
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
