@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:kinkorn/Screen/register_res.dart';
 import 'package:kinkorn/customer/choose_canteen.dart';
+import 'package:kinkorn/customer/more_cus.dart';
+import 'package:kinkorn/customer/order_status.dart';
 import 'package:kinkorn/customer/summary_payment.dart';
+import 'package:kinkorn/customer/your_cart.dart';
 
 class BottomBar extends StatelessWidget {
   final double screenHeight;
@@ -43,7 +46,7 @@ class BottomBar extends StatelessWidget {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => SummaryPayment()),
+                  MaterialPageRoute(builder: (context) => YourCart()),
                 );
               },
             ),
@@ -51,13 +54,24 @@ class BottomBar extends StatelessWidget {
               context,
               icon: Icons.notifications,
               label: "Status",
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => OrderStatusCustomer()),
+                );
+              },
             ),
             bottomBarItem(
               context,
               icon: Icons.more_horiz,
               label: "More",
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => MoreRes()),
+                );
+              },
             ),
             bottomBarItem(
               context,
@@ -78,7 +92,9 @@ class BottomBar extends StatelessWidget {
 
   // Bottom Bar Item Widget
   Widget bottomBarItem(BuildContext context,
-      {required IconData icon, required String label, required VoidCallback onTap}) {
+      {required IconData icon,
+      required String label,
+      required VoidCallback onTap}) {
     return GestureDetector(
       onTap: onTap,
       child: Column(
