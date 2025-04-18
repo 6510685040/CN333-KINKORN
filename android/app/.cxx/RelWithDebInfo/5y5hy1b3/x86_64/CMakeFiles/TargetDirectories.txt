@@ -1,2 +1,0 @@
-D:/project33/kinkorn/android/app/.cxx/RelWithDebInfo/5y5hy1b3/x86_64/CMakeFiles/edit_cache.dir
-D:/project33/kinkorn/android/app/.cxx/RelWithDebInfo/5y5hy1b3/x86_64/CMakeFiles/rebuild_cache.dir
