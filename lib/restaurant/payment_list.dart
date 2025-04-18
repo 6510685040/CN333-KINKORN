@@ -1,4 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:kinkorn/restaurant/add_payment.dart';
+import 'package:kinkorn/restaurant/edit_payment.dart';
 import 'package:kinkorn/template/restaurant_bottom_nav.dart';
 
 class BankAccount {
@@ -11,26 +15,58 @@ class BankAccount {
     required this.bankName,
     required this.accountNumber,
   });
+
+  factory BankAccount.fromMap(Map<String, dynamic> data) {
+    return BankAccount(
+      accountName: data['accountName'] ?? '',
+      bankName: data['bankName'] ?? '',
+      accountNumber: data['accountNumber'] ?? '',
+    );
+  }
 }
 
-class EditPaymentPage extends StatelessWidget {
-  final List<BankAccount> accounts = [
-    BankAccount(
-      accountName: 'ครัวสุขใจ',
-      bankName: 'KBANK',
-      accountNumber: '123-4-56789-0',
-    ),
-    BankAccount(
-      accountName: 'ครัวสุขใจ',
-      bankName: 'SCB',
-      accountNumber: '123-4-55555-0',
-    ),
-  ];
+class EditPaymentPage extends StatefulWidget {
+  @override
+  _EditPaymentPageState createState() => _EditPaymentPageState();
+}
+
+class _EditPaymentPageState extends State<EditPaymentPage> {
+  List<BankAccount> accounts = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPaymentMethods();  // เรียกใช้ฟังก์ชันที่โหลดข้อมูล
+  }
+
+  Future<void> _loadPaymentMethods() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
+
+      final docSnapshot = await FirebaseFirestore.instance
+          .collection('restaurants')
+          .doc(user.uid)
+          .collection('paymentMethods')  // เปลี่ยนจาก bankAccounts เป็น paymentMethods
+          .get();
+
+      setState(() {
+        accounts = docSnapshot.docs
+            .map((doc) => BankAccount.fromMap(doc.data()))
+            .toList();
+        isLoading = false;
+      });
+    } catch (e) {
+      print('Error loading payment methods: $e');
+      setState(() => isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFB71C1C), // Light yellow background
+      backgroundColor: Color(0xFFB71C1C),
       body: Column(
         children: [
           // Header
@@ -42,7 +78,7 @@ class EditPaymentPage extends StatelessWidget {
               right: 16,
               bottom: 16,
             ),
-            color: Color(0xFFFFFBE6), // Deep red
+            color: Color(0xFFFFFBE6),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -56,7 +92,7 @@ class EditPaymentPage extends StatelessWidget {
                 ),
                 SizedBox(height: 16),
                 Text(
-                  'List of Your Bank Accounts',
+                  'List of Your Payment Methods',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 18,
@@ -66,140 +102,140 @@ class EditPaymentPage extends StatelessWidget {
             ),
           ),
 
-          // Bank Accounts List
+          // Payment Methods List
           Expanded(
-            child: Padding(
-              padding: EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  ...accounts
-                      .map((account) => Container(
-                            margin: EdgeInsets.only(bottom: 16),
-                            padding: EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(8),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 4,
-                                  offset: Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Text(
-                                              'Account Name : ',
-                                              style: TextStyle(
-                                                color: Colors.red[900],
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                            Text(account.accountName),
-                                          ],
-                                        ),
-                                        SizedBox(height: 4),
-                                        Row(
-                                          children: [
-                                            Text(
-                                              'Bank : ',
-                                              style: TextStyle(
-                                                color: Colors.red[900],
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                            Text(account.bankName),
-                                          ],
-                                        ),
-                                        SizedBox(height: 4),
-                                        Row(
-                                          children: [
-                                            Text(
-                                              'Number : ',
-                                              style: TextStyle(
-                                                color: Colors.red[900],
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                            Text(account.accountNumber),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                    TextButton(
-                                      onPressed: () {},
-                                      child: Text(
-                                        'edit',
-                                        style: TextStyle(
-                                          color: Colors.red[900],
-                                        ),
-                                      ),
+            child: isLoading
+                ? Center(child: CircularProgressIndicator())
+                : accounts.isEmpty
+                    ? Center(child: Text('No payment methods found.'))
+                    : Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Column(
+                          children: [
+                            ...accounts.map(
+                              (account) => Container(
+                                margin: EdgeInsets.only(bottom: 16),
+                                padding: EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(8),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.1),
+                                      blurRadius: 4,
+                                      offset: Offset(0, 2),
                                     ),
                                   ],
                                 ),
-                              ],
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              children: [
+                                                Text(
+                                                  'Account Name : ',
+                                                  style: TextStyle(
+                                                    color: Colors.red[900],
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                Text(account.accountName),
+                                              ],
+                                            ),
+                                            SizedBox(height: 4),
+                                            Row(
+                                              children: [
+                                                Text(
+                                                  'Bank name : ',
+                                                  style: TextStyle(
+                                                    color: Colors.red[900],
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                Text(account.bankName),
+                                              ],
+                                            ),
+                                            SizedBox(height: 4),
+                                            Row(
+                                              children: [
+                                                Text(
+                                                  'Account Number : ',
+                                                  style: TextStyle(
+                                                    color: Colors.red[900],
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                Text(account.accountNumber),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                        TextButton(
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => EditPayment(), 
+                                            ),
+                                          );
+                                        },
+                                        child: Text(
+                                          'edit',
+                                          style: TextStyle(
+                                            color: Colors.red[900],
+                                          ),
+                                        ),
+                                      ),
+
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
-                          ))
-                      .toList(),
-                  Spacer(),
-                  // Add Payment Button
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.grey[200],
-                        padding: EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                            Spacer(),
+                            // Add Payment Button
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.grey[300],
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 14),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => AddPayment()),
+                                  );
+                                },
+                                child: const Text(
+                                  'ADD PAYMENT METHOD',
+                                  style: TextStyle(
+                                      color: Colors.black, fontSize: 16),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      child: Text(
-                        'ADD PAYMENT',
-                        style: TextStyle(
-                          color: Colors.grey[700],
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
           ),
 
-          // Bottom Navigation Bar
           const CustomBottomNav(),
         ],
       ),
-    );
-  }
-
-  Widget _buildNavItem(IconData icon, String label) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, color: Colors.grey.shade600),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey.shade600,
-          ),
-        ),
-      ],
     );
   }
 }

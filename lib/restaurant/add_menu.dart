@@ -186,13 +186,6 @@ class _AddMenuPageState extends State<AddMenuPage> {
                                             fontSize: 16,
                                           ),
                                         ),
-                                        Text(
-                                          '...',
-                                          style: TextStyle(
-                                            color: Color(0xFFB71C1C),
-                                            fontSize: 24,
-                                          ),
-                                        ),
                                       ],
                                     ),
                                   )

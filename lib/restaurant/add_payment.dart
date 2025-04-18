@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:kinkorn/template/restaurant_bottom_nav.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:uuid/uuid.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class AddPayment extends StatefulWidget {
   const AddPayment({super.key});
@@ -12,10 +16,12 @@ class AddPayment extends StatefulWidget {
 
 class _AddPaymentState extends State<AddPayment> {
   String? selectedBank;
-  File? _selectedImage; // เก็บรูปที่เลือก
-  final ImagePicker _picker = ImagePicker(); // ตัวเลือกไฟล์รูป
+  File? _selectedImage;
+  final ImagePicker _picker = ImagePicker();
 
-  // รายชื่อธนาคารแบบสมมติก่อน
+  final TextEditingController accountNameController = TextEditingController();
+  final TextEditingController accountNumberController = TextEditingController();
+
   final List<String> bankNames = [
     "ไทยพาณิชย์ (SCB)",
     "กสิกรไทย (KBANK)",
@@ -26,7 +32,6 @@ class _AddPaymentState extends State<AddPayment> {
     "กรุงศรีอยุธยา (BAY)"
   ];
 
-  // ฟังก์ชันเลือกรูปภาพจากแกลเลอรี
   Future<void> _pickImage() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
 
@@ -37,20 +42,76 @@ class _AddPaymentState extends State<AddPayment> {
     }
   }
 
+  Future<void> _uploadPaymentMethod() async {
+    if (accountNameController.text.isEmpty ||
+        selectedBank == null ||
+        accountNumberController.text.isEmpty ||
+        _selectedImage == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Please fill all fields and select an image.")),
+      );
+      return;
+    }
+
+    try {
+      final restaurantId = FirebaseAuth.instance.currentUser!.uid;;
+      final uuid = Uuid().v4();
+
+      final ref = FirebaseStorage.instance
+          .ref()
+          .child('qr_codes')
+          .child('$uuid.png');
+
+      await ref.putFile(_selectedImage!);
+      final qrUrl = await ref.getDownloadURL();
+
+      await FirebaseFirestore.instance
+          .collection('restaurants')
+          .doc(restaurantId)
+          .collection('paymentMethods')
+          .add({
+        'accountName': accountNameController.text,
+        'bankName': selectedBank,
+        'accountNumber': accountNumberController.text,
+        'qrImageUrl': qrUrl,
+        'createdAt': Timestamp.now(),
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Payment method added successfully!")),
+      );
+
+      setState(() {
+        accountNameController.clear();
+        accountNumberController.clear();
+        selectedBank = null;
+        _selectedImage = null;
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: $e")),
+      );
+    }
+  }
+
+  Future<String?> _getRestaurantIdFromUser() async {
+  final user = FirebaseAuth.instance.currentUser;
+
+  return FirebaseAuth.instance.currentUser!.uid;;
+}
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFAF1F1F), // พื้นหลังแดงเข้ม
+      backgroundColor: Color(0xFFAF1F1F),
       body: Stack(
         children: [
-          // พื้นหลัง Title
           Container(
             width: MediaQuery.of(context).size.width,
             height: 100,
             color: Color(0xFFFCF9CA),
           ),
-
-          // Add Your Payment
           Align(
             alignment: Alignment.topCenter,
             child: Padding(
@@ -66,95 +127,98 @@ class _AddPaymentState extends State<AddPayment> {
               ),
             ),
           ),
-
-          //List of Your Bank Accounts
           Padding(
-            padding: EdgeInsets.only(top: 130),
-            child: Align(
-              alignment: Alignment.topCenter,
-              child: Container(
-                width: MediaQuery.of(context).size.width * 0.9, //กว้าง 90%
-                height: 160,
-                decoration: BoxDecoration(
-                  color: Color(0xFFFCF9CA), //FCF9CA
-                  borderRadius: BorderRadius.circular(20), // มุมโค้ง 20px
-                ),
-                child: Align(
-                  alignment: Alignment.topCenter,
-                  child: Padding(
-                    padding: EdgeInsets.only(top: 10),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment
-                          .start, // ข้อความเริ่มจากซ้าย (ยกเว้นอันแรก)
-                      children: [
-                        Align(
-                          alignment: Alignment.center, // จัดข้อความแรกตรงกลาง
-                          child: Text(
-                            "List of Your Bank Accounts",
-                            style: TextStyle(
-                              fontFamily: 'Montserrat',
-                              fontWeight: FontWeight.bold,
-                              fontSize: 24,
-                              color: Color(0xFFAF1F1F), //AF1F1F
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: 5), // เว้นระยะห่าง
-
-                        // Bank list
-                        Padding(
-                          padding: EdgeInsets.only(left: 10),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "1. Account Name : ครัวสุขใจ",
-                                style: TextStyle(
-                                  fontFamily: 'Montserrat',
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: Color(0xFFAF1F1F), //AF1F1F
-                                ),
-                              ),
-                              Text(
-                                "    Bank : KBANK        Number : 123-4-56789-0",
-                                style: TextStyle(
-                                  fontFamily: 'Montserrat',
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: Color(0xFFAF1F1F), //AF1F1F
-                                ),
-                              ),
-                              Text(
-                                "2. Account Name : ครัวสุขใจ",
-                                style: TextStyle(
-                                  fontFamily: 'Montserrat',
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: Color(0xFFAF1F1F), //AF1F1F
-                                ),
-                              ),
-                              Text(
-                                "    Bank : SCB              Number : 123-4-55555-0",
-                                style: TextStyle(
-                                  fontFamily: 'Montserrat',
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: Color(0xFFAF1F1F), //AF1F1F
-                                ),
-                              ),
-                            ],
-                          ),
-                        )
-                      ],
-                    ),
-                  ),
-                ),
+  padding: EdgeInsets.only(top: 130),
+  child: Align(
+    alignment: Alignment.topCenter,
+    child: Container(
+      width: MediaQuery.of(context).size.width * 0.9,
+      height: 200,
+      decoration: BoxDecoration(
+        color: Color(0xFFFCF9CA),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Padding(
+        padding: EdgeInsets.only(top: 10),
+        child: Column(
+          children: [
+            Text(
+              "List of Your Bank Accounts",
+              style: TextStyle(
+                fontFamily: 'Montserrat',
+                fontWeight: FontWeight.bold,
+                fontSize: 24,
+                color: Color(0xFFAF1F1F),
               ),
             ),
-          ),
+            SizedBox(height: 10),
+            Expanded(
+              child: FutureBuilder<String?>(
+                future: _getRestaurantIdFromUser(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator());
+                  }
+                  if (!snapshot.hasData || snapshot.data == null) {
+                    return Center(child: Text("No restaurant ID found."));
+                  }
 
-          // Add Payment Method Section
+                  final restaurantId = snapshot.data!;
+
+                  return StreamBuilder<QuerySnapshot>(
+                    stream: FirebaseFirestore.instance
+                        .collection('restaurants')
+                        .doc(restaurantId)
+                        .collection('paymentMethods')
+                        .snapshots(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Center(child: CircularProgressIndicator());
+                      }
+
+                      if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                        return Padding(
+                          padding: const EdgeInsets.only(left: 10),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text("No bank accounts found."),
+                          ),
+                        );
+                      }
+
+                      final docs = snapshot.data!.docs;
+                      return Padding(
+                        padding: EdgeInsets.only(left: 10),
+                        child: ListView.builder(
+                          itemCount: docs.length,
+                          itemBuilder: (context, index) {
+                            final data = docs[index].data() as Map<String, dynamic>;
+                            final accountName = data['accountName'] ?? '';
+                            final bankName = data['bankName'] ?? '';
+                            final accountNumber = data['accountNumber'] ?? '';
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text("${index + 1}. Account Name : $accountName"),
+                                Text("    Bank : $bankName        Number : $accountNumber"),
+                                SizedBox(height: 4),
+                              ],
+                            );
+                          },
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  ),
+),
+
           Padding(
             padding: EdgeInsets.only(top: 325),
             child: Align(
@@ -171,7 +235,6 @@ class _AddPaymentState extends State<AddPayment> {
                   child: SingleChildScrollView(
                     child: Column(
                       children: [
-                        // Header
                         Text(
                           "Add Payment Method",
                           style: TextStyle(
@@ -181,33 +244,19 @@ class _AddPaymentState extends State<AddPayment> {
                             color: Color(0xFFAF1F1F),
                           ),
                         ),
-                        SizedBox(height: 5),
-
-                        // Account Name Input
-                        Text(
-                          "Account Name",
-                          style: TextStyle(
-                            fontFamily: 'Montserrat',
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            color: Color(0xFFAF1F1F),
-                          ),
-                        ),
                         SizedBox(height: 10),
+                        Text("Account Name", style: TextStyle(fontWeight: FontWeight.bold)),
+                        SizedBox(height: 5),
                         SizedBox(
                           width: MediaQuery.of(context).size.width * 0.8,
                           height: 50,
                           child: TextField(
+                            controller: accountNameController,
                             textAlign: TextAlign.center,
                             decoration: InputDecoration(
                               labelText: "Enter Your Account Name",
-                              labelStyle: TextStyle(fontSize: 14),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(20),
-                                borderSide: BorderSide(
-                                  color: Color(0xFFD9D9D9),
-                                  width: 2,
-                                ),
                               ),
                               filled: true,
                               fillColor: Color(0xFFECECEC),
@@ -215,19 +264,8 @@ class _AddPaymentState extends State<AddPayment> {
                           ),
                         ),
                         SizedBox(height: 10),
-
-                        // Bank Name Dropdown
-                        Text(
-                          "Bank Name",
-                          style: TextStyle(
-                            fontFamily: 'Montserrat',
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            color: Color(0xFFAF1F1F),
-                          ),
-                        ),
-                        SizedBox(height: 10),
-                        //dropdown bank
+                        Text("Bank Name", style: TextStyle(fontWeight: FontWeight.bold)),
+                        SizedBox(height: 5),
                         SizedBox(
                           width: MediaQuery.of(context).size.width * 0.8,
                           height: 50,
@@ -236,30 +274,15 @@ class _AddPaymentState extends State<AddPayment> {
                             decoration: InputDecoration(
                               filled: true,
                               fillColor: Color(0xFFECECEC),
-                              contentPadding: EdgeInsets.symmetric(vertical: 10),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(20),
-                                borderSide: BorderSide(
-                                    color: Color(0xFFD9D9D9), width: 2),
                               ),
                             ),
-                            hint: Center(
-                              child: Text(
-                                "Choose Your Bank Name",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(fontSize: 16),
-                              ),
-                            ),
+                            hint: Text("Choose Your Bank Name", textAlign: TextAlign.center),
                             items: bankNames.map((String bank) {
                               return DropdownMenuItem<String>(
                                 value: bank,
-                                child: Center(
-                                  child: Text(
-                                    bank,
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(fontSize: 16),
-                                  ),
-                                ),
+                                child: Center(child: Text(bank)),
                               );
                             }).toList(),
                             onChanged: (String? newValue) {
@@ -267,39 +290,21 @@ class _AddPaymentState extends State<AddPayment> {
                                 selectedBank = newValue;
                               });
                             },
-                            dropdownColor: Colors.white,
-                            style: TextStyle(fontSize: 16, color: Colors.black),
-                            isExpanded:
-                                true, // ขยาย dropdown ให้เต็มความกว้างของ parent
                           ),
                         ),
                         SizedBox(height: 10),
-
-                        // Account Number Input
-                        Text(
-                          "Account Number",
-                          style: TextStyle(
-                            fontFamily: 'Montserrat',
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            color: Color(0xFFAF1F1F),
-                          ),
-                        ),
-                        SizedBox(height: 10),
+                        Text("Account Number", style: TextStyle(fontWeight: FontWeight.bold)),
+                        SizedBox(height: 5),
                         SizedBox(
                           width: MediaQuery.of(context).size.width * 0.8,
                           height: 50,
                           child: TextField(
+                            controller: accountNumberController,
                             textAlign: TextAlign.center,
                             decoration: InputDecoration(
                               labelText: "Enter Your Account Number",
-                              labelStyle: TextStyle(fontSize: 14),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(20),
-                                borderSide: BorderSide(
-                                  color: Color(0xFFD9D9D9),
-                                  width: 2,
-                                ),
                               ),
                               filled: true,
                               fillColor: Color(0xFFECECEC),
@@ -307,9 +312,6 @@ class _AddPaymentState extends State<AddPayment> {
                           ),
                         ),
                         SizedBox(height: 20),
-
-                        //Add QR code
-                        // แสดงรูปที่เลือก
                         _selectedImage != null
                             ? ClipRRect(
                                 borderRadius: BorderRadius.circular(15),
@@ -320,24 +322,15 @@ class _AddPaymentState extends State<AddPayment> {
                                   fit: BoxFit.cover,
                                 ),
                               )
-                            : Text("No image selected", style: TextStyle(color: Colors.grey, fontSize: 14)),
+                            : Text("No image selected", style: TextStyle(color: Colors.grey)),
                         SizedBox(height: 10),
-                        //ปุ่มให้เลือกรูป
                         ElevatedButton(
                           onPressed: _pickImage,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Color(0xFFD9D9D9), // สีปุ่ม
-                            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 0),
-                            shadowColor: Colors.black, // สีเงา
-                            elevation: 5, // ความสูงของเงา (ค่ามาก = เงาเข้ม)
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
+                            backgroundColor: Color(0xFFD9D9D9),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                           ),
-                          child: Text(
-                            "Add QR Code",
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFFAF1F1F)),
-                          ),
+                          child: Text("Add QR Code", style: TextStyle(color: Color(0xFFAF1F1F))),
                         ),
                       ],
                     ),
@@ -346,74 +339,47 @@ class _AddPaymentState extends State<AddPayment> {
               ),
             ),
           ),
-
-          //ปุ่ม cancel confirm
-          Stack(
-            children: [
-              // เนื้อหาหน้าจอทั้งหมด
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 20, // ตำแหน่งห่างจากขอบล่าง
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      // ปุ่ม Cancel
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () {
-                            setState(() {
-                              selectedBank = null;
-                              _selectedImage = null;
-                            });
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Color(0xFFFCF9CA),
-                            padding: EdgeInsets.symmetric(vertical: 0),
-                            shadowColor: Colors.black, // สีเงา
-                            elevation: 8, // ความสูงของเงา (ค่ามาก = เงาเข้ม)
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                          ),
-                          child: Text(
-                            "Cancel",
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
-                          ),
-                        ),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 20,
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          selectedBank = null;
+                          _selectedImage = null;
+                          accountNameController.clear();
+                          accountNumberController.clear();
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Color(0xFFFCF9CA),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                       ),
-
-                      SizedBox(width: 50), // ระยะห่างระหว่างปุ่ม
-
-                      // ปุ่ม Confirm
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () {
-                            print("Confirmed!");
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Color(0xFFFCF9CA),
-                            padding: EdgeInsets.symmetric(vertical: 0),
-                            shadowColor: Colors.black, // สีเงา
-                            elevation: 8, // ความสูงของเงา (ค่ามาก = เงาเข้ม)
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                          ),
-                          child: Text(
-                            "Confirm",
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
-                          ),
-                        ),
-                      ),
-                    ],
+                      child: Text("Cancel", style: TextStyle(color: Colors.black)),
+                    ),
                   ),
-                ),
+                  SizedBox(width: 50),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: _uploadPaymentMethod,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Color(0xFFFCF9CA),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                      ),
+                      child: Text("Confirm", style: TextStyle(color: Colors.black)),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          )
+            ),
+          ),
         ],
       ),
       bottomNavigationBar: const CustomBottomNav(),
