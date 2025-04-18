@@ -3,8 +3,12 @@ import 'package:kinkorn/Screen/register_res.dart';
 import 'package:kinkorn/customer/choose_canteen.dart';
 import 'package:kinkorn/customer/summary_payment.dart';
 import 'package:kinkorn/customer/more_cus.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:kinkorn/restaurant/homepage.dart';
 
-class BottomBar extends StatelessWidget {
+
+class BottomBar extends StatefulWidget {
   final double screenHeight;
   final double screenWidth;
 
@@ -15,14 +19,19 @@ class BottomBar extends StatelessWidget {
   });
 
   @override
+  State<BottomBar> createState() => _BottomBarState();
+}
+
+class _BottomBarState extends State<BottomBar> {
+  @override
   Widget build(BuildContext context) {
     return Positioned(
       left: 0,
-      top: 0.92 * screenHeight,
+      top: 0.92 * widget.screenHeight,
       child: Container(
-        width: screenWidth,
-        height: 0.08 * screenHeight,
-        color: Color(0xFFAF1F1F),
+        width: widget.screenWidth,
+        height: 0.08 * widget.screenHeight,
+        color: const Color(0xFFAF1F1F),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
@@ -33,7 +42,7 @@ class BottomBar extends StatelessWidget {
               onTap: () {
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (context) => ChooseCanteen()),
+                  MaterialPageRoute(builder: (context) => const ChooseCanteen()),
                 );
               },
             ),
@@ -44,7 +53,7 @@ class BottomBar extends StatelessWidget {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => SummaryPayment()),
+                  MaterialPageRoute(builder: (context) => const SummaryPayment()),
                 );
               },
             ),
@@ -58,23 +67,13 @@ class BottomBar extends StatelessWidget {
               context,
               icon: Icons.more_horiz,
               label: "More",
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => MoreCus()),
-                );
-              },
+              onTap: () {},
             ),
             bottomBarItem(
               context,
               icon: Icons.person,
               label: "Restaurant",
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => RegisterRes()),
-                );
-              },
+              onTap: RestaurantCheck,
             ),
           ],
         ),
@@ -82,7 +81,33 @@ class BottomBar extends StatelessWidget {
     );
   }
 
-  // Bottom Bar Item Widget
+  // เช็กว่าเคยลงทะเบียนร้านยัง
+  Future<void> RestaurantCheck() async {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user != null) {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+
+      final roles = doc['roles'] ?? [];
+      final restaurantName = doc['restaurantName'];
+
+      if (roles.contains('res') && restaurantName != null && restaurantName.isNotEmpty) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const RestaurantDashboard()),
+        );
+      } else {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const RegisterRes()),
+        );
+      }
+    }
+  }
+
   Widget bottomBarItem(BuildContext context,
       {required IconData icon, required String label, required VoidCallback onTap}) {
     return GestureDetector(
@@ -93,7 +118,7 @@ class BottomBar extends StatelessWidget {
           Icon(icon, color: Colors.white),
           Text(
             label,
-            style: TextStyle(
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 11,
               fontWeight: FontWeight.bold,

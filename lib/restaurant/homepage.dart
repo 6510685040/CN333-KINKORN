@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:kinkorn/restaurant/restaurant_management.dart';
 import 'package:kinkorn/restaurant/sales_report.dart';
 import 'package:kinkorn/template/curve_app_bar.dart';
+import 'package:kinkorn/template/restaurant_bottom_nav.dart';
+
 
 class RestaurantDashboard extends StatelessWidget {
   const RestaurantDashboard({Key? key}) : super(key: key);
@@ -60,8 +62,8 @@ class RestaurantDashboard extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) =>
-                                    RestaurantManagementPage()),
+                              builder: (context) => RestaurantManagementPage(),
+                            ),
                           );
                         },
                       ),
@@ -72,8 +74,8 @@ class RestaurantDashboard extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) =>
-                                    SalesReport()),
+                              builder: (context) => SalesReport(),
+                            ),
                           );
                         },
                       ),
@@ -84,32 +86,7 @@ class RestaurantDashboard extends StatelessWidget {
             ),
           ),
 
-          // Bottom navigation bar
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.3),
-                  blurRadius: 10,
-                  offset: const Offset(0, -5),
-                ),
-              ],
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildNavItem(Icons.home, 'home', true),
-                  _buildNavItem(Icons.notifications_outlined, 'status', false),
-                  _buildNavItem(Icons.bar_chart, 'sale report', false),
-                  _buildNavItem(Icons.menu, 'more', false),
-                  _buildNavItem(Icons.person_outline, 'customer', false),
-                ],
-              ),
-            ),
-          ),
+          const CustomBottomNav (),
         ],
       ),
     );
@@ -166,66 +143,45 @@ class RestaurantDashboard extends StatelessWidget {
     required VoidCallback onTap,
   }) {
     return GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
-          decoration: BoxDecoration(
-            color: const Color(0xFFB71C1C),
-            borderRadius: BorderRadius.circular(25),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, color: Colors.white),
-              const SizedBox(
-                width: 22,
-                height: 44,
-              ),
-              Text(
-                label,
-                style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold),
-              ),
-            ],
-          ),
-        ));
-  }
-
-  Widget _buildNavItem(IconData icon, String label, bool isSelected) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(
-          icon,
-          color: isSelected ? const Color(0xFFB71C1C) : Colors.grey,
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+        decoration: BoxDecoration(
+          color: const Color(0xFFB71C1C),
+          borderRadius: BorderRadius.circular(25),
         ),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: isSelected ? const Color(0xFFB71C1C) : Colors.grey,
-          ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: Colors.white),
+            const SizedBox(width: 22, height: 44),
+            Text(
+              label,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }
+
 
 class CurvedBottomClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
     final path = Path();
     path.lineTo(0, size.height - 40);
-
     path.quadraticBezierTo(
       size.width / 2,
       size.height,
       size.width,
       size.height - 40,
     );
-
     path.lineTo(size.width, 0);
     return path;
   }
