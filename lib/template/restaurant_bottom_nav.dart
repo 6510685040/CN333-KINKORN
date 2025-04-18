@@ -25,7 +25,7 @@ class CustomBottomNav extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           buildClickableNavItem(context, Icons.home, "home", () {
-            
+            Navigator.push(context, MaterialPageRoute(builder: (context) => RestaurantDashboard()));
           }),
           buildClickableNavItem(context, Icons.notifications, "status", () {
           

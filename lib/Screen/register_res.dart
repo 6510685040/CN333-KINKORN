@@ -387,6 +387,36 @@ class RegisterRestaurantScreenState extends State<RegisterRes> {
                                       'roles': currentRoles,
                                       'logoUrl': imageLogoURL,
                                     });
+                                    // สร้าง collection restaurants
+                                    await FirebaseFirestore.instance.collection('restaurants').doc(user.uid).set({
+                                      'restaurantId': user.uid,
+                                      'restaurantName': restaurantNameController.text,
+                                      'ownerId': user.uid,
+                                      'ownerName': ownerNameController.text,
+                                      'canteenType': selectedCanteen,
+                                      'logoUrl': imageLogoURL,
+                                      'openingDays': selectedDays,
+                                      'openingTime': openingTimeController.text,
+                                      'openStatus': 'open', 
+                                      'category': '', 
+                                      'description': '', 
+                                      'created_at': FieldValue.serverTimestamp(),
+                                    });
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('Restaurant registered successfully!')),
+                                    );
+
+                                    Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(builder: (context) => const RestaurantDashboard()),
+                                    );
+                                  } catch (e) {
+                                    print('Error updating Firestore: $e');
+                                  } catch (e) {
+                                    print('Error updating Firestore: $e');  
+                                  } catch (e) {
+                                    print('Error updating Firestore: $e');        
+
                                   } catch (e) {
                                     print('Error updating Firestore: $e');
                                   }

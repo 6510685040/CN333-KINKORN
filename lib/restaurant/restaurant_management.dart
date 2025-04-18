@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:kinkorn/restaurant/edit_payment.dart';
 import 'package:kinkorn/restaurant/edit_restaurant_info.dart';
 import 'package:kinkorn/restaurant/menu_list.dart';
+import 'package:kinkorn/restaurant/payment_list.dart';
+import 'package:kinkorn/template/restaurant_bottom_nav.dart';
 
 class RestaurantManagementPage extends StatelessWidget {
   const RestaurantManagementPage({Key? key}) : super(key: key);
@@ -58,7 +60,7 @@ class RestaurantManagementPage extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => EditPayment()),
+                                builder: (context) => EditPaymentPage()),
                           );
                         },
                       ),
@@ -93,31 +95,7 @@ class RestaurantManagementPage extends StatelessWidget {
           ),
 
           // Bottom navigation bar
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.3),
-                  blurRadius: 10,
-                  offset: const Offset(0, -5),
-                ),
-              ],
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildNavItem(Icons.home, 'home', true),
-                  _buildNavItem(Icons.notifications_outlined, 'status', false),
-                  _buildNavItem(Icons.bar_chart, 'sale report', false),
-                  _buildNavItem(Icons.menu, 'more', false),
-                  _buildNavItem(Icons.person_outline, 'customer', false),
-                ],
-              ),
-            ),
-          ),
+        const CustomBottomNav (),
         ],
       ),
     );

@@ -67,7 +67,10 @@ class _BottomBarState extends State<BottomBar> {
               context,
               icon: Icons.more_horiz,
               label: "More",
-              onTap: () {},
+              onTap: () {Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const MoreCus()),
+                );},
             ),
             bottomBarItem(
               context,
@@ -83,30 +86,32 @@ class _BottomBarState extends State<BottomBar> {
 
   // เช็กว่าเคยลงทะเบียนร้านยัง
   Future<void> RestaurantCheck() async {
-    final user = FirebaseAuth.instance.currentUser;
+  final user = FirebaseAuth.instance.currentUser;
 
-    if (user != null) {
-      final doc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .get();
+  if (user != null) {
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .get();
 
-      final roles = doc['roles'] ?? [];
-      final restaurantName = doc['restaurantName'];
+    final data = doc.data() as Map<String, dynamic>? ?? {};
+    final roles = data['roles'] ?? [];
+    final restaurantName = data['restaurantName'] ?? '';
 
-      if (roles.contains('res') && restaurantName != null && restaurantName.isNotEmpty) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const RestaurantDashboard()),
-        );
-      } else {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const RegisterRes()),
-        );
-      }
+    if (roles.contains('res') && restaurantName.isNotEmpty) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const RestaurantDashboard()),
+      );
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const RegisterRes()),
+      );
     }
   }
+}
+
 
   Widget bottomBarItem(BuildContext context,
       {required IconData icon, required String label, required VoidCallback onTap}) {

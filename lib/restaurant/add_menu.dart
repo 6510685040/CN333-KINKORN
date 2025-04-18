@@ -1,7 +1,85 @@
-import 'package:flutter/material.dart';
+import 'dart:io';
 
-class AddMenuPage extends StatelessWidget {
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:uuid/uuid.dart';
+
+class AddMenuPage extends StatefulWidget {
   const AddMenuPage({Key? key}) : super(key: key);
+
+  @override
+  State<AddMenuPage> createState() => _AddMenuPageState();
+}
+
+class _AddMenuPageState extends State<AddMenuPage> {
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController priceController = TextEditingController();
+  final TextEditingController descriptionController = TextEditingController();
+
+  String? category;
+  File? imageFile;
+  final picker = ImagePicker();
+
+  Future<void> pickImage(ImageSource source) async {
+    final pickedFile = await picker.pickImage(source: source);
+    if (pickedFile != null) {
+      setState(() {
+        imageFile = File(pickedFile.path);
+      });
+    }
+  }
+
+  Future<void> saveMenu() async {
+    final name = nameController.text.trim();
+    final price = double.tryParse(priceController.text.trim()) ?? 0.0;
+    final description = descriptionController.text.trim();
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+
+    if (imageFile == null || name.isEmpty || category == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill in all fields and add an image')),
+      );
+      return;
+    }
+
+    final menuItemId = const Uuid().v4();
+
+    final ref = FirebaseStorage.instance.ref().child('menu_images/$menuItemId.jpg');
+    await ref.putFile(imageFile!);
+    final imageUrl = await ref.getDownloadURL();
+
+    final menuItem = {
+      'menuItemId': menuItemId,
+      'restaurantId': uid,
+      'name': name,
+      'description': description,
+      'price': price,
+      'imageUrl': imageUrl,
+      'status': 'available',
+      'options': [],
+      'orderCount': 0,
+      'created_at': FieldValue.serverTimestamp(),
+    };
+
+    // Save to main menuItems collection
+    await FirebaseFirestore.instance.collection('menuItems').doc(menuItemId).set(menuItem);
+
+    // Save to subcollection under restaurants
+    await FirebaseFirestore.instance
+        .collection('restaurants')
+        .doc(uid)
+        .collection('menuItems')
+        .doc(menuItemId)
+        .set(menuItem);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Menu added successfully')),
+    );
+    Navigator.pop(context);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,86 +125,93 @@ class AddMenuPage extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 20),
-
-                      // Image upload section
                       Center(
-                        child: Column(
-                          children: [
-                            Container(
-                              width: 200,
-                              height: 200,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(20),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.withOpacity(0.2),
-                                    spreadRadius: 2,
-                                    blurRadius: 5,
-                                    offset: const Offset(0, 3),
-                                  ),
-                                ],
-                              ),
-                              child: const Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      'Add\nyour\nPicture',
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        color: Color(0xFFB71C1C),
-                                        fontSize: 16,
-                                      ),
-                                    ),
-                                    Text(
-                                      '...',
-                                      style: TextStyle(
-                                        color: Color(0xFFB71C1C),
-                                        fontSize: 24,
-                                      ),
-                                    ),
-                                  ],
+                        child: GestureDetector(
+                          onTap: () => showModalBottomSheet(
+                            context: context,
+                            builder: (_) => Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                ListTile(
+                                  leading: const Icon(Icons.camera_alt),
+                                  title: const Text('Take a photo'),
+                                  onTap: () {
+                                    Navigator.pop(context);
+                                    pickImage(ImageSource.camera);
+                                  },
                                 ),
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 20,
-                                vertical: 8,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.grey[300],
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: const Text(
-                                'add picture',
-                                style: TextStyle(
-                                  color: Colors.black54,
+                                ListTile(
+                                  leading: const Icon(Icons.photo),
+                                  title: const Text('Choose from gallery'),
+                                  onTap: () {
+                                    Navigator.pop(context);
+                                    pickImage(ImageSource.gallery);
+                                  },
                                 ),
-                              ),
+                              ],
                             ),
-                          ],
+                          ),
+                          child: Container(
+                            width: 200,
+                            height: 200,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.2),
+                                  spreadRadius: 2,
+                                  blurRadius: 5,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
+                              image: imageFile != null
+                                  ? DecorationImage(
+                                      image: FileImage(imageFile!),
+                                      fit: BoxFit.cover,
+                                    )
+                                  : null,
+                            ),
+                            child: imageFile == null
+                                ? const Center(
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          'Add\nyour\nPicture',
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            color: Color(0xFFB71C1C),
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                        Text(
+                                          '...',
+                                          style: TextStyle(
+                                            color: Color(0xFFB71C1C),
+                                            fontSize: 24,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                : null,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 20),
-
-                      // Form fields
-                      _buildTextField('Name of menu'),
+                      _buildTextField('Name of menu', controller: nameController),
                       const SizedBox(height: 10),
-                      _buildTextField('Price'),
+                      _buildTextField('Price', controller: priceController, keyboardType: TextInputType.number),
                       const SizedBox(height: 10),
-                      _buildTextField('about', maxLines: 3),
+                      _buildTextField('about', controller: descriptionController, maxLines: 3),
                       const SizedBox(height: 10),
                       _buildDropdownField('category'),
                       const SizedBox(height: 20),
-
-                      // Save button
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: () {},
+                          onPressed: saveMenu,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFFB71C1C),
                             padding: const EdgeInsets.symmetric(vertical: 15),
@@ -142,32 +227,16 @@ class AddMenuPage extends StatelessWidget {
                 ),
               ),
             ),
-
-            // Bottom navigation
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildNavItem(Icons.home, 'home', false),
-                  _buildNavItem(Icons.notifications_outlined, 'status', false),
-                  _buildNavItem(Icons.bar_chart, 'sale report', false),
-                  _buildNavItem(Icons.menu, 'more', false),
-                  _buildNavItem(Icons.person_outline, 'customer', false),
-                ],
-              ),
-            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildTextField(String hint, {int maxLines = 1}) {
+  Widget _buildTextField(String hint, {TextEditingController? controller, TextInputType? keyboardType, int maxLines = 1}) {
     return TextField(
+      controller: controller,
+      keyboardType: keyboardType,
       maxLines: maxLines,
       decoration: InputDecoration(
         hintText: hint,
@@ -199,30 +268,20 @@ class AddMenuPage extends StatelessWidget {
             hint,
             style: const TextStyle(color: Color(0xFFB71C1C)),
           ),
+          value: category,
           isExpanded: true,
-          items: const [],
-          onChanged: (value) {},
+          items: const [
+            DropdownMenuItem(value: 'drink', child: Text('Drink')),
+            DropdownMenuItem(value: 'food', child: Text('Food')),
+            DropdownMenuItem(value: 'dessert', child: Text('Dessert')),
+          ],
+          onChanged: (value) {
+            setState(() {
+              category = value;
+            });
+          },
         ),
       ),
-    );
-  }
-
-  Widget _buildNavItem(IconData icon, String label, bool isSelected) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(
-          icon,
-          color: isSelected ? const Color(0xFFB71C1C) : Colors.grey,
-        ),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: isSelected ? const Color(0xFFB71C1C) : Colors.grey,
-          ),
-        ),
-      ],
     );
   }
 }
