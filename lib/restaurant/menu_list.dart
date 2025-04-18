@@ -117,20 +117,24 @@ class MenuPage extends StatelessWidget {
                         title: Text(name),
                         subtitle: Text('฿${price.toStringAsFixed(2)}'),
                         trailing: ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const EditMenuPage(),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => EditMenuPage(
+                                restaurantId: FirebaseAuth.instance.currentUser!.uid,
+                                menuItemId: doc.id,
                               ),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFB71C1C),
-                            foregroundColor: Colors.white,
-                          ),
-                          child: const Text('Edit'),
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFB71C1C),
+                          foregroundColor: Colors.white,
                         ),
+                        child: const Text('Edit'),
+                      ),
+
                       );
                     },
                   );

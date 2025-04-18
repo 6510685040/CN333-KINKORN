@@ -1,7 +1,124 @@
-import 'package:flutter/material.dart';
+import 'dart:io';
 
-class EditMenuPage extends StatelessWidget {
-  const EditMenuPage({Key? key}) : super(key: key);
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:kinkorn/template/restaurant_bottom_nav.dart';
+
+class EditMenuPage extends StatefulWidget {
+  final String restaurantId;
+  final String menuItemId;
+
+  const EditMenuPage({
+    Key? key,
+    required this.restaurantId,
+    required this.menuItemId,
+  }) : super(key: key);
+
+  @override
+  State<EditMenuPage> createState() => _EditMenuPageState();
+}
+
+class _EditMenuPageState extends State<EditMenuPage> {
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController priceController = TextEditingController();
+  final TextEditingController descriptionController = TextEditingController();
+
+  String? category;
+  String? imageUrl;
+  File? imageFile;
+  final picker = ImagePicker();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMenuData();
+  }
+
+  Future<void> _loadMenuData() async {
+    final doc = await FirebaseFirestore.instance
+        .collection('restaurants')
+        .doc(widget.restaurantId)
+        .collection('menuItems')
+        .doc(widget.menuItemId)
+        .get();
+
+    if (doc.exists) {
+      final data = doc.data()!;
+      nameController.text = data['name'] ?? '';
+      priceController.text = data['price']?.toString() ?? '';
+      descriptionController.text = data['description'] ?? '';
+      category = data['category'];
+      imageUrl = data['imageUrl'];
+      setState(() {});
+    }
+  }
+
+  Future<void> pickImage(ImageSource source) async {
+    final pickedFile = await picker.pickImage(source: source);
+    if (pickedFile != null) {
+      setState(() {
+        imageFile = File(pickedFile.path);
+      });
+    }
+  }
+
+  Future<void> saveMenu() async {
+    final name = nameController.text.trim();
+    final price = double.tryParse(priceController.text.trim()) ?? 0.0;
+    final description = descriptionController.text.trim();
+
+    if (imageFile == null && imageUrl == null || name.isEmpty || category == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill in all fields and add an image')),
+      );
+      return;
+    }
+
+    final imageUrlToSave = imageFile != null
+        ? await _uploadImage(widget.menuItemId)
+        : imageUrl;
+
+    await FirebaseFirestore.instance
+        .collection('restaurants')
+        .doc(widget.restaurantId)
+        .collection('menuItems')
+        .doc(widget.menuItemId)
+        .update({
+      'name': name,
+      'price': price,
+      'description': description,
+      'category': category,
+      'imageUrl': imageUrlToSave,
+    });
+
+    await FirebaseFirestore.instance
+        .collection('menuItems')
+        .doc(widget.menuItemId)
+        .update({
+      'name': name,
+      'price': price,
+      'description': description,
+      'category': category,
+      'imageUrl': imageUrlToSave,
+    });
+
+    
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Menu updated successfully')),
+    );
+    Navigator.pop(context);
+  }
+
+  Future<String> _uploadImage(String menuItemId) async {
+    final ref = FirebaseStorage.instance
+        .ref()
+        .child('menu_images/${widget.restaurantId}/$menuItemId.jpg');
+    await ref.putFile(imageFile!);
+    return await ref.getDownloadURL();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,6 +139,12 @@ class EditMenuPage extends StatelessWidget {
           icon: const Icon(Icons.arrow_back, color: Color(0xFFB71C1C)),
           onPressed: () => Navigator.pop(context),
         ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.delete, color: Colors.red[900]),
+            onPressed: () => _confirmDelete(context),
+          )
+        ],
       ),
       body: Container(
         padding: const EdgeInsets.all(16),
@@ -39,7 +162,7 @@ class EditMenuPage extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'Please edit your menu',
+                        'Edit your menu details',
                         style: TextStyle(
                           color: Color(0xFFB71C1C),
                           fontSize: 18,
@@ -47,87 +170,98 @@ class EditMenuPage extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 20),
-
-                      // Image upload section
                       Center(
-                        child: Column(
-                          children: [
-                            Container(
-                              width: 200,
-                              height: 200,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(20),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.withOpacity(0.2),
-                                    spreadRadius: 2,
-                                    blurRadius: 5,
-                                    offset: const Offset(0, 3),
-                                  ),
-                                ],
-                              ),
-                              child: const Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      'Edit\nPicture',
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        color: Color(0xFFB71C1C),
-                                        fontSize: 16,
-                                      ),
-                                    ),
-                                    Text(
-                                      '...',
-                                      style: TextStyle(
-                                        color: Color(0xFFB71C1C),
-                                        fontSize: 24,
-                                      ),
-                                    ),
-                                  ],
+                        child: GestureDetector(
+                          onTap: () => showModalBottomSheet(
+                            context: context,
+                            builder: (_) => Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                ListTile(
+                                  leading: const Icon(Icons.camera_alt),
+                                  title: const Text('Take a photo'),
+                                  onTap: () {
+                                    Navigator.pop(context);
+                                    pickImage(ImageSource.camera);
+                                  },
                                 ),
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 20,
-                                vertical: 8,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.grey[300],
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: const Text(
-                                'edit picture',
-                                style: TextStyle(
-                                  color: Colors.black54,
+                                ListTile(
+                                  leading: const Icon(Icons.photo),
+                                  title: const Text('Choose from gallery'),
+                                  onTap: () {
+                                    Navigator.pop(context);
+                                    pickImage(ImageSource.gallery);
+                                  },
                                 ),
-                              ),
+                              ],
                             ),
-                          ],
+                          ),
+                          child: Container(
+                            width: 200,
+                            height: 200,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.2),
+                                  spreadRadius: 2,
+                                  blurRadius: 5,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
+                              image: imageFile != null
+                                  ? DecorationImage(
+                                      image: FileImage(imageFile!),
+                                      fit: BoxFit.cover,
+                                    )
+                                  : (imageUrl != null
+                                      ? DecorationImage(
+                                          image: NetworkImage(imageUrl!),
+                                          fit: BoxFit.cover,
+                                        )
+                                      : null),
+                            ),
+                            child: imageFile == null && imageUrl == null
+                                ? const Center(
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          'Edit\nyour\nPicture',
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            color: Color(0xFFB71C1C),
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                        Text(
+                                          '...',
+                                          style: TextStyle(
+                                            color: Color(0xFFB71C1C),
+                                            fontSize: 24,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                : null,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 20),
-
-                      // Form fields
-                      _buildTextField('ข้าวหมูกระเทียม'),
+                      _buildTextField('Name of menu', controller: nameController),
                       const SizedBox(height: 10),
-                      _buildTextField('55.00'),
+                      _buildTextField('Price', controller: priceController, keyboardType: TextInputType.number),
                       const SizedBox(height: 10),
-                      _buildTextField('หมูกระเทียมอร่อย ผัดกับเครื่องเน้นๆ',
-                          maxLines: 3),
+                      _buildTextField('About', controller: descriptionController, maxLines: 3),
                       const SizedBox(height: 10),
-                      _buildDropdownField('อาหารตามสั่ง'),
+                      _buildDropdownField('Category'),
                       const SizedBox(height: 20),
-
-                      // Save button
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: () {},
+                          onPressed: saveMenu,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFFB71C1C),
                             padding: const EdgeInsets.symmetric(vertical: 15),
@@ -135,30 +269,15 @@ class EditMenuPage extends StatelessWidget {
                               borderRadius: BorderRadius.circular(10),
                             ),
                           ),
-                          child: const Text('save'),
+                          child: const Text(
+                            'Save Changes',
+                            style: TextStyle(color: Colors.white),
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
-              ),
-            ),
-
-            // Bottom navigation
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildNavItem(Icons.home, 'home', false),
-                  _buildNavItem(Icons.notifications_outlined, 'status', false),
-                  _buildNavItem(Icons.bar_chart, 'sale report', false),
-                  _buildNavItem(Icons.menu, 'more', false),
-                  _buildNavItem(Icons.person_outline, 'customer', false),
-                ],
               ),
             ),
           ],
@@ -167,8 +286,10 @@ class EditMenuPage extends StatelessWidget {
     );
   }
 
-  Widget _buildTextField(String hint, {int maxLines = 1}) {
+  Widget _buildTextField(String hint, {TextEditingController? controller, TextInputType? keyboardType, int maxLines = 1}) {
     return TextField(
+      controller: controller,
+      keyboardType: keyboardType,
       maxLines: maxLines,
       decoration: InputDecoration(
         hintText: hint,
@@ -200,30 +321,56 @@ class EditMenuPage extends StatelessWidget {
             hint,
             style: const TextStyle(color: Color(0xFFB71C1C)),
           ),
+          value: category,
           isExpanded: true,
-          items: const [],
-          onChanged: (value) {},
+          items: const [
+            DropdownMenuItem(value: 'drink', child: Text('Drink')),
+            DropdownMenuItem(value: 'food', child: Text('Food')),
+            DropdownMenuItem(value: 'dessert', child: Text('Dessert')),
+          ],
+          onChanged: (value) {
+            setState(() {
+              category = value;
+            });
+          },
         ),
       ),
     );
   }
 
-  Widget _buildNavItem(IconData icon, String label, bool isSelected) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(
-          icon,
-          color: isSelected ? const Color(0xFFB71C1C) : Colors.grey,
-        ),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: isSelected ? const Color(0xFFB71C1C) : Colors.grey,
+  void _confirmDelete(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Delete Menu'),
+        content: const Text('Are you sure you want to delete this menu?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _deleteMenu();
+            },
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
           ),
-        ),
-      ],
+        ],
+      ),
     );
+  }
+
+  Future<void> _deleteMenu() async {
+    await FirebaseFirestore.instance
+        .collection('restaurants')
+        .doc(widget.restaurantId)
+        .collection('menuItems')
+        .doc(widget.menuItemId)
+        .delete();
+    
+    await FirebaseFirestore.instance
+        .collection('menuItems')
+        .doc(widget.menuItemId)
+        .delete();
+
+    Navigator.pop(context);
   }
 }
