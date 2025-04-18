@@ -29,7 +29,7 @@ class CurveAppBar extends StatelessWidget implements PreferredSizeWidget {
                     title,
                     style: TextStyle(
                       color: textColor,
-                      fontSize: 24,
+                      fontSize: 32,
                       fontWeight: FontWeight.bold,
                     ),
                   ),

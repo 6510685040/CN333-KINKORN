@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:kinkorn/Screen/register_res.dart';
 import 'package:kinkorn/customer/choose_canteen.dart';
+import 'package:kinkorn/customer/more_cus.dart';
+import 'package:kinkorn/customer/order_status.dart';
 import 'package:kinkorn/customer/summary_payment.dart';
 import 'package:kinkorn/customer/more_cus.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:kinkorn/restaurant/homepage.dart';
+import 'package:kinkorn/customer/your_cart.dart';
 
 
 class BottomBar extends StatefulWidget {
@@ -53,7 +56,7 @@ class _BottomBarState extends State<BottomBar> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const SummaryPayment()),
+                  MaterialPageRoute(builder: (context) => YourCart()),
                 );
               },
             ),
@@ -61,7 +64,13 @@ class _BottomBarState extends State<BottomBar> {
               context,
               icon: Icons.notifications,
               label: "Status",
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => OrderStatusCustomer()),
+                );
+              },
             ),
             bottomBarItem(
               context,
@@ -114,7 +123,9 @@ class _BottomBarState extends State<BottomBar> {
 
 
   Widget bottomBarItem(BuildContext context,
-      {required IconData icon, required String label, required VoidCallback onTap}) {
+      {required IconData icon,
+      required String label,
+      required VoidCallback onTap}) {
     return GestureDetector(
       onTap: onTap,
       child: Column(
