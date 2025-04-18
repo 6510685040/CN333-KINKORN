@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kinkorn/restaurant/restaurant_management.dart';
+import 'package:kinkorn/restaurant/sales_report.dart';
 import 'package:kinkorn/template/curve_app_bar.dart';
 
 class RestaurantDashboard extends StatelessWidget {
@@ -72,7 +73,7 @@ class RestaurantDashboard extends StatelessWidget {
                             context,
                             MaterialPageRoute(
                                 builder: (context) =>
-                                    RestaurantManagementPage()),
+                                    SalesReport()),
                           );
                         },
                       ),

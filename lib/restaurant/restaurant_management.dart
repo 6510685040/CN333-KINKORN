@@ -58,7 +58,7 @@ class RestaurantManagementPage extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => EditPaymentPage()),
+                                builder: (context) => EditPayment()),
                           );
                         },
                       ),
