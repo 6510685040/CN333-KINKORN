@@ -6,23 +6,27 @@ import 'package:kinkorn/restaurant/edit_payment.dart';
 import 'package:kinkorn/template/restaurant_bottom_nav.dart';
 
 class BankAccount {
+  final String id;
   final String accountName;
   final String bankName;
   final String accountNumber;
 
   BankAccount({
+    required this.id,
     required this.accountName,
     required this.bankName,
     required this.accountNumber,
   });
 
-  factory BankAccount.fromMap(Map<String, dynamic> data) {
+  factory BankAccount.fromDoc(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
     return BankAccount(
+      id: doc.id,
       accountName: data['accountName'] ?? '',
       bankName: data['bankName'] ?? '',
       accountNumber: data['accountNumber'] ?? '',
     );
-  }
+}
 }
 
 class EditPaymentPage extends StatefulWidget {
@@ -53,7 +57,7 @@ class _EditPaymentPageState extends State<EditPaymentPage> {
 
       setState(() {
         accounts = docSnapshot.docs
-            .map((doc) => BankAccount.fromMap(doc.data()))
+            .map((doc) => BankAccount.fromDoc(doc))
             .toList();
         isLoading = false;
       });
@@ -179,13 +183,19 @@ class _EditPaymentPageState extends State<EditPaymentPage> {
                                           ],
                                         ),
                                         TextButton(
-                                        onPressed: () {
-                                          Navigator.push(
+                                        onPressed: () async {
+                                          final result = await Navigator.push(
                                             context,
                                             MaterialPageRoute(
-                                              builder: (context) => EditPayment(), 
+                                              builder: (context) => EditPayment(
+                                                restaurantId: FirebaseAuth.instance.currentUser!.uid,
+                                                paymentMethodId: account.id,
+                                              ), 
                                             ),
                                           );
+                                          if (result == true) {
+                                            _loadPaymentMethods();
+                                          }
                                         },
                                         child: Text(
                                           'edit',
@@ -214,12 +224,15 @@ class _EditPaymentPageState extends State<EditPaymentPage> {
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                 ),
-                                onPressed: () {
-                                  Navigator.push(
+                                onPressed: () async {
+                                  final result = await Navigator.push(
                                     context,
                                     MaterialPageRoute(
                                         builder: (context) => AddPayment()),
                                   );
+                                  if (result == true) {
+                                    _loadPaymentMethods();
+                                  }
                                 },
                                 child: const Text(
                                   'ADD PAYMENT METHOD',

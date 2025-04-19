@@ -81,12 +81,7 @@ class _AddPaymentState extends State<AddPayment> {
         SnackBar(content: Text("Payment method added successfully!")),
       );
 
-      setState(() {
-        accountNameController.clear();
-        accountNumberController.clear();
-        selectedBank = null;
-        _selectedImage = null;
-      });
+      Navigator.pop(context, true);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Error: $e")),
