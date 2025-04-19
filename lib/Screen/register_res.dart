@@ -47,8 +47,10 @@ class RegisterRestaurantScreenState extends State<RegisterRes> {
     "Sunday": false,
   };
 
-  
-  String? selectedCanteen ;
+  List<Map<String, dynamic>> canteens = [];
+
+  String? selectedCanteenId;
+
 
   Future<void> pickImage() async {
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
@@ -74,6 +76,15 @@ class RegisterRestaurantScreenState extends State<RegisterRes> {
   }
 }
 
+Future<List<Map<String, dynamic>>> fetchCanteens() async {
+  final snapshot = await FirebaseFirestore.instance.collection('canteens').get();
+  return snapshot.docs.map((doc) {
+    return {
+      'id': doc.id,
+      'name': doc['name'],
+    };
+  }).toList();
+}
 
   
   @override
@@ -306,37 +317,46 @@ class RegisterRestaurantScreenState extends State<RegisterRes> {
                         ),
                       ),
                       const SizedBox(height: 10),
-                      DropdownButtonFormField<String>(
-                        value: selectedCanteen,
-                        hint: const Text("Choose canteen"),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please select a canteen';
-                          }
-                          return null;
-                        },
-                        onChanged: (String? newValue) {
-                          setState(() {
-                            selectedCanteen = newValue;
-                          });
-                        },
-                        items: <String>['sc canteen', 'jc canteen']
-                            .map<DropdownMenuItem<String>>((String value) {
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList(),
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: Colors.white,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(24),
-                            borderSide: const BorderSide(
-                                color: Color(0xFFD9D9D9), width: 2),
+               FutureBuilder<List<Map<String, dynamic>>>(
+                future: fetchCanteens(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return const Text('Error loading canteens');
+                  } else {
+                    final canteenItems = snapshot.data ?? [];
+
+                    return DropdownButtonFormField<String>(
+                      value: selectedCanteenId,
+                      hint: const Text("Choose canteen"),
+                      validator: (value) =>
+                          value == null || value.isEmpty ? 'Please select a canteen' : null,
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          selectedCanteenId = newValue;
+                        });
+                      },
+                      items: canteenItems.map((canteen) {
+                        return DropdownMenuItem<String>(
+                          value: canteen['id'],
+                          child: Text(canteen['name']),
+                        );
+                      }).toList(),
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: Colors.white,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(24),
+                              borderSide: const BorderSide(
+                                  color: Color(0xFFD9D9D9), width: 2),
+                            ),
                           ),
-                        ),
-                      ),
+                        );
+                      }
+                    },
+                  ),
+
                       const SizedBox(height: 20),
 
                       Center(
@@ -383,17 +403,17 @@ class RegisterRestaurantScreenState extends State<RegisterRes> {
                                       'ownerName': ownerNameController.text,
                                       'openingTime': openingTimeController.text,
                                       'openingDays': selectedDays,
-                                      'canteenType': selectedCanteen,
+                                      'canteenId': selectedCanteenId,
                                       'roles': currentRoles,
                                       'logoUrl': imageLogoURL,
                                     });
-                                    // สร้าง collection restaurants
+                                   
                                     await FirebaseFirestore.instance.collection('restaurants').doc(user.uid).set({
                                       'restaurantId': user.uid,
                                       'restaurantName': restaurantNameController.text,
                                       'ownerId': user.uid,
                                       'ownerName': ownerNameController.text,
-                                      'canteenType': selectedCanteen,
+                                      'canteenId': selectedCanteenId,
                                       'logoUrl': imageLogoURL,
                                       'openingDays': selectedDays,
                                       'openingTime': openingTimeController.text,
@@ -412,14 +432,7 @@ class RegisterRestaurantScreenState extends State<RegisterRes> {
                                     );
                                   } catch (e) {
                                     print('Error updating Firestore: $e');
-                                  } catch (e) {
-                                    print('Error updating Firestore: $e');  
-                                  } catch (e) {
-                                    print('Error updating Firestore: $e');        
-
-                                  } catch (e) {
-                                    print('Error updating Firestore: $e');
-                                  }
+                                  } 
 
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(

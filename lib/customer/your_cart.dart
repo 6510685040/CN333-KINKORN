@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:kinkorn/customer/waiting_approve.dart';
 import 'package:kinkorn/template/curve_app_bar.dart';
@@ -6,7 +7,7 @@ import 'package:kinkorn/provider/cartprovider.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class YourCart extends StatelessWidget {
+class YourCart extends StatefulWidget {
   const YourCart({super.key});
 
   @override
@@ -24,11 +25,72 @@ class _YourCartState extends State<YourCart> {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
 
-    final List<Map<String, dynamic>> orders = [
-      {'name': 'ข้าวกะเพราหมูสับ', 'quantity': 1, 'price': 55.00},
-      {'name': 'ข้าวผัดไข่', 'quantity': 1, 'price': 45.00},
-    ];
+    final cartProvider = Provider.of<CartProvider>(context);
+    final List<Map<String, dynamic>> orders = cartProvider.cartItems;
+    final String restaurantId = cartProvider.restaurantId ?? ''; // Assuming you have a way to get the restaurantId
+    final String customerId = cartProvider.customerId ?? ''; // Assuming you have a way to get the customerId
+    final double totalAmount = orders.fold(0.0, (sum, order) => sum + (order['quantity'] * order['price']));
 
+    // Function to pick the time
+    Future<void> _selectTime() async {
+      final TimeOfDay? picked = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.now(),
+      );
+      if (picked != null) {
+        setState(() {
+          selectedTime = DateTime(
+            DateTime.now().year,
+            DateTime.now().month,
+            DateTime.now().day,
+            picked.hour,
+            picked.minute,
+          );
+        });
+      }
+    }
+
+    // Function to save order to Firestore
+    Future<void> _placeOrder() async {
+      if (selectedTime == null) {
+        // Display a message if the user has not selected a pickup time
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Please select a pickup time')));
+        return;
+      }
+
+      try {
+        // Prepare the order data
+        final orderData = {
+          'customerId': customerId,
+          'restaurantId': restaurantId,
+          'items': orders,
+          'totalAmount': totalAmount,
+          'orderStatus': 'Waiting for approve',
+          'createdAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
+          'pickupTime': selectedTime,
+          'slipUrl': '', // You can update this if you have a way to handle payment slips
+          'specialNote': specialNoteController.text,
+        };
+
+        // Add order to Firestore in both the user's subcollection and restaurant's subcollection
+        await FirebaseFirestore.instance.collection('users').doc(customerId).collection('orders').add(orderData);
+        await FirebaseFirestore.instance.collection('restaurants').doc(restaurantId).collection('orders').add(orderData);
+
+        // Navigate to the waiting approve screen
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => WaitingApprove(),
+          ),
+        );
+      } catch (e) {
+        // Handle error
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error placing order: $e')));
+      }
+    }
+  
+  
     return Scaffold(
       body: Stack(
         children: [
@@ -37,7 +99,7 @@ class _YourCartState extends State<YourCart> {
             height: screenHeight,
             color: Colors.yellow[100],
           ),
-
+          
           // Move "Your Cart" to the CurveAppBar
           const Positioned(
             top: 0,
@@ -55,7 +117,7 @@ class _YourCartState extends State<YourCart> {
               children: [
                 SizedBox(
                     height:
-                        0.3 * screenHeight), // เพิ่มช่องว่างด้านบนให้เลื่อนลงมา
+                        0.23 * screenHeight), // ปรับช่องว่างให้เหมาะสมกับ app bar
 
                 // รายการอาหาร
                 ...orders.map((order) {
@@ -71,9 +133,11 @@ class _YourCartState extends State<YourCart> {
                           style: const TextStyle(
                               fontSize: 18, fontWeight: FontWeight.bold),
                         ),
-                        Text(
-                          '฿${totalPrice.toStringAsFixed(2)}',
-                          style: const TextStyle(fontSize: 18),
+                        Row(
+                          children: [
+                            Text(
+                              '฿${totalPrice.toStringAsFixed(2)}',
+                              style: const TextStyle(fontSize: 18),
                             ),
                             IconButton(
                               onPressed: () {
@@ -109,7 +173,7 @@ class _YourCartState extends State<YourCart> {
                           BorderRadius.circular(8.0), // มุมโค้งนิดหน่อย
                     ),
                     child: Text(
-                      'Total : ฿${orders.fold(0.0, (sum, order) => sum + (order['quantity'] * order['price'])).toStringAsFixed(2)}',
+                      'Total : ฿${totalAmount.toStringAsFixed(2)}',
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -167,20 +231,12 @@ class _YourCartState extends State<YourCart> {
                     width: double
                         .infinity, // ทำให้ปุ่มกว้างเต็มจอ (เว้นจาก Padding)
                     child: ElevatedButton(
-                      //ลิงก์ไปหน้าอื่น
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) =>
-                                  WaitingApprove()), // ไปหน้า Waiting
-                        );
-                      },
+                      onPressed: _placeOrder, // Call the function to place the order
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.white,
                         backgroundColor: Color(0xFF35AF1F),
                         padding: EdgeInsets.symmetric(
-                            vertical: 15), // ความสูงของปุ่ม
+                            vertical: 15), 
                         textStyle: TextStyle(
                           fontSize: MediaQuery.of(context).size.width * 0.05,
                           fontWeight: FontWeight.bold,
