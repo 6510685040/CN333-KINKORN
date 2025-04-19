@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:kinkorn/restaurant/contactus_restaurant.dart';
+import 'package:kinkorn/restaurant/language_setting.dart';
 import 'package:kinkorn/template/restaurant_bottom_nav.dart';
 import 'package:kinkorn/Screen/home.dart';
 
@@ -119,7 +121,12 @@ class MoreRes extends StatelessWidget {
                               elevation: 5, // ✅ ทำให้ปุ่มลอยขึ้น
                               shadowColor: Colors.black.withOpacity(0.3),
                             ),
-                            onPressed: () {},
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => LanguageSettingRestaurant()),
+                              );
+                            },
                             child: const Padding(
                               padding: EdgeInsets.symmetric(vertical: 12),
                               child: Center(
@@ -165,7 +172,12 @@ class MoreRes extends StatelessWidget {
                               elevation: 5, // ✅ ทำให้ปุ่มลอยขึ้น
                               shadowColor: Colors.black.withOpacity(0.3),
                             ),
-                            onPressed: () {},
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => ContactUsRestaurant()),
+                              );
+                            },
                             child: const Padding(
                               padding: EdgeInsets.symmetric(vertical: 12),
                               child: Center(
