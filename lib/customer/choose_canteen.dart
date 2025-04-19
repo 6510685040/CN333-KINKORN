@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:kinkorn/Screen/register_res.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kinkorn/customer/choose_restaurant.dart';
-import 'package:kinkorn/customer/summary_payment.dart';
 import 'package:kinkorn/template/curve_app_bar.dart';
 import 'package:kinkorn/template/bottom_bar.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class ChooseCanteen extends StatelessWidget {
   const ChooseCanteen({super.key});
@@ -19,18 +19,14 @@ class ChooseCanteen extends StatelessWidget {
           Container(
             width: screenWidth,
             height: screenHeight,
-            color: Color(0xFFFCF9CA),
+            color: const Color(0xFFFCF9CA),
           ),
           const Positioned(
             top: 0,
             left: 0,
             right: 0,
-            child: CurveAppBar(
-              title: "",
-            ),
+            child: CurveAppBar(title: ""),
           ),
-
-          // Where to eat?
           Positioned(
             left: 0.07 * screenWidth,
             top: 0.09 * screenHeight,
@@ -40,7 +36,7 @@ class ChooseCanteen extends StatelessWidget {
                 fontFamily: 'GeistFont',
                 fontWeight: FontWeight.bold,
                 fontSize: 0.087 * screenWidth,
-                color: Color(0xFFFCF9CA),
+                color: const Color(0xFFFCF9CA),
               ),
             ),
           ),
@@ -51,49 +47,65 @@ class ChooseCanteen extends StatelessWidget {
               width: 340,
               height: 32,
               decoration: BoxDecoration(
-                color: Color(0xFFFDFDFD), // #FFFDFD
+                color: const Color(0xFFFDFDFD),
                 borderRadius: BorderRadius.circular(110),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(0.25),
-                    offset: Offset(0, 4),
+                    offset: const Offset(0, 4),
                     blurRadius: 4,
                   ),
                 ],
               ),
             ),
           ),
+          Positioned.fill(
+            top: 260,
+            bottom: 70,
+            child: StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance.collection('canteens').snapshots(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const Center(child: CircularProgressIndicator());
+                }
 
-          // JC Canteen Box
-          Positioned(
-            left: 0.08 * screenWidth,
-            top: 0.32 * screenHeight,
-            
-            child: canteenBox(
-              
-              context,
-              canteenName: "JC Canteen",
-              location:
-                  "near location : Faculty of Engineering, Faculty of Journalism and Mass Communication",
-              screenWidth: screenWidth,
-              screenHeight: screenHeight,
+                final docs = snapshot.data!.docs;
+
+                if (docs.isEmpty) {
+                  return const Center(child: Text('No canteens available.'));
+                }
+
+                return ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 30),
+                  itemCount: docs.length,
+                  itemBuilder: (context, index) {
+                    final doc = docs[index];
+                    final data = doc.data() as Map<String, dynamic>;
+                    final canteenId = doc.id; 
+
+                    final name = data['name'] ?? '';
+                    final location = data['location'] ?? '';
+                    final imageUrl = data['imageUrl'] ?? '';
+
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 20),
+                      child: canteenBox(
+                        context,
+                        canteenId: canteenId,
+                        name: name,
+                        location: location,
+                        imageUrl: imageUrl,
+                        screenWidth: screenWidth,
+                        screenHeight: screenHeight,
+                      ),
+                    );
+                  },
+                );
+              },
             ),
           ),
-
-          // SC Canteen Box
           Positioned(
-            left: 0.08 * screenWidth,
-            top: 0.53 * screenHeight,
-            child: canteenBox(
-              context,
-              canteenName: "SC Canteen",
-              location: "near location : SC1, SC2, SC3 Building",
-              screenWidth: screenWidth,
-              screenHeight: screenHeight,
-            ),
-          ),
-          Positioned(
-            bottom: 0, 
+            bottom: 0,
             left: 0,
             right: 0,
             child: BottomBar(
@@ -106,18 +118,21 @@ class ChooseCanteen extends StatelessWidget {
     );
   }
 
-  // Widget สำหรับกล่องของโรงอาหาร (Canteen Box)
-  Widget canteenBox(BuildContext context,
-      {required String canteenName,
-      required String location,
-      required double screenWidth,
-      required double screenHeight}) {
+  Widget canteenBox(
+    BuildContext context, {
+    required String canteenId,
+    required String name,
+    required String location,
+    required String imageUrl,
+    required double screenWidth,
+    required double screenHeight,
+  }) {
     return GestureDetector(
       onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => ChooseRestaurantScreen(),
+            builder: (context) => ChooseRestaurantScreen(canteenId: canteenId,),
           ),
         );
       },
@@ -125,60 +140,67 @@ class ChooseCanteen extends StatelessWidget {
         width: 0.82 * screenWidth,
         height: 0.16 * screenHeight,
         decoration: BoxDecoration(
-          color: Color(0xFFAF1F1F),
+          color: const Color(0xFFAF1F1F),
           borderRadius: BorderRadius.circular(20),
         ),
         child: Row(
           children: [
-            // Icon หรือรูปในกล่อง
             Container(
               width: 0.27 * screenWidth,
               height: 0.13 * screenHeight,
-              margin: EdgeInsets.all(10),
+              margin: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: Colors.white,
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: Center(
-                child: Text(
-                  "PIC",
-                  style: TextStyle(
-                    fontFamily: ' GeistFont',
-                    fontWeight: FontWeight.w800,
-                    fontSize: 13,
-                    color: Color(0xFFAF1F1F),
-                  ),
+              clipBehavior: Clip.antiAlias,
+              child: imageUrl.isNotEmpty
+                  ? CachedNetworkImage(
+                      imageUrl: imageUrl,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => const Center(
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                      errorWidget: (context, url, error) =>
+                          const Icon(Icons.broken_image, size: 40),
+                    )
+                  : const Icon(Icons.image_not_supported,
+                      size: 40, color: Colors.grey),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 20, bottom: 20, right: 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name,
+                      style: const TextStyle(
+                        fontFamily: 'GeistFont',
+                        fontWeight: FontWeight.w600,
+                        fontSize: 20,
+                        color: Color(0xFFFCF9CA),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 5),
+                    Expanded(
+                      child: Text(
+                        location,
+                        style: const TextStyle(
+                          fontFamily: 'GeistFont',
+                          fontWeight: FontWeight.w400,
+                          fontSize: 12,
+                          color: Colors.white,
+                        ),
+                        softWrap: true,
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ),
-            // ข้อความในกล่อง
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  canteenName,
-                  style: TextStyle(
-                    fontFamily: ' GeistFont',
-                    fontWeight: FontWeight.w600,
-                    fontSize: 24,
-                    color: Color(0xFFFCF9CA),
-                  ),
-                ),
-                SizedBox(height: 5),
-                SizedBox(
-                  width: 0.45 * screenWidth,
-                  child: Text(
-                    location,
-                    style: TextStyle(
-                      fontFamily: ' GeistFont',
-                      fontWeight: FontWeight.w600,
-                      fontSize: 10,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ],
             ),
           ],
         ),
