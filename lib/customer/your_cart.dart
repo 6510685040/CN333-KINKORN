@@ -2,9 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:kinkorn/customer/waiting_approve.dart';
 import 'package:kinkorn/template/curve_app_bar.dart';
 import 'package:kinkorn/template/bottom_bar.dart';
+import 'package:kinkorn/provider/cartprovider.dart';
+import 'package:provider/provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class YourCart extends StatelessWidget {
   const YourCart({super.key});
+
+  @override
+  _YourCartState createState() => _YourCartState();
+
+  
+}
+
+class _YourCartState extends State<YourCart> {
+  DateTime? selectedTime; // Variable to store the selected time
+  final TextEditingController specialNoteController = TextEditingController(); // Special note text controller
 
   @override
   Widget build(BuildContext context) {
@@ -25,49 +38,13 @@ class YourCart extends StatelessWidget {
             color: Colors.yellow[100],
           ),
 
+          // Move "Your Cart" to the CurveAppBar
           const Positioned(
             top: 0,
             left: 0,
             right: 0,
             child: CurveAppBar(
-              //navดึงมาจากtemplate
-              title: "",
-            ),
-          ),
-
-          //ชื่อร้านอาหาร
-          Positioned(
-            top: 0.09 * screenHeight,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: Text(
-                "ครัวสุขใจ โรงอาหาร JC",
-                style: TextStyle(
-                  fontFamily: 'Montserrat',
-                  fontWeight: FontWeight.bold,
-                  fontSize: 0.087 * screenWidth,
-                  color: Color(0xFFFCF9CA),
-                ),
-              ),
-            ),
-          ),
-
-          //Your cart
-          Positioned(
-            top: 0.23 * screenHeight,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: Text(
-                "Your cart",
-                style: TextStyle(
-                  fontFamily: 'Montserrat',
-                  fontWeight: FontWeight.bold,
-                  fontSize: 0.087 * screenWidth,
-                  color: Color(0xFFB71C1C),
-                ),
-              ),
+              title: "Your Cart",  // Set "Your Cart" as the title in the app bar
             ),
           ),
 
@@ -97,6 +74,17 @@ class YourCart extends StatelessWidget {
                         Text(
                           '฿${totalPrice.toStringAsFixed(2)}',
                           style: const TextStyle(fontSize: 18),
+                            ),
+                            IconButton(
+                              onPressed: () {
+                                cartProvider.removeFromCart(order); // Remove item from cart
+                              },
+                              icon: const Icon(
+                                Icons.delete,
+                                color: Colors.red,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -133,6 +121,43 @@ class YourCart extends StatelessWidget {
                 ),
 
                 SizedBox(height: 20), // ระยะห่างจาก Total
+
+                // Pickup time selection
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Select Pickup Time:',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(height: 8),
+                      ElevatedButton(
+                        onPressed: _selectTime,
+                        child: Text(
+                          selectedTime == null
+                              ? 'Pick a Time'
+                              : 'Picked Time: ${selectedTime!.hour}:${selectedTime!.minute.toString().padLeft(2, '0')}',
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                SizedBox(height: 20), // Special note field
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: TextField(
+                    controller: specialNoteController,
+                    decoration: InputDecoration(
+                      labelText: 'Special Note (optional)',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+
+                SizedBox(height: 20), // ระยะห่างจาก Special Note
 
                 // ปุ่ม Proceed to Payment
                 Padding(
@@ -171,7 +196,7 @@ class YourCart extends StatelessWidget {
 
           //footer bar
           Positioned(
-            bottom: 0, // Adjusted to ensure it's at the bottom
+            bottom: 0, 
             left: 0,
             right: 0,
             child: BottomBar(

@@ -3,7 +3,7 @@ import 'package:kinkorn/Screen/register_res.dart';
 import 'package:kinkorn/customer/choose_canteen.dart';
 import 'package:kinkorn/customer/more_cus.dart';
 import 'package:kinkorn/customer/order_status.dart';
-import 'package:kinkorn/customer/summary_payment.dart';
+import 'package:kinkorn/customer/waiting_approve.dart';
 import 'package:kinkorn/customer/more_cus.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
