@@ -3,6 +3,7 @@ import 'package:kinkorn/customer/choose_canteen.dart';
 import 'package:kinkorn/restaurant/sales_report.dart';
 import 'package:kinkorn/restaurant/more_res.dart';
 import 'package:kinkorn/restaurant/homepage.dart';
+import 'package:kinkorn/restaurant/order_status.dart';
 
 class CustomBottomNav extends StatelessWidget {
   const CustomBottomNav({super.key});
@@ -28,7 +29,7 @@ class CustomBottomNav extends StatelessWidget {
             Navigator.push(context, MaterialPageRoute(builder: (context) => RestaurantDashboard()));
           }),
           buildClickableNavItem(context, Icons.notifications, "status", () {
-          
+            Navigator.push(context, MaterialPageRoute(builder: (context) => OrderStatusRestaurant()));
           }),
           buildClickableNavItem(context, Icons.bar_chart, "sale report", () {
             Navigator.push(context, MaterialPageRoute(builder: (context) => SalesReport()));

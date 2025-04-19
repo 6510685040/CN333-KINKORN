@@ -81,12 +81,7 @@ class _AddPaymentState extends State<AddPayment> {
         SnackBar(content: Text("Payment method added successfully!")),
       );
 
-      setState(() {
-        accountNameController.clear();
-        accountNumberController.clear();
-        selectedBank = null;
-        _selectedImage = null;
-      });
+      Navigator.pop(context, true);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Error: $e")),
@@ -119,7 +114,7 @@ class _AddPaymentState extends State<AddPayment> {
               child: Text(
                 "ADD YOUR PAYMENT",
                 style: TextStyle(
-                  fontFamily: 'Montserrat',
+                  //fontFamily: 'Montserrat',
                   fontWeight: FontWeight.bold,
                   fontSize: MediaQuery.of(context).size.width * 0.087,
                   color: Color(0xFFAF1F1F),
@@ -145,7 +140,7 @@ class _AddPaymentState extends State<AddPayment> {
             Text(
               "List of Your Bank Accounts",
               style: TextStyle(
-                fontFamily: 'Montserrat',
+                //fontFamily: 'Montserrat',
                 fontWeight: FontWeight.bold,
                 fontSize: 24,
                 color: Color(0xFFAF1F1F),
@@ -238,7 +233,7 @@ class _AddPaymentState extends State<AddPayment> {
                         Text(
                           "Add Payment Method",
                           style: TextStyle(
-                            fontFamily: 'Montserrat',
+                            //fontFamily: 'Montserrat',
                             fontWeight: FontWeight.bold,
                             fontSize: 24,
                             color: Color(0xFFAF1F1F),

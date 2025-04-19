@@ -111,7 +111,7 @@ class ChooseMenuScreenState extends State<ChooseMenuScreen> {
                   child: Text(
                     "open to order",
                     style: TextStyle(
-                      fontFamily: 'GeistFont',
+                      //fontFamily: 'GeistFont',
                       fontWeight: FontWeight.w600,
                       fontSize: screenWidth * 0.03,
                       color: Colors.white,
@@ -210,7 +210,7 @@ class ChooseMenuScreenState extends State<ChooseMenuScreen> {
             AutoSizeText(
               menuItem["name"],
               style: const TextStyle(
-                fontFamily: 'GeistFont',
+                //fontFamily: 'GeistFont',
                 fontWeight: FontWeight.w800,
                 fontSize: 15,
                 color: Color(0xFFFCF9CA),
@@ -222,7 +222,7 @@ class ChooseMenuScreenState extends State<ChooseMenuScreen> {
             AutoSizeText(
               "฿${menuItem["price"]}",
               style: const TextStyle(
-                fontFamily: 'GeistFont',
+                //fontFamily: 'GeistFont',
                 fontWeight: FontWeight.w600,
                 fontSize: 15,
                 color: Colors.white,
@@ -243,7 +243,7 @@ class ChooseMenuScreenState extends State<ChooseMenuScreen> {
                 child: AutoSizeText(
                   "add",
                   style: TextStyle(
-                    fontFamily: 'GeistFont',
+                    //fontFamily: 'GeistFont',
                     fontWeight: FontWeight.w600,
                     fontSize: 15,
                     color: Color(0xFFAF1F1F),

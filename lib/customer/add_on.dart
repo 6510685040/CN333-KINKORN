@@ -152,7 +152,7 @@ class AddOnState extends State<AddOn> {
                   widget.menuData['name'] ?? 'ชื่อเมนู',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontFamily: 'GeistFont',
+                    //fontFamily: 'GeistFont',
                     fontWeight: FontWeight.bold,
                     fontSize: screenWidth * 0.06,
                     color: const Color(0xFFAF1F1F),
@@ -162,7 +162,7 @@ class AddOnState extends State<AddOn> {
                   '฿${widget.menuData['price'] ?? '0'}',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontFamily: 'GeistFont',
+                    //fontFamily: 'GeistFont',
                     fontWeight: FontWeight.w600,
                     fontSize: screenWidth * 0.06,
                     color: const Color(0xFFAF1F1F),
@@ -232,7 +232,7 @@ class AddOnState extends State<AddOn> {
                   child: Text(
                     'Special Request',
                     style: TextStyle(
-                      fontFamily: 'GeistFont',
+                      //fontFamily: 'GeistFont',
                       fontWeight: FontWeight.bold,
                       fontSize: screenWidth * 0.05,
                       color: const Color(0xFFAF1F1F),
@@ -288,7 +288,7 @@ class AddOnState extends State<AddOn> {
                   child: Text(
                     'Add to Cart',
                     style: TextStyle(
-                      fontFamily: 'GeistFont',
+                      //fontFamily: 'GeistFont',
                       fontWeight: FontWeight.bold,
                       fontSize: screenWidth * 0.045,
                       color: Colors.white,

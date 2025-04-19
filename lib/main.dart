@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 
 import 'package:kinkorn/Screen/home.dart';
 import 'package:kinkorn/provider/cartprovider.dart';
-
+import 'package:google_fonts/google_fonts.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
@@ -31,7 +31,12 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        home: HomeScreen(),
+        home: const HomeScreen(),
+        theme: ThemeData(
+          textTheme: GoogleFonts.kanitTextTheme(
+            Theme.of(context).textTheme
+          )
+        ),
       ),
     );
   }

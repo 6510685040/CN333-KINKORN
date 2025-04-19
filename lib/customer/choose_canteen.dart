@@ -33,7 +33,7 @@ class ChooseCanteen extends StatelessWidget {
             child: Text(
               "Where to eat?",
               style: TextStyle(
-                fontFamily: 'GeistFont',
+                //fontFamily: 'GeistFont',
                 fontWeight: FontWeight.bold,
                 fontSize: 0.087 * screenWidth,
                 color: const Color(0xFFFCF9CA),

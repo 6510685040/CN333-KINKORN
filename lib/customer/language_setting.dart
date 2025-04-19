@@ -89,9 +89,19 @@ class _LanguageSettingRestaurantState extends State<LanguageSettingCustomer> {
               ],
             ),
           ),
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: BottomBar(
+              screenHeight: MediaQuery.of(context).size.height,
+              screenWidth: MediaQuery.of(context).size.width,
+            ),
+          ),
         ],
       ),
       //bottomNavigationBar: const BottomBar(), // เพิ่มแถบเมนูด้านล่าง
+      
     );
   }
 
@@ -153,5 +163,7 @@ class _LanguageSettingRestaurantState extends State<LanguageSettingCustomer> {
         ],
       ),
     );
+    
   }
+  
 }

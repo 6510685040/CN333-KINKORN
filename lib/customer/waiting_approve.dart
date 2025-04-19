@@ -25,21 +25,21 @@ class WaitingApprove extends StatelessWidget {
                 SizedBox(height: 20), // เพิ่มระยะห่าง
                 Text("Waiting for",
                     style: TextStyle(
-                      fontFamily: 'Montserrat',
+                      //fontFamily: 'Montserrat',
                       fontWeight: FontWeight.bold,
                       fontSize: 0.087 * screenWidth,
                       color: Color(0xFFB71C1C),
                     )),
                 Text("restaurant to",
                     style: TextStyle(
-                      fontFamily: 'Montserrat',
+                     // fontFamily: 'Montserrat',
                       fontWeight: FontWeight.bold,
                       fontSize: 0.087 * screenWidth,
                       color: Color(0xFFB71C1C),
                     )),
                 Text("approve your order",
                     style: TextStyle(
-                      fontFamily: 'Montserrat',
+                      //fontFamily: 'Montserrat',
                       fontWeight: FontWeight.bold,
                       fontSize: 0.087 * screenWidth,
                       color: Color(0xFFB71C1C),
@@ -67,7 +67,7 @@ class WaitingApprove extends StatelessWidget {
               child: Text(
                 "ครัวสุขใจ โรงอาหาร JC",
                 style: TextStyle(
-                  fontFamily: 'Montserrat',
+                  //fontFamily: 'Montserrat',
                   fontWeight: FontWeight.bold,
                   fontSize: 0.087 * screenWidth,
                   color: Color(0xFFFCF9CA),
