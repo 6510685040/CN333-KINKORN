@@ -1,10 +1,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:kinkorn/restaurant/completed_order.dart';
+import 'package:kinkorn/restaurant/preparing_order.dart';
 import 'package:kinkorn/restaurant/restaurant_management.dart';
 import 'package:kinkorn/restaurant/sales_report.dart';
 import 'package:kinkorn/template/curve_app_bar.dart';
 import 'package:kinkorn/template/restaurant_bottom_nav.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:kinkorn/restaurant/neworder.dart';
 
 
 class RestaurantDashboard extends StatelessWidget {
@@ -66,15 +69,49 @@ class RestaurantDashboard extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      _buildStatusCard('New order', '0'),
-                      _buildStatusCard('Preparing order', '0'),
+                      _buildStatusCard(
+                        'New order',
+                        '0',
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => NewOrder(), // ใช้ชื่อ class ของหน้า new order ที่คุณสร้าง
+                            ),
+                          );
+                        },
+                      ),
+                      _buildStatusCard(
+                        'Preparing order',
+                        '0',
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => PreparingOrderRestaurant(), // ใช้ชื่อ class ของหน้า new order ที่คุณสร้าง
+                            ),
+                          );
+                        },
+                      ),
                     ],
                   ),
                   const SizedBox(height: 20),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      _buildStatusCard('Completed', '0'),
+                      _buildStatusCard(
+                        'Completed',
+                        '0',
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => CompletedOrderRestaurant(), // ใช้ชื่อ class ของหน้า new order ที่คุณสร้าง
+                            ),
+                          );
+                        },
+                      ),
+                      
                     ],
                   ),
                   const SizedBox(height: 30),
@@ -122,12 +159,14 @@ class RestaurantDashboard extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusCard(String title, String count) {
-    return Container(
+  Widget _buildStatusCard(String title, String count, {VoidCallback? onTap}) {
+  return GestureDetector(
+    onTap: onTap,
+    child: Container(
       width: 150,
       padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
-        color: Colors.yellow.shade100,
+        color: Color(0xFFFDDC5C),
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
@@ -164,8 +203,10 @@ class RestaurantDashboard extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
+
 
   Widget _buildManagementButton({
     required IconData icon,
