@@ -62,7 +62,7 @@ class MoreRes extends StatelessWidget {
                                         Text(
                                           "ครัวสุขใจ",
                                           style: TextStyle(
-                                            fontFamily: 'Montserrat',
+                                            //fontFamily: 'Montserrat',
                                             fontSize: 16,
                                             fontWeight: FontWeight.bold,
                                             color: Color(0xFFAF1F1F),
@@ -82,7 +82,7 @@ class MoreRes extends StatelessWidget {
                                               Text(
                                                 "Edit my profile",
                                                 style: TextStyle(
-                                                  fontFamily: 'Montserrat',
+                                                  //fontFamily: 'Montserrat',
                                                   fontSize: 14,
                                                   fontWeight: FontWeight.bold,
                                                   color: Color(0xFFAF1F1F),

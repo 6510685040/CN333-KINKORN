@@ -44,7 +44,7 @@ class YourCart extends StatelessWidget {
               child: Text(
                 "ครัวสุขใจ โรงอาหาร JC",
                 style: TextStyle(
-                  fontFamily: 'Montserrat',
+                  //fontFamily: 'Montserrat',
                   fontWeight: FontWeight.bold,
                   fontSize: 0.087 * screenWidth,
                   color: Color(0xFFFCF9CA),
@@ -62,7 +62,7 @@ class YourCart extends StatelessWidget {
               child: Text(
                 "Your cart",
                 style: TextStyle(
-                  fontFamily: 'Montserrat',
+                  //fontFamily: 'Montserrat',
                   fontWeight: FontWeight.bold,
                   fontSize: 0.087 * screenWidth,
                   color: Color(0xFFB71C1C),

@@ -37,7 +37,7 @@ class ChooseCanteen extends StatelessWidget {
             child: Text(
               "Where to eat?",
               style: TextStyle(
-                fontFamily: 'GeistFont',
+                //fontFamily: 'GeistFont',
                 fontWeight: FontWeight.bold,
                 fontSize: 0.087 * screenWidth,
                 color: Color(0xFFFCF9CA),
@@ -143,7 +143,7 @@ class ChooseCanteen extends StatelessWidget {
                 child: Text(
                   "PIC",
                   style: TextStyle(
-                    fontFamily: ' GeistFont',
+                    //fontFamily: ' GeistFont',
                     fontWeight: FontWeight.w800,
                     fontSize: 13,
                     color: Color(0xFFAF1F1F),
@@ -159,7 +159,7 @@ class ChooseCanteen extends StatelessWidget {
                 Text(
                   canteenName,
                   style: TextStyle(
-                    fontFamily: ' GeistFont',
+                    //fontFamily: ' GeistFont',
                     fontWeight: FontWeight.w600,
                     fontSize: 24,
                     color: Color(0xFFFCF9CA),
@@ -171,7 +171,7 @@ class ChooseCanteen extends StatelessWidget {
                   child: Text(
                     location,
                     style: TextStyle(
-                      fontFamily: ' GeistFont',
+                      //fontFamily: ' GeistFont',
                       fontWeight: FontWeight.w600,
                       fontSize: 10,
                       color: Colors.white,

@@ -55,7 +55,7 @@ class ChooseMenuScreen extends StatelessWidget {
                 const AutoSizeText(
                   "ครัวสุขใจ โรงอาหารJC",
                   style: TextStyle(
-                    fontFamily: 'GeistFont',
+                    //fontFamily: 'GeistFont',
                     fontWeight: FontWeight.w700,
                     fontSize: 24,
                     color: Color(0xFFFCF9CA),
@@ -75,7 +75,7 @@ class ChooseMenuScreen extends StatelessWidget {
                   child: Text(
                     "open to order",
                     style: TextStyle(
-                      fontFamily: 'GeistFont',
+                      //fontFamily: 'GeistFont',
                       fontWeight: FontWeight.w600,
                       fontSize: screenWidth * 0.03,
                       color: Colors.white,
@@ -165,7 +165,7 @@ class ChooseMenuScreen extends StatelessWidget {
             AutoSizeText(
               menuItem["name"],
               style: const TextStyle(
-                fontFamily: 'GeistFont',
+                //fontFamily: 'GeistFont',
                 fontWeight: FontWeight.w800,
                 fontSize: 15,
                 color: Color(0xFFFCF9CA),
@@ -177,7 +177,7 @@ class ChooseMenuScreen extends StatelessWidget {
             AutoSizeText(
               "฿${menuItem["price"]}",
               style: const TextStyle(
-                fontFamily: 'GeistFont',
+                //fontFamily: 'GeistFont',
                 fontWeight: FontWeight.w600,
                 fontSize: 15,
                 color: Colors.white,
@@ -198,7 +198,7 @@ class ChooseMenuScreen extends StatelessWidget {
                 child: AutoSizeText(
                   "add",
                   style: TextStyle(
-                    fontFamily: 'GeistFont',
+                    //fontFamily: 'GeistFont',
                     fontWeight: FontWeight.w600,
                     fontSize: 15,
                     color: Color(0xFFAF1F1F),

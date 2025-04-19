@@ -168,7 +168,7 @@ Widget build(BuildContext context) {
                           child: const Text(
                             'Create Account',
                             style: TextStyle(
-                              fontFamily: 'GeistFont',
+                              //fontFamily: 'GeistFont',
                               fontWeight: FontWeight.w600,
                               fontSize: 16,
                               color: Colors.white,
@@ -197,7 +197,7 @@ Widget build(BuildContext context) {
         Text(
           label,
           style: const TextStyle(
-            fontFamily: 'GeistFont',
+            //fontFamily: 'GeistFont',
             fontWeight: FontWeight.w600,
             fontSize: 16,
             color: Color(0xFFAF1F1F),

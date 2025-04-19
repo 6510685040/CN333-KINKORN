@@ -129,7 +129,7 @@ class _EditPaymentState extends State<EditPayment> {
               child: Text(
                 "EDIT YOUR PAYMENT",
                 style: TextStyle(
-                  fontFamily: 'Montserrat',
+                  //fontFamily: 'Montserrat',
                   fontWeight: FontWeight.bold,
                   fontSize: MediaQuery.of(context).size.width * 0.087,
                   color: Color(0xFFAF1F1F),
@@ -146,7 +146,7 @@ class _EditPaymentState extends State<EditPayment> {
               child: Text(
                 "Edit Payment Method",
                 style: TextStyle(
-                  fontFamily: 'Montserrat',
+                  //fontFamily: 'Montserrat',
                   fontWeight: FontWeight.bold,
                   fontSize: 26,
                   color: Color(0xFFFCF9CA),
@@ -176,7 +176,7 @@ class _EditPaymentState extends State<EditPayment> {
                         Text(
                           "Account Name",
                           style: TextStyle(
-                            fontFamily: 'Montserrat',
+                            //fontFamily: 'Montserrat',
                             fontWeight: FontWeight.bold,
                             fontSize: 18,
                             color: Color(0xFFAF1F1F),
@@ -190,7 +190,7 @@ class _EditPaymentState extends State<EditPayment> {
                         Text(
                           "Bank Name",
                           style: TextStyle(
-                            fontFamily: 'Montserrat',
+                            //fontFamily: 'Montserrat',
                             fontWeight: FontWeight.bold,
                             fontSize: 18,
                             color: Color(0xFFAF1F1F),
@@ -205,7 +205,7 @@ class _EditPaymentState extends State<EditPayment> {
                         Text(
                           "Account Number",
                           style: TextStyle(
-                            fontFamily: 'Montserrat',
+                            //fontFamily: 'Montserrat',
                             fontWeight: FontWeight.bold,
                             fontSize: 18,
                             color: Color(0xFFAF1F1F),

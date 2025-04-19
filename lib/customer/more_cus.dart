@@ -63,7 +63,7 @@ class MoreCus extends StatelessWidget {
                                         Text(
                                           "เจนรดา",
                                           style: TextStyle(
-                                            fontFamily: 'Montserrat',
+                                            //fontFamily: 'Montserrat',
                                             fontSize: 16,
                                             fontWeight: FontWeight.bold,
                                             color: Color(0xFFAF1F1F),
@@ -80,7 +80,7 @@ class MoreCus extends StatelessWidget {
                                               child: Text(
                                                 "Edit my profile",
                                                 style: TextStyle(
-                                                  fontFamily: 'Montserrat',
+                                                  //fontFamily: 'Montserrat',
                                                   fontSize: 14,
                                                   color: Color(0xFFAF1F1F),
                                                 ),

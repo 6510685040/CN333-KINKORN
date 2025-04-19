@@ -95,7 +95,7 @@ class _AddOnState extends State<AddOn> {
                 Text(
                   'ข้าวกะเพราหมูสับ',
                   style: TextStyle(
-                    fontFamily: 'GeistFont',
+                    //fontFamily: 'GeistFont',
                     fontWeight: FontWeight.bold,
                     fontSize: screenWidth * 0.06, // ขนาดฟอนต์เล็กลง
                     color: Color(0xFFAF1F1F),
@@ -104,7 +104,7 @@ class _AddOnState extends State<AddOn> {
                 Text(
                   '฿45',
                   style: TextStyle(
-                    fontFamily: 'GeistFont',
+                    //fontFamily: 'GeistFont',
                     fontWeight: FontWeight.w600,
                     fontSize: screenWidth * 0.06, // ขนาดฟอนต์เล็กลง
                     color: Color(0xFFAF1F1F),
@@ -116,7 +116,7 @@ class _AddOnState extends State<AddOn> {
                   child: Text(
                     'Add-ons',
                     style: TextStyle(
-                      fontFamily: 'GeistFont',
+                      //fontFamily: 'GeistFont',
                       fontWeight: FontWeight.bold,
                       fontSize: screenWidth * 0.05,
                       color: Color(0xFFAF1F1F),
@@ -143,7 +143,7 @@ class _AddOnState extends State<AddOn> {
                   child: Text(
                     'Special Request',
                     style: TextStyle(
-                      fontFamily: 'GeistFont',
+                      //fontFamily: 'GeistFont',
                       fontWeight: FontWeight.bold,
                       fontSize: screenWidth * 0.05,
                       color: Color(0xFFAF1F1F),
@@ -208,7 +208,7 @@ class _AddOnState extends State<AddOn> {
                   child: Text(
                     'Add to Cart',
                     style: TextStyle(
-                      fontFamily: 'GeistFont',
+                      //fontFamily: 'GeistFont',
                       fontWeight: FontWeight.bold,
                       fontSize: screenWidth * 0.045,
                       color: Colors.white,
@@ -270,7 +270,7 @@ class AddOnWidget extends StatelessWidget {
         Text(
           '$label x$count',
           style: TextStyle(
-            fontFamily: 'GeistFont',
+            //fontFamily: 'GeistFont',
             fontWeight: FontWeight.w600,
             fontSize: screenWidth * 0.045, // ขนาดฟอนต์เล็กลง
             color: Color(0xFFAF1F1F),

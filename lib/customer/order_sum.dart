@@ -53,7 +53,7 @@ class _OrderSummaryState extends State<OrderSummary> {
               child: Text(
                 "Order summary",
                 style: TextStyle(
-                  fontFamily: 'Montserrat',
+                  //fontFamily: 'Montserrat',
                   fontWeight: FontWeight.bold,
                   fontSize: 0.087 * screenWidth,
                   color: Color(0xFFB71C1C),
@@ -121,7 +121,7 @@ class _OrderSummaryState extends State<OrderSummary> {
                     child: Text(
                       "Payment method",
                       style: TextStyle(
-                        fontFamily: 'Montserrat',
+                        //fontFamily: 'Montserrat',
                         fontWeight: FontWeight.bold,
                         fontSize: 0.087 * screenWidth,
                         color: Color(0xFFB71C1C),
