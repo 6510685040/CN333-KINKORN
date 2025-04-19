@@ -1,18 +1,46 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:kinkorn/restaurant/restaurant_management.dart';
 import 'package:kinkorn/restaurant/sales_report.dart';
 import 'package:kinkorn/template/curve_app_bar.dart';
 import 'package:kinkorn/template/restaurant_bottom_nav.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 
 class RestaurantDashboard extends StatelessWidget {
   const RestaurantDashboard({Key? key}) : super(key: key);
 
+  Future<String> fetchRestaurantName() async {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+
+    DocumentSnapshot snapshot = await FirebaseFirestore.instance
+        .collection('restaurants')
+        .doc(uid)
+        .get();
+
+    if (snapshot.exists && snapshot.data() != null) {
+      return snapshot['restaurantName'] ?? 'ร้านใหม่';
+    } else {
+      return 'ร้านใหม่';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    return FutureBuilder<String>(
+      future: fetchRestaurantName(),
+      builder: (context, snapshot) {
+        String title = 'Welcome ร้านใหม่!';
+
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          title = 'กำลังโหลดชื่อร้าน...';
+        } else if (snapshot.hasData) {
+          title = 'Welcome ${snapshot.data} !';
+        }
+
     return Scaffold(
       appBar: CurveAppBar(
-        title: 'Welcome ร้านใหม่!',
+        title: title,
       ),
       backgroundColor: const Color(0xFFFFF8E1), // Light cream background
       body: Column(
@@ -89,6 +117,8 @@ class RestaurantDashboard extends StatelessWidget {
           const CustomBottomNav (),
         ],
       ),
+    );
+      },
     );
   }
 
