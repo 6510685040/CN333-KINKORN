@@ -86,33 +86,52 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Email', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16, color: Color(0xFFAF1F1F))),
+                        const Text(
+                          'Email',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                            color: Color(0xFFAF1F1F),
+                          ),
+                        ),
                         const SizedBox(height: 8),
-                        TextFormField(
-                          controller: _emailController,
-                          validator: (value) => value == null || value.isEmpty ? 'Please enter your email' : null,
-                          decoration: InputDecoration(
-                            hintText: 'Enter your Email',
-                            filled: true,
-                            fillColor: Colors.white,
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(24)),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+                          child: TextFormField(
+                            controller: _emailController,
+                            validator: (value) =>
+                                value == null || value.isEmpty ? 'Please enter your email' : null,
+                            decoration: const InputDecoration(
+                              hintText: 'Enter your Email',
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                            ),
                           ),
                         ),
                         const SizedBox(height: 20),
 
+
                         const Text('Password', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16, color: Color(0xFFAF1F1F))),
                         const SizedBox(height: 8),
-                        TextFormField(
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+                        
+                          child: TextFormField(
                           controller: _passwordController,
                           obscureText: _obscurePassword,
                           validator: (value) => value == null || value.isEmpty ? 'Please enter your password' : null,
                           decoration: InputDecoration(
                             hintText: 'Enter your password',
-                            filled: true,
-                            fillColor: Colors.white,
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(24)),
+                            //filled: true,
+                            //fillColor: Colors.white,
+                            border: InputBorder.none,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                             suffixIcon: IconButton(
                               icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility ,color: Color(0xFFAF1F1F)),
                               onPressed: () {
@@ -122,6 +141,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               },
                             ),
                           ),
+                        ),
                         ),
                         const SizedBox(height: 20),
 
