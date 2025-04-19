@@ -119,6 +119,7 @@ class _SalesReportState extends State<SalesReport> {
                     child: Column(
                       children: [
                         // title
+                        /*
                         Align(
                           alignment: Alignment.center,
                           child: Text(
@@ -130,7 +131,7 @@ class _SalesReportState extends State<SalesReport> {
                               color: Color(0xFFFCF9CA), //AF1F1F
                             ),
                           ),
-                        ),
+                        ),*/
                         Align(
                           alignment: Alignment.center,
                           child: Text(

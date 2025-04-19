@@ -125,7 +125,7 @@ class RestaurantManagementPage extends StatelessWidget {
             children: [
               Icon(
                 icon,
-                size: 40,
+                size: 80,
                 color: const Color(0xFFB71C1C),
               ),
               const SizedBox(height: 8),
@@ -133,7 +133,7 @@ class RestaurantManagementPage extends StatelessWidget {
                 label,
                 style: const TextStyle(
                   color: Color(0xFFB71C1C),
-                  fontSize: 16,
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
               ),
