@@ -4,6 +4,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:kinkorn/customer/add_on.dart';
 import 'package:kinkorn/template/curve_app_bar.dart';
 import 'package:kinkorn/template/bottom_bar.dart';
+import 'package:kinkorn/provider/cartprovider.dart';
 
 class ChooseMenuScreen extends StatefulWidget {
   final String restaurantId;
@@ -92,7 +93,7 @@ class ChooseMenuScreenState extends State<ChooseMenuScreen> {
                 AutoSizeText(
                   restaurantName,
                   style: const TextStyle(
-                    fontFamily: 'GeistFont',
+                    //fontFamily: 'GeistFont',
                     fontWeight: FontWeight.w700,
                     fontSize: 24,
                     color: Color(0xFFFCF9CA),

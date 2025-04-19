@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 
 class CartProvider extends ChangeNotifier {
   String? _restaurantName;
+  String? _restaurantId; 
+  String? _customerId;   
   List<Map<String, dynamic>> _cartItems = [];
 
   String? get restaurantName => _restaurantName;
