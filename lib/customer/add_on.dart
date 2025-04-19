@@ -175,7 +175,6 @@ class AddOnState extends State<AddOn> {
                     child: Text(
                       'Add-ons',
                       style: TextStyle(
-                        fontFamily: 'GeistFont',
                         fontWeight: FontWeight.bold,
                         fontSize: screenWidth * 0.05,
                         color: const Color(0xFFAF1F1F),
@@ -199,7 +198,6 @@ class AddOnState extends State<AddOn> {
                 Text(
                   'Quantity',
                   style: TextStyle(
-                    fontFamily: 'GeistFont',
                     fontWeight: FontWeight.bold,
                     fontSize: screenWidth * 0.05,
                     color: const Color(0xFFAF1F1F),
@@ -216,7 +214,6 @@ class AddOnState extends State<AddOn> {
                     Text(
                       '$quantity',
                       style: TextStyle(
-                        fontFamily: 'GeistFont',
                         fontWeight: FontWeight.bold,
                         fontSize: screenWidth * 0.06,
                       ),

@@ -175,7 +175,6 @@ class ChooseCanteen extends StatelessWidget {
                     Text(
                       name,
                       style: const TextStyle(
-                        fontFamily: 'GeistFont',
                         fontWeight: FontWeight.w600,
                         fontSize: 20,
                         color: Color(0xFFFCF9CA),
@@ -188,7 +187,6 @@ class ChooseCanteen extends StatelessWidget {
                       child: Text(
                         location,
                         style: const TextStyle(
-                          fontFamily: 'GeistFont',
                           fontWeight: FontWeight.w400,
                           fontSize: 12,
                           color: Colors.white,
