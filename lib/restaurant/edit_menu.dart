@@ -371,6 +371,10 @@ class _EditMenuPageState extends State<EditMenuPage> {
         .doc(widget.menuItemId)
         .delete();
 
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Menu deleted successfully')),
+    );
+
     Navigator.pop(context);
   }
 }
