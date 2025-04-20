@@ -31,7 +31,6 @@ class ChooseRestaurantScreen extends StatelessWidget {
             child: Text(
               "Choose Restaurant....",
               style: TextStyle(
-                fontFamily: 'GeistFont',
                 fontWeight: FontWeight.w700,
                 fontSize: screenWidth * 0.08,
                 color: const Color(0xFFFCF9CA),
@@ -152,7 +151,6 @@ class ChooseRestaurantScreen extends StatelessWidget {
                                           Text(
                                             name,
                                             style: TextStyle(
-                                              fontFamily: 'GeistFont',
                                               fontWeight: FontWeight.w600,
                                               fontSize: screenWidth * 0.05,
                                               color: const Color(0xFFFCF9CA),
@@ -174,7 +172,6 @@ class ChooseRestaurantScreen extends StatelessWidget {
                                             child: Text(
                                               status == 'open' ? "open to order" : "closed",
                                               style: TextStyle(
-                                                fontFamily: 'GeistFont',
                                                 fontWeight: FontWeight.w600,
                                                 fontSize: screenWidth * 0.03,
                                                 color: Colors.white,
@@ -185,7 +182,6 @@ class ChooseRestaurantScreen extends StatelessWidget {
                                             child: Text(
                                               "Location: $canteenLocation",
                                               style: TextStyle(
-                                                fontFamily: 'GeistFont',
                                                 fontWeight: FontWeight.w600,
                                                 fontSize: screenWidth * 0.03,
                                                 color: const Color(0xFFFCF9CA),
