@@ -243,8 +243,8 @@ Future<List<Map<String, dynamic>>> fetchCanteens() async {
                           fillColor: Colors.white,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(24),
-                            borderSide: const BorderSide(
-                                color: Color(0xFFD9D9D9), width: 2),
+                            borderSide: BorderSide.none,/*const BorderSide(
+                                color: Color(0xFFD9D9D9), width: 5),*/
                           ),
                         ),
                         readOnly: true,
@@ -348,8 +348,7 @@ Future<List<Map<String, dynamic>>> fetchCanteens() async {
                             fillColor: Colors.white,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(24),
-                              borderSide: const BorderSide(
-                                  color: Color(0xFFD9D9D9), width: 2),
+                              borderSide: BorderSide.none,
                             ),
                           ),
                         );
@@ -482,7 +481,12 @@ Future<List<Map<String, dynamic>>> fetchCanteens() async {
                 fontSize: 16,
                 color: Color(0xFFAF1F1F))),
         const SizedBox(height: 8),
-        TextFormField(
+        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+        child: TextFormField(
           controller: controller,
           validator: (value) {
           if (value == null || value.trim().isEmpty) {
@@ -494,10 +498,14 @@ Future<List<Map<String, dynamic>>> fetchCanteens() async {
             hintText: hint,
             filled: true,
             fillColor: Colors.white,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(24)),
+            border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(24),
+            borderSide: BorderSide.none,
+            )
           ),
         ),
-        const SizedBox(height: 20),
+        ),
+        const SizedBox(height: 20),      
       ],
     );
   }

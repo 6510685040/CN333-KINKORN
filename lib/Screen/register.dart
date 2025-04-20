@@ -204,7 +204,12 @@ Widget build(BuildContext context) {
           ),
         ),
         const SizedBox(height: 8),
-        TextFormField(
+        Container(
+           decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            ),
+          child: TextFormField(
           controller: controller,
           obscureText: obscureText,
           decoration: InputDecoration(
@@ -213,11 +218,12 @@ Widget build(BuildContext context) {
             filled: true,
             fillColor: Colors.white,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(24),
-              borderSide: const BorderSide(color: Color(0xFFD9D9D9), width: 2),
-            ),
+    borderRadius: BorderRadius.circular(24),
+    borderSide: BorderSide.none,
+  ),
           ),
           validator: validator,
+        ),
         ),
         const SizedBox(height: 20),
       ],
