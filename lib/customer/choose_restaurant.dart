@@ -73,7 +73,9 @@ class ChooseRestaurantScreen extends StatelessWidget {
                   stream: FirebaseFirestore.instance
                       .collection('restaurants')
                       .where('canteenId', isEqualTo: canteenId)
+                      .where('isApproved', isEqualTo: true)
                       .snapshots(),
+
                   builder: (context, snapshot) {
                     if (!snapshot.hasData) {
                       return const Center(child: CircularProgressIndicator());

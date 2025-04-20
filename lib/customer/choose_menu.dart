@@ -98,7 +98,8 @@ class ChooseMenuScreenState extends State<ChooseMenuScreen> {
                 ),
                 const SizedBox(width: 10),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
                     color: const Color(0xFF35AF1F),
                     borderRadius: BorderRadius.circular(21),
@@ -115,8 +116,7 @@ class ChooseMenuScreenState extends State<ChooseMenuScreen> {
               ],
             ),
           ),
-          if (isLoading)
-            const Center(child: CircularProgressIndicator()),
+          if (isLoading) const Center(child: CircularProgressIndicator()),
           if (!isLoading)
             Positioned(
               top: screenHeight * 0.2,
@@ -158,69 +158,90 @@ class ChooseMenuScreenState extends State<ChooseMenuScreen> {
     final user = FirebaseAuth.instance.currentUser;
     final cartProvider = Provider.of<CartProvider>(context, listen: false);
 
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => AddOn(menuData: menuItem)),
-        );
-      },
-      child: Container(
-        decoration: BoxDecoration(
-          color: const Color(0xFFAF1F1F),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.25),
-              offset: const Offset(0, 4),
-              blurRadius: 4,
-            ),
-          ],
-          borderRadius: BorderRadius.circular(30),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                color: const Color(0xFFD9D9D9),
-                shape: BoxShape.circle,
-                image: menuItem['imageUrl'] != ''
-                    ? DecorationImage(
-                        image: NetworkImage(menuItem['imageUrl']),
-                        fit: BoxFit.cover,
-                      )
-                    : null,
-              ),
-              child: menuItem['imageUrl'] == ''
-                  ? const Icon(Icons.image_not_supported, size: 40, color: Colors.white)
+  
+    double screenWidth = MediaQuery.of(context).size.width;
+
+    return Container(
+       width: MediaQuery.of(context).size.width * 0.1, 
+    height: MediaQuery.of(context).size.height * 0.05, 
+      decoration: BoxDecoration(
+        color: const Color(0xFFAF1F1F),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.25),
+            offset: const Offset(0, 4),
+            blurRadius: 4,
+          ),
+        ],
+        borderRadius: BorderRadius.circular(30),
+      ),
+      
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+    
+          Container(
+            width: screenWidth * 0.25,
+            height: screenWidth * 0.25, 
+            decoration: BoxDecoration(
+              color: const Color(0xFFD9D9D9),
+              shape: BoxShape.circle,
+              image: menuItem['imageUrl'] != ''
+                  ? DecorationImage(
+                      image: NetworkImage(menuItem['imageUrl']),
+                      fit: BoxFit.cover,
+                    )
                   : null,
             ),
-            const SizedBox(height: 10),
-            AutoSizeText(
-              menuItem["name"],
-              style: const TextStyle(
-                fontWeight: FontWeight.w800,
-                fontSize: 15,
-                color: Color(0xFFFCF9CA),
-              ),
-              maxLines: 1,
-              minFontSize: 12,
-              overflow: TextOverflow.ellipsis,
+            child: menuItem['imageUrl'] == ''
+                ? const Icon(Icons.image_not_supported,
+                    size: 40, color: Colors.white)
+                : null,
+          ),
+          const SizedBox(height: 10),
+      
+          AutoSizeText(
+            menuItem["name"],
+            style: const TextStyle(
+              fontWeight: FontWeight.w800,
+              fontSize: 15,
+              color: Color(0xFFFCF9CA),
             ),
-            AutoSizeText(
-              "฿${menuItem["price"]}",
-              style: const TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: 15,
-                color: Colors.white,
-              ),
-              maxLines: 1,
-              minFontSize: 12,
-              overflow: TextOverflow.ellipsis,
+            maxLines: 1,
+            minFontSize: 12,
+            overflow: TextOverflow.ellipsis,
+          ),
+      
+          AutoSizeText(
+            "฿${menuItem["price"]}",
+            style: const TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 15,
+              color: Colors.white,
             ),
-            Container(
+            maxLines: 1,
+            minFontSize: 12,
+            overflow: TextOverflow.ellipsis,
+          ),
+    
+          GestureDetector(
+            onTap: () async {
+              if (user != null) {
+                cartProvider.setRestaurantId(widget.restaurantId);
+                cartProvider.setCustomerId(user.uid);
+                cartProvider.addToCart({
+                  'name': menuItem['name'],
+                  'price': menuItem['price'],
+                  'quantity': 1,
+                });
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => AddOn(menuData: menuItem)),
+                );
+              }
+            },
+            child: Container(
               margin: const EdgeInsets.only(top: 12),
               width: 103,
               height: 32,
@@ -228,35 +249,21 @@ class ChooseMenuScreenState extends State<ChooseMenuScreen> {
                 color: const Color(0xFFFDDC5C),
                 borderRadius: BorderRadius.circular(64),
               ),
-              child: GestureDetector(
-                onTap: () async {
-                  if (user != null) {
-                    cartProvider.setRestaurantId(widget.restaurantId);
-                    cartProvider.setCustomerId(user.uid);
-                    cartProvider.addToCart({
-                      'name': menuItem['name'],
-                      'price': menuItem['price'],
-                      'quantity': 1,
-                    });
-                  }
-                },
-                child: const Center(
-                  child: AutoSizeText(
-                    "add",
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 15,
-                      color: Color(0xFFAF1F1F),
-                    ),
-                    maxLines: 1,
-                    minFontSize: 12,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+              alignment: Alignment.center,
+              child: const AutoSizeText(
+                "add",
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 15,
+                  color: Color(0xFFAF1F1F),
                 ),
+                maxLines: 1,
+                minFontSize: 12,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

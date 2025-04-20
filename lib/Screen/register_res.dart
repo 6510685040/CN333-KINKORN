@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:kinkorn/Screen/pendingApproval.dart';
 import 'dart:io';
 import 'login.dart';
 import 'package:kinkorn/customer/choose_canteen.dart';
@@ -368,21 +369,18 @@ Future<List<Map<String, dynamic>>> fetchCanteens() async {
                             ),
                           ),
                           onPressed: () async {
-                            await Future.delayed(Duration(seconds: 2));
                             if (formKey.currentState?.validate() ?? false) {
                               User? user = FirebaseAuth.instance.currentUser;
                               if (user != null) {
-                                DocumentReference userRef = FirebaseFirestore
-                                    .instance
-                                    .collection('users')
-                                    .doc(user.uid);
+                                DocumentReference userRef =
+                                    FirebaseFirestore.instance.collection('users').doc(user.uid);
 
                                 DocumentSnapshot userDoc = await userRef.get();
-                                
-                              String? imageLogoURL;
-                              if (image != null) {
-                                imageLogoURL= await uploadImageToFirebase(image!); 
-                              }
+
+                                String? imageLogoURL;
+                                if (image != null) {
+                                  imageLogoURL = await uploadImageToFirebase(image!);
+                                }
 
                                 if (userDoc.exists) {
                                   List<dynamic> currentRoles =
@@ -397,6 +395,7 @@ Future<List<Map<String, dynamic>>> fetchCanteens() async {
                                   }
 
                                   try {
+                                   
                                     await userRef.update({
                                       'restaurantName': restaurantNameController.text,
                                       'ownerName': ownerNameController.text,
@@ -405,9 +404,13 @@ Future<List<Map<String, dynamic>>> fetchCanteens() async {
                                       'canteenId': selectedCanteenId,
                                       'roles': currentRoles,
                                       'logoUrl': imageLogoURL,
+                                      
                                     });
-                                   
-                                    await FirebaseFirestore.instance.collection('restaurants').doc(user.uid).set({
+
+                                    await FirebaseFirestore.instance
+                                        .collection('restaurants')
+                                        .doc(user.uid)
+                                        .set({
                                       'restaurantId': user.uid,
                                       'restaurantName': restaurantNameController.text,
                                       'ownerId': user.uid,
@@ -416,35 +419,27 @@ Future<List<Map<String, dynamic>>> fetchCanteens() async {
                                       'logoUrl': imageLogoURL,
                                       'openingDays': selectedDays,
                                       'openingTime': openingTimeController.text,
-                                      'openStatus': 'open', 
-                                      'category': '', 
-                                      'description': '', 
+                                      'openStatus': 'open',
+                                      'category': '',
+                                      'description': '',
                                       'created_at': FieldValue.serverTimestamp(),
+                                      'isApproved': false,
                                     });
+
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(content: Text('Restaurant registered successfully!')),
                                     );
 
                                     Navigator.pushReplacement(
                                       context,
-                                      MaterialPageRoute(builder: (context) => const RestaurantDashboard()),
+                                      MaterialPageRoute(builder: (context) => const PendingApprovalScreen()),
                                     );
                                   } catch (e) {
                                     print('Error updating Firestore: $e');
-                                  } 
-
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                        content: Text(
-                                            'Restaurant registered successfully!')),
-                                  );
-
-                                  Navigator.pushReplacement(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            const RestaurantDashboard()),
-                                  );
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('Something went wrong')),
+                                    );
+                                  }
                                 }
                               }
                             }

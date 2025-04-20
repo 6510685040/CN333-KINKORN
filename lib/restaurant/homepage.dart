@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:kinkorn/Screen/pendingApproval.dart';
 import 'package:kinkorn/restaurant/completed_order.dart';
 import 'package:kinkorn/restaurant/preparing_order.dart';
 import 'package:kinkorn/restaurant/restaurant_management.dart';
@@ -10,10 +11,24 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kinkorn/restaurant/neworder.dart';
 
 
-class RestaurantDashboard extends StatelessWidget {
+class RestaurantDashboard extends StatefulWidget {
   const RestaurantDashboard({Key? key}) : super(key: key);
 
-  Future<String> fetchRestaurantName() async {
+  @override
+  State<RestaurantDashboard> createState() => _RestaurantDashboardState();
+}
+
+class _RestaurantDashboardState extends State<RestaurantDashboard> {
+  String restaurantName = 'ร้านใหม่';
+
+  @override
+  void initState() {
+    super.initState();
+    fetchRestaurantName();
+    checkApprovalStatus();
+  }
+
+  Future<void> fetchRestaurantName() async {
     final uid = FirebaseAuth.instance.currentUser!.uid;
 
     DocumentSnapshot snapshot = await FirebaseFirestore.instance
@@ -22,33 +37,36 @@ class RestaurantDashboard extends StatelessWidget {
         .get();
 
     if (snapshot.exists && snapshot.data() != null) {
-      return snapshot['restaurantName'] ?? 'ร้านใหม่';
-    } else {
-      return 'ร้านใหม่';
+      setState(() {
+        restaurantName = snapshot['restaurantName'] ?? 'ร้านใหม่';
+      });
+    }
+  }
+
+  Future<void> checkApprovalStatus() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final doc = await FirebaseFirestore.instance.collection('restaurants').doc(user.uid).get();
+      if (!doc.exists || !(doc['isApproved'] ?? false)) {
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const PendingApprovalScreen()),
+          );
+        }
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<String>(
-      future: fetchRestaurantName(),
-      builder: (context, snapshot) {
-        String title = 'Welcome ร้านใหม่!';
-
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          title = 'กำลังโหลดชื่อร้าน...';
-        } else if (snapshot.hasData) {
-          title = 'Welcome ${snapshot.data} !';
-        }
+    String title = 'Welcome $restaurantName !';
 
     return Scaffold(
-      appBar: CurveAppBar(
-        title: title,
-      ),
-      backgroundColor: const Color(0xFFFFF8E1), // Light cream background
+      appBar: CurveAppBar(title: title),
+      backgroundColor: const Color(0xFFFFF8E1),
       body: Column(
         children: [
-          // Overview section
           Expanded(
             child: Padding(
               padding: const EdgeInsets.all(10.0),
@@ -65,58 +83,27 @@ class RestaurantDashboard extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
 
-                  // Status cards
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      _buildStatusCard(
-                        'New order',
-                        '0',
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => NewOrder(), // ใช้ชื่อ class ของหน้า new order ที่คุณสร้าง
-                            ),
-                          );
-                        },
-                      ),
-                      _buildStatusCard(
-                        'Preparing order',
-                        '0',
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => PreparingOrderRestaurant(), // ใช้ชื่อ class ของหน้า new order ที่คุณสร้าง
-                            ),
-                          );
-                        },
-                      ),
+                      _buildStatusCard('New order', '0', onTap: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => NewOrder()));
+                      }),
+                      _buildStatusCard('Preparing order', '0', onTap: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => PreparingOrderRestaurant()));
+                      }),
                     ],
                   ),
                   const SizedBox(height: 20),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      _buildStatusCard(
-                        'Completed',
-                        '0',
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => CompletedOrderRestaurant(), // ใช้ชื่อ class ของหน้า new order ที่คุณสร้าง
-                            ),
-                          );
-                        },
-                      ),
-                      
+                      _buildStatusCard('Completed', '0', onTap: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => CompletedOrderRestaurant()));
+                      }),
                     ],
                   ),
                   const SizedBox(height: 30),
-
-                  // Management buttons
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
@@ -124,24 +111,14 @@ class RestaurantDashboard extends StatelessWidget {
                         icon: Icons.restaurant_menu,
                         label: 'Manage your\nrestuarant',
                         onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => RestaurantManagementPage(),
-                            ),
-                          );
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => RestaurantManagementPage()));
                         },
                       ),
                       _buildManagementButton(
                         icon: Icons.bar_chart,
                         label: 'Sales report',
                         onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => SalesReport(),
-                            ),
-                          );
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => SalesReport()));
                         },
                       ),
                     ],
@@ -150,63 +127,59 @@ class RestaurantDashboard extends StatelessWidget {
               ),
             ),
           ),
-
-          const CustomBottomNav (),
+          const CustomBottomNav(),
         ],
       ),
-    );
-      },
     );
   }
 
   Widget _buildStatusCard(String title, String count, {VoidCallback? onTap}) {
-  return GestureDetector(
-    onTap: onTap,
-    child: Container(
-      width: 150,
-      padding: const EdgeInsets.all(15),
-      decoration: BoxDecoration(
-        color: Color(0xFFFDDC5C),
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
-            blurRadius: 5,
-            offset: const Offset(0, 3),
-          ),
-        ],
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 150,
+        padding: const EdgeInsets.all(15),
+        decoration: BoxDecoration(
+          color: Color(0xFFFDDC5C),
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.2),
+              blurRadius: 5,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Text(
+              title,
+              style: const TextStyle(
+                color: Color(0xFFB71C1C),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              count,
+              style: const TextStyle(
+                color: Color(0xFFB71C1C),
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const Text(
+              'Click here',
+              style: TextStyle(
+                color: Color(0xFFB71C1C),
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
       ),
-      child: Column(
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              color: Color(0xFFB71C1C),
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            count,
-            style: const TextStyle(
-              color: Color(0xFFB71C1C),
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const Text(
-            'Click here',
-            style: TextStyle(
-              color: Color(0xFFB71C1C),
-              fontSize: 12,
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
+    );
+  }
 
   Widget _buildManagementButton({
     required IconData icon,
@@ -239,24 +212,4 @@ class RestaurantDashboard extends StatelessWidget {
       ),
     );
   }
-}
-
-
-class CurvedBottomClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) {
-    final path = Path();
-    path.lineTo(0, size.height - 40);
-    path.quadraticBezierTo(
-      size.width / 2,
-      size.height,
-      size.width,
-      size.height - 40,
-    );
-    path.lineTo(size.width, 0);
-    return path;
-  }
-
-  @override
-  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
 }
