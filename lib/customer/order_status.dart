@@ -4,6 +4,9 @@ import 'package:kinkorn/template/curve_app_bar.dart';
 import 'package:kinkorn/template/bottom_bar.dart';
 import 'package:intl/intl.dart';
 import 'package:kinkorn/customer/order_detail.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 
 class OrderStatusCustomer extends StatefulWidget {
   const OrderStatusCustomer({super.key});
@@ -140,153 +143,239 @@ class _OrderStatusCustomerState extends State<OrderStatusCustomer> {
   }
 
   Widget _buildOrderList() {
-    return Column(
-      children: [
-        _buildOrderCard(
-          orderId: "cst01250206003",
-          timeAgo: "5 mins ago",
-          restaurantName: "ร้านกะเพราเด็ด",
-          menuItems: ["ข้าวกะเพราหมูสับ + ไข่ดาว x1", "ข้าวผัดไก่ x1"],
-          statusText: "Waiting for payment",
-          statusColor: Colors.blue,
-          timeorder: "Jun 10 , 11:45",
-        ),
-        _buildOrderCard(
-          orderId: "cst01250206002",
-          timeAgo: "15 mins ago",
-          restaurantName: "ร้านข้าวมันไก่เจ๊แดง",
-          menuItems: ["ข้าวมันไก่ทอด x1"],
-          statusText: "Waiting for payment confirmation",
-          statusColor: Color(0xFFFDDC5C),
-          timeorder: "Jun 10 , 10:45",
-        ),
-        _buildOrderCard(
-          orderId: "cst01250206001",
-          timeAgo: "30 mins ago",
-          restaurantName: "ร้านส้มตำแซ่บเว่อร์",
-          menuItems: ["ตำไทย x1", "ไก่ย่าง x1"],
-          statusText: "Preparing food",
-          statusColor: Colors.grey,
-          timeorder: "Jun 10 , 09:45",
-        ),
-        _buildOrderCard(
-          orderId: "cst01250206000",
-          timeAgo: "45 mins ago",
-          restaurantName: "ร้านข้าวหมูแดง",
-          menuItems: ["ข้าวหมูแดง x1"],
-          statusText: "Completed",
-          statusColor: Colors.green,
-          timeorder: "Jun 10 , 08:45",
-        ),
-        _buildOrderCard(
-          orderId: "cst01250206000",
-          timeAgo: "45 mins ago",
-          restaurantName: "ร้านข้าวหมูแดง",
-          menuItems: ["ข้าวหมูแดง x1"],
-          statusText: "Completed",
-          statusColor: Colors.green,
-          timeorder: "Jun 10 , 08:40",
-        ),
-      ],
-    );
-  }
+  final userId = FirebaseAuth.instance.currentUser?.uid;
 
-  Widget _buildOrderCard({
-    required String orderId,
-    required String timeAgo,
-    required String restaurantName,
-    required List<String> menuItems,
-    required String statusText,
-    required Color statusColor,
-    required String timeorder,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Color(0xFFB71C1C),
-        borderRadius: BorderRadius.circular(15),
-        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 5)],
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                //ชื่อร้าน
-                Text("ร้าน: $restaurantName",
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, color: Colors.white)),
-                const SizedBox(height: 4),
-                // เวลาสั่งซื้อ
-                Text("เวลาสั่งซื้อ: $timeorder",
-                    style: const TextStyle(color: Colors.white, fontSize: 14)),
-                const SizedBox(height: 4),
-                //แสดงรายการอาหาร
-                const Text("Order Summary",
-                    style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white)),
-                ...menuItems
-                    .map((item) =>
-                        Text(item, style: const TextStyle(color: Colors.white)))
-                    .toList(),
-              ],
-            ),
+  return FutureBuilder<QuerySnapshot>(
+    future: FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .collection('orders')
+        .orderBy('createdAt', descending: true)
+        .get(),
+    builder: (context, snapshot) {
+      if (snapshot.connectionState == ConnectionState.waiting) {
+        return const Center(child: CircularProgressIndicator());
+      }
+
+      if (snapshot.hasError) {
+        return const Center(child: Text("เกิดข้อผิดพลาดในการโหลดออเดอร์"));
+      }
+
+      final ordersSnapshot = snapshot.data;
+
+      //no orders
+      if (ordersSnapshot == null || ordersSnapshot.docs.isEmpty) {
+        return const Center(
+          child: Text(
+            "ยังไม่มีออเดอร์ในขณะนี้",
+            style: TextStyle(fontSize: 16, color: Colors.black54),
           ),
-          GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => OrderDetailPage(
-                    orderId: orderId,
-                    customerName: "สมชาย ใจดี",
-                    phoneNumber: "091-234-5678",
-                    restaurantName: restaurantName,
-                    canteenName: "โรงอาหารกลาง",
-                    orderTime: "10:30 AM",
-                    pickupTime: "11:00 AM",
-                    menuItems: menuItems,
-                    totalAmount: "100.00",
-                    statusText: statusText,
-                    statusColor: statusColor,
-                    timeAgo: timeAgo,
-                  ),
+        );
+      }
+
+      //have orders
+      return Column(
+        children: ordersSnapshot.docs.map((doc) {
+          final data = doc.data() as Map<String, dynamic>;
+          final orderStatus = data['orderStatus'] ?? '';
+          final createdAt = (data['createdAt'] as Timestamp?)?.toDate();
+          final formattedTime = createdAt != null
+              ? DateFormat("MMM dd, HH:mm").format(createdAt)
+              : '';
+          final menuList = List<Map<String, dynamic>>.from(data['orders'] ?? []);
+          final List<Map<String, dynamic>> menuItems = menuList.map((item) {
+            return {
+              'name': item['name'] ?? '',
+              'quantity': item['quantity'] ?? 1,
+            };
+          }).toList();
+
+          final restaurantId = menuList.isNotEmpty ? menuList[0]['restaurantId'] ?? '' : '';
+
+          Color statusColor = Colors.grey;
+          if (orderStatus == "Waiting for restaurant approval") {
+            statusColor = const Color.fromARGB(255, 94, 35, 93);
+          }
+            else if (orderStatus == "Waiting for payment") {
+            statusColor = const Color.fromARGB(255, 32, 56, 118);
+          } else if (orderStatus == "Waiting for payment confirmation") {
+            statusColor = const Color(0xFFFDDC5C);
+          } else if (orderStatus == "Preparing food") {
+            statusColor = Color.fromARGB(255, 132, 132, 132);
+          } else if (orderStatus == "Completed") {
+            statusColor = Colors.green;
+          }
+
+          return FutureBuilder<DocumentSnapshot>(
+            future: FirebaseFirestore.instance
+                .collection('restaurants')
+                .doc(restaurantId)
+                .get(),
+            builder: (context, restaurantSnapshot) {
+              String restaurantName = "ไม่พบชื่อร้านอาหาร";
+              if (restaurantSnapshot.hasData && restaurantSnapshot.data!.exists) {
+                restaurantName = restaurantSnapshot.data!.get('restaurantName') ?? 'ไม่พบชื่อร้านอาหาร';
+              }
+
+              return GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => OrderDetailPage(
+                        orderId: doc.id,
+                        userId: FirebaseAuth.instance.currentUser!.uid,
+                      ),
+                    ),
+                  );
+                },
+
+                child: _buildOrderCard(
+                  orderId: doc.id,
+                  timeAgo: "",
+                  restaurantName: restaurantName,
+                  menuItems: menuItems,
+                  statusText: orderStatus,
+                  statusColor: statusColor,
+                  timeorder: formattedTime,
                 ),
               );
+
             },
-            child: Container(
-              width: 120,
+          );
+        }).toList(),
+      );
+    },
+  );
+}
+
+
+
+  Widget _buildOrderCard({
+  required String orderId,
+  required String timeAgo,
+  required String restaurantName,
+  required List<Map<String, dynamic>> menuItems,
+  required String statusText,
+  required Color statusColor,
+  required String timeorder,
+}) {
+  return Container(
+    margin: const EdgeInsets.only(bottom: 12),
+    padding: const EdgeInsets.all(12),
+    decoration: BoxDecoration(
+      color: const Color(0xFFB71C1C),
+      borderRadius: BorderRadius.circular(15),
+      boxShadow: [const BoxShadow(color: Colors.black12, blurRadius: 5)],
+    ),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // ซ้าย: รายการ
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                restaurantName,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                "Order summary",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 4),
+              ...menuItems.map((item) {
+                final name = item['name'] ?? '';
+                final quantity = item['quantity'] ?? 1;
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 2),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        margin: const EdgeInsets.only(right: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          '${quantity}x',
+                          style: const TextStyle(
+                            color: Colors.black87,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Text(
+                          name,
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ],
+          ),
+        ),
+        // ขวา: เวลา + สถานะ
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(
+              timeorder,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Container(
+              width: 130,
               height: 80,
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               decoration: BoxDecoration(
                 color: statusColor,
                 borderRadius: BorderRadius.circular(20),
               ),
-              alignment: Alignment.center,
-              child: Text(
-                statusText,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  shadows: [
-                    Shadow(
-                      blurRadius: 4.0, // ความเบลอของเงา
-                      color: Colors.black54, // สีของเงา
-                      offset: Offset(1, 1), // การเลื่อนตำแหน่งของเงา (X, Y)
-                    ),
-                  ],
+              child: Center(
+                child: Text(
+                  statusText,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                    shadows: [
+                      Shadow(
+                        blurRadius: 4,
+                        color: Colors.black26,
+                        offset: Offset(1, 1),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
+          ],
+        ),
+      ],
+    ),
+  );
+}
+
+
+
+
 }
