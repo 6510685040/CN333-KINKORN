@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:kinkorn/customer/your_cart.dart';
 import 'package:kinkorn/provider/cartprovider.dart';
@@ -19,6 +20,7 @@ class AddOnState extends State<AddOn> {
   Map<String, int> addonCounts = {};
   TextEditingController requestController = TextEditingController();
   int quantity = 1;
+  
 
   @override
   void initState() {
@@ -55,33 +57,41 @@ class AddOnState extends State<AddOn> {
     });
   }
 
-  void addToCart() {
-    final cartProvider = Provider.of<CartProvider>(context, listen: false);
-    final addons = widget.menuData['options'] as List<dynamic>? ?? [];
+ void addToCart() {
+  final cartProvider = Provider.of<CartProvider>(context, listen: false);
+  final addons = widget.menuData['options'] as List<dynamic>? ?? [];
 
-    Map<String, int> selectedAddons = {};
-    for (var addon in addons) {
-      if (addonCounts[addon] != 0) {
-        selectedAddons[addon] = addonCounts[addon]!;
-      }
+  Map<String, int> selectedAddons = {};
+  for (var addon in addons) {
+    if (addonCounts[addon] != 0) {
+      selectedAddons[addon] = addonCounts[addon]!; 
     }
-
-    cartProvider.addToCart({
-      'name': widget.menuData['name'],
-      'price': widget.menuData['price'],
-      'addons': selectedAddons,
-      'quantity': quantity,
-      'request': requestController.text,
-      'imageUrl': widget.menuData['imageUrl'] ?? '',
-    });
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const YourCart(),
-      ),
-    );
   }
+
+  final orderData = {
+    'name': widget.menuData['name'],
+    'price': widget.menuData['price'],
+    'addons': selectedAddons,
+    'quantity': quantity,
+    'request': requestController.text,
+    'imageUrl': widget.menuData['imageUrl'] ?? '',
+    'restaurantId': cartProvider.restaurantId,  
+    'customerId': cartProvider.customerId, 
+  };
+
+  
+  cartProvider.addToCart(orderData);
+
+  Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(
+      builder: (context) => const YourCart(),
+    ),
+  );
+}
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -311,4 +321,4 @@ class AddOnState extends State<AddOn> {
       ),
     );
   }
-}
+} 

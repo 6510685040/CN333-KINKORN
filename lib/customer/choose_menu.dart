@@ -1,15 +1,22 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:kinkorn/customer/add_on.dart';
 import 'package:kinkorn/template/curve_app_bar.dart';
 import 'package:kinkorn/template/bottom_bar.dart';
 import 'package:kinkorn/provider/cartprovider.dart';
+import 'package:provider/provider.dart';
 
 class ChooseMenuScreen extends StatefulWidget {
   final String restaurantId;
+  final String restaurantName;
 
-  const ChooseMenuScreen({Key? key, required this.restaurantId, required restaurantName}) : super(key: key);
+  const ChooseMenuScreen({
+    Key? key,
+    required this.restaurantId,
+    required this.restaurantName,
+  }) : super(key: key);
 
   @override
   State<ChooseMenuScreen> createState() => ChooseMenuScreenState();
@@ -18,26 +25,15 @@ class ChooseMenuScreen extends StatefulWidget {
 class ChooseMenuScreenState extends State<ChooseMenuScreen> {
   List<Map<String, dynamic>> menuItems = [];
   bool isLoading = true;
-  String restaurantName = '';
 
   @override
   void initState() {
     super.initState();
-    fetchData();
+    fetchMenuItems();
   }
 
-  Future<void> fetchData() async {
+  Future<void> fetchMenuItems() async {
     try {
-     
-      final resSnapshot = await FirebaseFirestore.instance
-          .collection('restaurants')
-          .doc(widget.restaurantId)
-          .get();
-      final resData = resSnapshot.data();
-      final name = resData?['restaurantName'] ?? 'ร้านอาหาร';
-
-
-      
       final menuSnapshot = await FirebaseFirestore.instance
           .collection('menuItems')
           .where('restaurantId', isEqualTo: widget.restaurantId)
@@ -54,12 +50,11 @@ class ChooseMenuScreenState extends State<ChooseMenuScreen> {
       }).toList();
 
       setState(() {
-        restaurantName = name;
         menuItems = items;
         isLoading = false;
       });
     } catch (e) {
-      print('Error fetching data: $e');
+      print('Error fetching menu items: $e');
       setState(() {
         isLoading = false;
       });
@@ -91,9 +86,8 @@ class ChooseMenuScreenState extends State<ChooseMenuScreen> {
             child: Row(
               children: [
                 AutoSizeText(
-                  restaurantName,
+                  widget.restaurantName,
                   style: const TextStyle(
-                    //fontFamily: 'GeistFont',
                     fontWeight: FontWeight.w700,
                     fontSize: 24,
                     color: Color(0xFFFCF9CA),
@@ -112,7 +106,6 @@ class ChooseMenuScreenState extends State<ChooseMenuScreen> {
                   child: Text(
                     "open to order",
                     style: TextStyle(
-                      //fontFamily: 'GeistFont',
                       fontWeight: FontWeight.w600,
                       fontSize: screenWidth * 0.03,
                       color: Colors.white,
@@ -122,12 +115,8 @@ class ChooseMenuScreenState extends State<ChooseMenuScreen> {
               ],
             ),
           ),
-
-    
           if (isLoading)
             const Center(child: CircularProgressIndicator()),
-
-  
           if (!isLoading)
             Positioned(
               top: screenHeight * 0.2,
@@ -151,7 +140,6 @@ class ChooseMenuScreenState extends State<ChooseMenuScreen> {
                 ),
               ),
             ),
-
           Positioned(
             bottom: 0,
             left: 0,
@@ -167,6 +155,9 @@ class ChooseMenuScreenState extends State<ChooseMenuScreen> {
   }
 
   Widget buildMenuItem(BuildContext context, Map<String, dynamic> menuItem) {
+    final user = FirebaseAuth.instance.currentUser;
+    final cartProvider = Provider.of<CartProvider>(context, listen: false);
+
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -189,7 +180,6 @@ class ChooseMenuScreenState extends State<ChooseMenuScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-      
             Container(
               width: 80,
               height: 80,
@@ -211,7 +201,6 @@ class ChooseMenuScreenState extends State<ChooseMenuScreen> {
             AutoSizeText(
               menuItem["name"],
               style: const TextStyle(
-                //fontFamily: 'GeistFont',
                 fontWeight: FontWeight.w800,
                 fontSize: 15,
                 color: Color(0xFFFCF9CA),
@@ -223,7 +212,6 @@ class ChooseMenuScreenState extends State<ChooseMenuScreen> {
             AutoSizeText(
               "฿${menuItem["price"]}",
               style: const TextStyle(
-                //fontFamily: 'GeistFont',
                 fontWeight: FontWeight.w600,
                 fontSize: 15,
                 color: Colors.white,
@@ -240,18 +228,30 @@ class ChooseMenuScreenState extends State<ChooseMenuScreen> {
                 color: const Color(0xFFFDDC5C),
                 borderRadius: BorderRadius.circular(64),
               ),
-              child: const Center(
-                child: AutoSizeText(
-                  "add",
-                  style: TextStyle(
-                    //fontFamily: 'GeistFont',
-                    fontWeight: FontWeight.w600,
-                    fontSize: 15,
-                    color: Color(0xFFAF1F1F),
+              child: GestureDetector(
+                onTap: () async {
+                  if (user != null) {
+                    cartProvider.setRestaurantId(widget.restaurantId);
+                    cartProvider.setCustomerId(user.uid);
+                    cartProvider.addToCart({
+                      'name': menuItem['name'],
+                      'price': menuItem['price'],
+                      'quantity': 1,
+                    });
+                  }
+                },
+                child: const Center(
+                  child: AutoSizeText(
+                    "add",
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 15,
+                      color: Color(0xFFAF1F1F),
+                    ),
+                    maxLines: 1,
+                    minFontSize: 12,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  maxLines: 1,
-                  minFontSize: 12,
-                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ),
