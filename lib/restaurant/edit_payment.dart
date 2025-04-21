@@ -162,7 +162,7 @@ class _EditPaymentState extends State<EditPayment> {
               alignment: Alignment.topCenter,
               child: Container(
                 width: MediaQuery.of(context).size.width * 0.9,
-                height: MediaQuery.of(context).size.height * 0.66,
+                height: MediaQuery.of(context).size.height * 0.74,
                 decoration: BoxDecoration(
                   color: Color(0xFFFFFFFF),
                   borderRadius: BorderRadius.circular(20),
@@ -402,7 +402,7 @@ class _EditPaymentState extends State<EditPayment> {
           )
         ],
       ),
-      bottomNavigationBar: const CustomBottomNav(),
+      //bottomNavigationBar: const CustomBottomNav(),
     );
   }
 
