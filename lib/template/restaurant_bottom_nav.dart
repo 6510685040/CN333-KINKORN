@@ -9,6 +9,31 @@ class CustomBottomNav extends StatelessWidget {
   const CustomBottomNav({super.key});
 
   @override
+
+  void navigateWithSlide(BuildContext context, Widget page) {
+  // Check if the current widget and the target widget are of the same type
+  if (ModalRoute.of(context)?.settings.name == page.runtimeType.toString()) {
+    return; // Already on the page, do nothing
+  }
+
+  Navigator.push(
+    context,
+    PageRouteBuilder(
+      settings: RouteSettings(name: page.runtimeType.toString()),
+      pageBuilder: (context, animation, secondaryAnimation) => page,
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        const begin = Offset(1.0, 0.0);
+        const end = Offset.zero;
+        final tween = Tween(begin: begin, end: end);
+        final offsetAnimation = animation.drive(tween);
+
+        return SlideTransition(position: offsetAnimation, child: child);
+      },
+    ),
+  );
+}
+
+
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -26,16 +51,20 @@ class CustomBottomNav extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           buildClickableNavItem(context, Icons.home, "home", () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => RestaurantDashboard()));
+            navigateWithSlide(context, RestaurantDashboard());
+            //Navigator.push(context, MaterialPageRoute(builder: (context) => RestaurantDashboard()));
           }),
           buildClickableNavItem(context, Icons.notifications, "status", () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => OrderStatusRestaurant()));
+            navigateWithSlide(context, OrderStatusRestaurant());
+            //Navigator.push(context, MaterialPageRoute(builder: (context) => OrderStatusRestaurant()));
           }),
           buildClickableNavItem(context, Icons.bar_chart, "sale report", () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => SalesReport()));
+            navigateWithSlide(context, SalesReport());
+            //Navigator.push(context, MaterialPageRoute(builder: (context) => SalesReport()));
           }),
           buildClickableNavItem(context, Icons.menu, "more", () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => MoreRes()));
+            navigateWithSlide(context, MoreRes());
+            //Navigator.push(context, MaterialPageRoute(builder: (context) => MoreRes()));
           }),
           buildClickableNavItem(context, Icons.person_2, "customer", () {
             Navigator.push(context, MaterialPageRoute(builder: (context) => ChooseCanteen()));
