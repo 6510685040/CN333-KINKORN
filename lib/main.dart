@@ -1,32 +1,43 @@
 import 'package:flutter/material.dart';
-import 'package:kinkorn/Screen/home.dart';
-import 'package:kinkorn/Screen/login.dart';
-import 'package:kinkorn/Screen/register_res.dart';
-import 'package:kinkorn/customer/add_on.dart';
-import 'package:kinkorn/customer/choose_canteen.dart';
-import 'package:kinkorn/customer/choose_menu.dart';
-import 'package:kinkorn/customer/choose_restaurant.dart';
-import 'package:kinkorn/restaurant/add_payment.dart';
-import 'package:kinkorn/restaurant/edit_payment.dart';
-import 'package:kinkorn/restaurant/sales_report.dart';
-import 'package:kinkorn/restaurant/status_waiting.dart';
-import 'package:kinkorn/restaurant/status_preparing.dart';
-import 'package:kinkorn/restaurant/status_complete.dart';
-import 'package:kinkorn/customer/contact_us.dart';
-import 'package:kinkorn/restaurant/more_res.dart';
-import 'package:kinkorn/customer/more_cus.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
+import 'package:provider/provider.dart'; 
 
-void main() {
-  runApp(MaterialApp(
-    //home:  HomeScreen(),
-    //home:  AddPayment(),
-    //home:  EditPayment(),
-    //home: SalesReport(),
-    home: StatusWaiting(),
-    //home: StatusPreparing(),
-    //home: StatusComplete(),
-    //home: ContactUs(),
-    //home: MoreRes(),
-    //home: MoreCus(),
-  ));
+import 'package:kinkorn/Screen/home.dart';
+import 'package:kinkorn/provider/cartprovider.dart';
+import 'package:google_fonts/google_fonts.dart';
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+
+  await FirebaseAppCheck.instance.activate(
+    androidProvider: AndroidProvider.playIntegrity,
+    appleProvider: AppleProvider.deviceCheck,
+  );
+
+  runApp(
+    const MyApp(), 
+  );
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => CartProvider()),
+      ],
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: const HomeScreen(),
+        theme: ThemeData(
+          textTheme: GoogleFonts.kanitTextTheme(
+            Theme.of(context).textTheme
+          )
+        ),
+      ),
+    );
+  }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kinkorn/customer/language_setting.dart';
 import 'package:kinkorn/template/bottom_bar.dart';
 import 'package:kinkorn/customer/contact_us.dart';
 import 'package:kinkorn/Screen/home.dart';
@@ -63,7 +64,7 @@ class MoreCus extends StatelessWidget {
                                         Text(
                                           "เจนรดา",
                                           style: TextStyle(
-                                            fontFamily: 'Montserrat',
+                                            //fontFamily: 'Montserrat',
                                             fontSize: 16,
                                             fontWeight: FontWeight.bold,
                                             color: Color(0xFFAF1F1F),
@@ -80,7 +81,7 @@ class MoreCus extends StatelessWidget {
                                               child: Text(
                                                 "Edit my profile",
                                                 style: TextStyle(
-                                                  fontFamily: 'Montserrat',
+                                                  //fontFamily: 'Montserrat',
                                                   fontSize: 14,
                                                   color: Color(0xFFAF1F1F),
                                                 ),
@@ -116,7 +117,12 @@ class MoreCus extends StatelessWidget {
                               elevation: 5, // ✅ ทำให้ปุ่มลอยขึ้น
                               shadowColor: Colors.black.withOpacity(0.3),
                             ),
-                            onPressed: () {},
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => LanguageSettingCustomer()),
+                              );
+                            },
                             child: const Padding(
                               padding: EdgeInsets.symmetric(vertical: 12),
                               child: Center(
@@ -139,7 +145,9 @@ class MoreCus extends StatelessWidget {
                               elevation: 5, // ✅ ทำให้ปุ่มลอยขึ้น
                               shadowColor: Colors.black.withOpacity(0.3),
                             ),
-                            onPressed: () {},
+                            onPressed: () {
+                              
+                            },
                             child: const Padding(
                               padding: EdgeInsets.symmetric(vertical: 12),
                               child: Center(

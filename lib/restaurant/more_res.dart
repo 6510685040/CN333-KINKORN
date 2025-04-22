@@ -1,12 +1,41 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:kinkorn/restaurant/contactus_restaurant.dart';
+import 'package:kinkorn/restaurant/language_setting.dart';
 import 'package:kinkorn/template/restaurant_bottom_nav.dart';
 import 'package:kinkorn/Screen/home.dart';
 
 class MoreRes extends StatelessWidget {
   const MoreRes({super.key});
 
+  Future<String> fetchRestaurantName() async {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+
+    DocumentSnapshot snapshot = await FirebaseFirestore.instance
+        .collection('restaurants')
+        .doc(uid)
+        .get();
+
+    if (snapshot.exists && snapshot.data() != null) {
+      return snapshot['restaurantName'] ?? 'ร้านใหม่';
+    } else {
+      return 'ร้านใหม่';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    return FutureBuilder<String>(
+      future: fetchRestaurantName(),
+      builder: (context, snapshot) {
+        String title = 'ร้านใหม่!';
+
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          title = 'กำลังโหลดชื่อร้าน...';
+        } else if (snapshot.hasData) {
+          title = '${snapshot.data}';
+        }
     return Scaffold(
       backgroundColor: const Color(0xFFFCF9CA),
       body: Stack(
@@ -60,9 +89,9 @@ class MoreRes extends StatelessWidget {
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          "ครัวสุขใจ",
+                                          title,
                                           style: TextStyle(
-                                            fontFamily: 'Montserrat',
+                                            //fontFamily: 'Montserrat',
                                             fontSize: 16,
                                             fontWeight: FontWeight.bold,
                                             color: Color(0xFFAF1F1F),
@@ -82,7 +111,7 @@ class MoreRes extends StatelessWidget {
                                               Text(
                                                 "Edit my profile",
                                                 style: TextStyle(
-                                                  fontFamily: 'Montserrat',
+                                                  //fontFamily: 'Montserrat',
                                                   fontSize: 14,
                                                   fontWeight: FontWeight.bold,
                                                   color: Color(0xFFAF1F1F),
@@ -119,7 +148,12 @@ class MoreRes extends StatelessWidget {
                               elevation: 5, // ✅ ทำให้ปุ่มลอยขึ้น
                               shadowColor: Colors.black.withOpacity(0.3),
                             ),
-                            onPressed: () {},
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => LanguageSettingRestaurant()),
+                              );
+                            },
                             child: const Padding(
                               padding: EdgeInsets.symmetric(vertical: 12),
                               child: Center(
@@ -165,7 +199,12 @@ class MoreRes extends StatelessWidget {
                               elevation: 5, // ✅ ทำให้ปุ่มลอยขึ้น
                               shadowColor: Colors.black.withOpacity(0.3),
                             ),
-                            onPressed: () {},
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => ContactUsRestaurant()),
+                              );
+                            },
                             child: const Padding(
                               padding: EdgeInsets.symmetric(vertical: 12),
                               child: Center(
@@ -238,6 +277,8 @@ class MoreRes extends StatelessWidget {
         ],
       ),
       bottomNavigationBar: const CustomBottomNav(),
+    );
+      },
     );
   }
 }

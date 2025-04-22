@@ -1,104 +1,293 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:kinkorn/customer/summary_payment.dart';
+import 'package:kinkorn/customer/your_cart.dart';
+import 'package:kinkorn/provider/cartprovider.dart';
 import 'package:kinkorn/template/curve_app_bar.dart';
 import 'package:kinkorn/template/bottom_bar.dart';
+import 'package:kinkorn/widgets/addon_widget.dart' as widgets;
+import 'package:provider/provider.dart';
 
-class AddOn extends StatelessWidget {
-  const AddOn({super.key});
+class AddOn extends StatefulWidget {
+  final Map<String, dynamic> menuData;
+
+  const AddOn({super.key, required this.menuData});
+
+  @override
+  AddOnState createState() => AddOnState();
+}
+
+class AddOnState extends State<AddOn> {
+  Map<String, int> addonCounts = {};
+  TextEditingController requestController = TextEditingController();
+  int quantity = 1;
+  
+
+  @override
+  void initState() {
+    super.initState();
+    final addons = widget.menuData['options'] as List<dynamic>? ?? [];
+    for (var addon in addons) {
+      addonCounts[addon] = 0;
+    }
+  }
+
+  void incrementAddon(String addon) {
+    setState(() {
+      addonCounts[addon] = (addonCounts[addon] ?? 0) + 1;
+    });
+  }
+
+  void decrementAddon(String addon) {
+    setState(() {
+      if ((addonCounts[addon] ?? 0) > 0) {
+        addonCounts[addon] = addonCounts[addon]! - 1;
+      }
+    });
+  }
+
+  void incrementQuantity() {
+    setState(() {
+      quantity++;
+    });
+  }
+
+  void decrementQuantity() {
+    setState(() {
+      if (quantity > 1) quantity--;
+    });
+  }
+
+ void addToCart() {
+  final cartProvider = Provider.of<CartProvider>(context, listen: false);
+  final addons = widget.menuData['options'] as List<dynamic>? ?? [];
+
+  Map<String, int> selectedAddons = {};
+  for (var addon in addons) {
+    if (addonCounts[addon] != 0) {
+      selectedAddons[addon] = addonCounts[addon]!; 
+    }
+  }
+
+  final orderData = {
+    'name': widget.menuData['name'],
+    'price': widget.menuData['price'],
+    'addons': selectedAddons,
+    'quantity': quantity,
+    'request': requestController.text,
+    'imageUrl': widget.menuData['imageUrl'] ?? '',
+    'restaurantId': cartProvider.restaurantId,  
+    'customerId': cartProvider.customerId, 
+  };
+
+  
+  cartProvider.addToCart(orderData);
+
+  Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(
+      builder: (context) => const YourCart(),
+    ),
+  );
+}
+
+
+
 
   @override
   Widget build(BuildContext context) {
-    // Get the screen size
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
+    final addons = widget.menuData['options'] as List<dynamic>? ?? [];
 
     return Scaffold(
       body: Stack(
         children: [
-          // Background
           Container(
             width: screenWidth,
             height: screenHeight,
-            color: Color(0xFFFCF9CA), // #FCF9CA
+            color: const Color(0xFFFCF9CA),
           ),
-
           const Positioned(
             top: 0,
             left: 0,
             right: 0,
-            child: CurveAppBar(
-              title: "",
-            ),
+            child: CurveAppBar(title: ""),
           ),
-
-          // Food item: ข้าวกะเพราหมูสับ (example)
           Positioned(
-            left: screenWidth * 0.2,  // Positioning based on screen width
-            top: screenHeight * 0.1,  // Positioning based on screen height
+            left: screenWidth * 0.1,
+            top: screenHeight * 0.1,
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Container(
-                  width: screenWidth * 0.6,  // Adjust image width
-                  height: screenHeight * 0.2, // Adjust image height
+                  width: screenWidth * 0.8,
+                  height: screenHeight * 0.2,
                   decoration: BoxDecoration(
-                    color: Colors.white,  // White background when no image
-                    borderRadius: BorderRadius.circular(30),
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withOpacity(0.25),
-                        offset: Offset(0, 4),
+                        offset: const Offset(0, 4),
                         blurRadius: 4,
                       ),
                     ],
                   ),
-                ),
-                SizedBox(height: 10),
-                Text(
-                  'ข้าวกะเพราหมูสับ',  // Example food name
-                  style: TextStyle(
-                    fontFamily: ' Geist',
-                    fontWeight: FontWeight.bold,
-                    fontSize: screenWidth * 0.08, // Adjust text size
-                    color: Color(0xFFAF1F1F),
+                  child: Center(
+                    child: widget.menuData['imageUrl'] != null
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(20),
+                            child: Image.network(
+                              widget.menuData['imageUrl'],
+                              fit: BoxFit.cover,
+                              width: screenWidth * 0.8,
+                              height: screenHeight * 0.2,
+                              errorBuilder: (context, error, stackTrace) {
+                                return const Icon(
+                                  Icons.broken_image,
+                                  color: Colors.grey,
+                                );
+                              },
+                            ),
+                          )
+                        : const Icon(
+                            Icons.image_not_supported,
+                            size: 50,
+                            color: Colors.grey,
+                          ),
                   ),
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 10),
                 Text(
-                  '฿45',
+                  widget.menuData['name'] ?? 'ชื่อเมนู',
+                  textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontFamily: ' Geist',
+                    //fontFamily: 'GeistFont',
+                    fontWeight: FontWeight.bold,
+                    fontSize: screenWidth * 0.06,
+                    color: const Color(0xFFAF1F1F),
+                  ),
+                ),
+                Text(
+                  '฿${widget.menuData['price'] ?? '0'}',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    //fontFamily: 'GeistFont',
                     fontWeight: FontWeight.w600,
-                    fontSize: screenWidth * 0.08, // Adjust price size
-                    color: Color(0xFFAF1F1F),
+                    fontSize: screenWidth * 0.06,
+                    color: const Color(0xFFAF1F1F),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                if (addons.isNotEmpty) ...[
+                  Padding(
+                    padding: EdgeInsets.only(left: screenWidth * 0.01),
+                    child: Text(
+                      'Add-ons',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: screenWidth * 0.05,
+                        color: const Color(0xFFAF1F1F),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  ...addons.map((addon) => Column(
+                        children: [
+                          widgets.AddOnWidget(
+                            label: addon,
+                            count: addonCounts[addon] ?? 0,
+                            onIncrement: () => incrementAddon(addon),
+                            onDecrement: () => decrementAddon(addon),
+                          ),
+                          const SizedBox(height: 10),
+                        ],
+                      )),
+                ],
+                const SizedBox(height: 10),
+                Text(
+                  'Quantity',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: screenWidth * 0.05,
+                    color: const Color(0xFFAF1F1F),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    IconButton(
+                      onPressed: decrementQuantity,
+                      icon: const Icon(Icons.remove_circle, color: Colors.red),
+                    ),
+                    Text(
+                      '$quantity',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: screenWidth * 0.06,
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: incrementQuantity,
+                      icon: const Icon(Icons.add_circle, color: Colors.green),
+                    ),
+                  ],
+                ),
+                Padding(
+                  padding: EdgeInsets.only(left: screenWidth * 0.01),
+                  child: Text(
+                    'Special Request',
+                    style: TextStyle(
+                      //fontFamily: 'GeistFont',
+                      fontWeight: FontWeight.bold,
+                      fontSize: screenWidth * 0.05,
+                      color: const Color(0xFFAF1F1F),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Container(
+                  width: screenWidth * 0.8,
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.25),
+                        offset: const Offset(0, 4),
+                        blurRadius: 4,
+                      ),
+                    ],
+                  ),
+                  child: TextField(
+                    controller: requestController,
+                    decoration: const InputDecoration(
+                      hintText: 'Enter your request...',
+                      border: InputBorder.none,
+                    ),
                   ),
                 ),
               ],
             ),
           ),
-
-          // Add to Cart Button
           Positioned(
-            bottom: 100,  // Adjust button position
-            left: 0,      // Ensure left is 0 to position it properly
-            right: 0,     // Ensure right is 0 to position it properly
-            child: Center(  // Center widget to make sure it's in the center horizontally
+            bottom: 100,
+            left: 0,
+            right: 0,
+            child: Center(
               child: GestureDetector(
-                onTap: () {
-                  // เมื่อกดปุ่ม Add to Cart จะนำไปที่หน้าจอ SummaryPayment
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const SummaryPayment()),
-                  );
-                },
+                onTap: addToCart,
                 child: Container(
-                  padding: EdgeInsets.symmetric(vertical: 15, horizontal: 40),
+                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 40),
                   decoration: BoxDecoration(
-                    color: Color(0xFFAF1F1F), // สีปุ่ม
+                    color: const Color(0xFFAF1F1F),
                     borderRadius: BorderRadius.circular(30),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withOpacity(0.25),
-                        offset: Offset(0, 4),
+                        offset: const Offset(0, 4),
                         blurRadius: 4,
                       ),
                     ],
@@ -106,9 +295,9 @@ class AddOn extends StatelessWidget {
                   child: Text(
                     'Add to Cart',
                     style: TextStyle(
-                      fontFamily: ' Geist',
+                      //fontFamily: 'GeistFont',
                       fontWeight: FontWeight.bold,
-                      fontSize: screenWidth * 0.05,
+                      fontSize: screenWidth * 0.045,
                       color: Colors.white,
                     ),
                   ),
@@ -116,10 +305,8 @@ class AddOn extends StatelessWidget {
               ),
             ),
           ),
-
-          // Bottom bar at the bottom of the screen
           Positioned(
-            bottom: 0, // Adjusted to ensure it's at the bottom
+            bottom: 0,
             left: 0,
             right: 0,
             child: BottomBar(
@@ -127,9 +314,8 @@ class AddOn extends StatelessWidget {
               screenWidth: screenWidth,
             ),
           ),
-          
         ],
       ),
     );
   }
-}
+} 

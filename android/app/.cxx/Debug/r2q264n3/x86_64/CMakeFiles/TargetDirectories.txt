@@ -1,2 +1,0 @@
-C:/Users/User/Desktop/Nurse/CN333-KINKORN/android/app/.cxx/Debug/r2q264n3/x86_64/CMakeFiles/edit_cache.dir
-C:/Users/User/Desktop/Nurse/CN333-KINKORN/android/app/.cxx/Debug/r2q264n3/x86_64/CMakeFiles/rebuild_cache.dir

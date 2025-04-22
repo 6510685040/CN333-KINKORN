@@ -97,7 +97,7 @@ class _SalesReportState extends State<SalesReport> {
               child: Text(
                 "SALES REPORT",
                 style: TextStyle(
-                  fontFamily: 'Montserrat',
+                  //fontFamily: 'Montserrat',
                   fontWeight: FontWeight.bold,
                   fontSize: MediaQuery.of(context).size.width * 0.087,
                   color: Color(0xFFAF1F1F),
@@ -119,24 +119,25 @@ class _SalesReportState extends State<SalesReport> {
                     child: Column(
                       children: [
                         // title
+                        /*
                         Align(
                           alignment: Alignment.center,
                           child: Text(
                             "Sales Report for",
                             style: TextStyle(
-                              fontFamily: 'Montserrat',
+                              //fontFamily: 'Montserrat',
                               fontWeight: FontWeight.bold,
                               fontSize: 26,
                               color: Color(0xFFFCF9CA), //AF1F1F
                             ),
                           ),
-                        ),
+                        ),*/
                         Align(
                           alignment: Alignment.center,
                           child: Text(
                             "ร้าน ครัวสุขใจ - อาหารนานาชาติ",
                             style: TextStyle(
-                              fontFamily: 'Montserrat',
+                              //fontFamily: 'Montserrat',
                               fontWeight: FontWeight.bold,
                               fontSize: 26,
                               color: Color(0xFFFCF9CA), //AF1F1F
@@ -201,7 +202,7 @@ class _SalesReportState extends State<SalesReport> {
                           child: Text(
                             "Total Sales",
                             style: TextStyle(
-                              fontFamily: 'Montserrat',
+                              //fontFamily: 'Montserrat',
                               fontWeight: FontWeight.bold,
                               fontSize: 26,
                               color: Color(0xFFFFFFFF), //AF1F1F
@@ -214,7 +215,7 @@ class _SalesReportState extends State<SalesReport> {
                             // แก้เป็นยอดรวม
                             "135.00 Baht",
                             style: TextStyle(
-                              fontFamily: 'Montserrat',
+                              //fontFamily: 'Montserrat',
                               fontWeight: FontWeight.bold,
                               fontSize: 28,
                               color: Color(0xFFFFFFFF), //AF1F1F

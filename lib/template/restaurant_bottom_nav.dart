@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:kinkorn/customer/choose_canteen.dart';
 import 'package:kinkorn/restaurant/sales_report.dart';
 import 'package:kinkorn/restaurant/more_res.dart';
+import 'package:kinkorn/restaurant/homepage.dart';
+import 'package:kinkorn/restaurant/order_status.dart';
 
 class CustomBottomNav extends StatelessWidget {
   const CustomBottomNav({super.key});
@@ -10,7 +13,7 @@ class CustomBottomNav extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8),
       decoration: const BoxDecoration(
-        color: Color(0xFFFDDC5C), // สีเหลืองตามดีไซน์
+        color: Color(0xFFFDDC5C),
         boxShadow: [
           BoxShadow(
             color: Colors.black26,
@@ -22,44 +25,47 @@ class CustomBottomNav extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildNavItem(Icons.home, "home"),
-          _buildNavItem(Icons.notifications, "status"),
-          GestureDetector(
-            onTap: () {
-              Navigator.push (context,
-                MaterialPageRoute(builder: (context) => SalesReport()),
-              );
-            },
-            child: _buildNavItem(Icons.bar_chart, "sale report"),
-          ),
-          GestureDetector(
-            onTap: () {
-              Navigator.push (context,
-                MaterialPageRoute(builder: (context) => MoreRes()),
-              );
-            },
-            child: _buildNavItem(Icons.menu, "more"),
-          ),
-          _buildNavItem(Icons.logout, "customer"),
+          buildClickableNavItem(context, Icons.home, "home", () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => RestaurantDashboard()));
+          }),
+          buildClickableNavItem(context, Icons.notifications, "status", () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => OrderStatusRestaurant()));
+          }),
+          buildClickableNavItem(context, Icons.bar_chart, "sale report", () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => SalesReport()));
+          }),
+          buildClickableNavItem(context, Icons.menu, "more", () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => MoreRes()));
+          }),
+          buildClickableNavItem(context, Icons.person_2, "customer", () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => ChooseCanteen()));
+          }),
         ],
       ),
     );
   }
 
-  Widget _buildNavItem(IconData icon, String label) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, color: Color(0xFFAF1F1F), size: 28),
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFFAF1F1F),
-          ),
+  Widget buildClickableNavItem(BuildContext context, IconData icon, String label, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: const Color(0xFFAF1F1F), size: 28),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFFAF1F1F),
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }
