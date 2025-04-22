@@ -2,13 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:kinkorn/customer/language_setting.dart';
 import 'package:kinkorn/template/bottom_bar.dart';
 import 'package:kinkorn/customer/contact_us.dart';
+import 'package:kinkorn/customer/edit_profile_cus.dart';
 import 'package:kinkorn/Screen/home.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class MoreCus extends StatelessWidget {
   const MoreCus({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+
     return Scaffold(
       backgroundColor: const Color(0xFFFCF9CA),
       body: Stack(
@@ -57,8 +62,77 @@ class MoreCus extends StatelessWidget {
                                       ),
                                     ),
                                     SizedBox(width: 20),
+
+                                    // ดึงชื่อผู้ใช้มา
+                                    StreamBuilder<DocumentSnapshot>(
+                                      stream: FirebaseFirestore.instance
+                                          .collection('users')
+                                          .doc(uid)
+                                          .snapshots(),
+                                      builder: (context, snapshot) {
+                                        if (snapshot.hasError) {
+                                          return const Text('Error',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: Color(0xFFAF1F1F),
+                                            ),
+                                          );
+                                        }
+                                        if (!snapshot.hasData || !snapshot.data!.exists) {
+                                          return const SizedBox(
+                                            width: 16, height: 16,
+                                            child: CircularProgressIndicator(strokeWidth: 2),
+                                          );
+                                        }
+                                        final data = snapshot.data!.data()! as Map<String, dynamic>;
+                                        final firstName = data['firstName'] as String? ?? '';
+                                        final lastName = data['lastName'] as String? ?? '';
+                                        final name = (firstName + ' ' + lastName).trim().isNotEmpty ? '$firstName $lastName' : 'ไม่มีชื่อ';
+
+                                        return Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              name,
+                                              style: const TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                                color: Color(0xFFAF1F1F),
+                                              ),
+                                            ),
+                                            Row(
+                                              children: [
+                                                GestureDetector(
+                                                  onTap: () => Navigator.pop(context),
+                                                  child: const Text(
+                                                    "Edit my profile",
+                                                    style: TextStyle(
+                                                      fontSize: 14,
+                                                      color: Color(0xFFAF1F1F),
+                                                    ),
+                                                  ),
+                                                ),
+                                                IconButton(
+                                                  icon: const Icon(Icons.chevron_right, size: 20, color: Color(0xFFAF1F1F)),
+                                                  onPressed: () => Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(builder: (_) => const EditProfileCustomer()),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
                                     // ส่วนของข้อความ
-                                    Column(
+                                    /*Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text(
@@ -92,7 +166,10 @@ class MoreCus extends StatelessWidget {
                                               child: IconButton(
                                                 icon: const Icon(Icons.chevron_right, size: 20, color: Color(0xFFAF1F1F)),
                                                 onPressed: () {
-                                                  Navigator.pop(context);
+                                                  Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(builder: (context) => EditProfileCustomer()),
+                                                  );
                                                 },
                                               ),
                                             )
@@ -104,7 +181,8 @@ class MoreCus extends StatelessWidget {
                                 ),
                               ),
                             ],
-                          ),
+                          ),*/
+
                           const SizedBox(height: 50),
 
                           // Language
