@@ -137,7 +137,10 @@ class _YourCartState extends State<YourCart> {
 
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => WaitingApprove()),
+      MaterialPageRoute(builder: (context) => WaitingApprove(
+        userId: customerId,
+        orderId: userOrderRef.id,
+      )),
     );
   } catch (e) {
     ScaffoldMessenger.of(context).showSnackBar(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kinkorn/customer/order_sum.dart';
 import 'package:kinkorn/customer/waiting_approve.dart';
 import 'package:kinkorn/template/curve_app_bar.dart';
 import 'package:kinkorn/template/bottom_bar.dart';
@@ -219,17 +220,40 @@ class _OrderStatusCustomerState extends State<OrderStatusCustomer> {
 
               return GestureDetector(
                 onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => OrderDetailPage(
-                        orderId: doc.id,
-                        userId: FirebaseAuth.instance.currentUser!.uid,
+                  // Navigate based on order status
+                  if (orderStatus == "Waiting for restaurant approval") {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => WaitingApprove(
+                          orderId: doc.id,
+                          userId: FirebaseAuth.instance.currentUser!.uid,
+                        ),
                       ),
-                    ),
-                  );
+                    );
+                  } else if (orderStatus == "Waiting for payment") {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => OrderSummary(
+                          orderId: doc.id,
+                          restaurantId: restaurantId,
+                        ),
+                      ),
+                    );
+                  }                 
+                  else {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => OrderDetailPage(
+                          orderId: doc.id,
+                          userId: FirebaseAuth.instance.currentUser!.uid,
+                        ),
+                      ),
+                    );
+                  }
                 },
-
                 child: _buildOrderCard(
                   orderId: doc.id,
                   timeAgo: "",
@@ -240,7 +264,6 @@ class _OrderStatusCustomerState extends State<OrderStatusCustomer> {
                   timeorder: formattedTime,
                 ),
               );
-
             },
           );
         }).toList(),

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:kinkorn/Screen/pendingApproval.dart';
@@ -10,7 +12,6 @@ import 'package:kinkorn/template/restaurant_bottom_nav.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kinkorn/restaurant/neworder.dart';
 
-
 class RestaurantDashboard extends StatefulWidget {
   const RestaurantDashboard({Key? key}) : super(key: key);
 
@@ -20,12 +21,24 @@ class RestaurantDashboard extends StatefulWidget {
 
 class _RestaurantDashboardState extends State<RestaurantDashboard> {
   String restaurantName = 'ร้านใหม่';
+  int newOrderCount = 0;
+  int preparingOrderCount = 0;
+  int completedOrderCount = 0;
+
+  StreamSubscription<QuerySnapshot>? _ordersSubscription;
 
   @override
   void initState() {
     super.initState();
     fetchRestaurantName();
     checkApprovalStatus();
+    listenToOrderChanges();
+  }
+
+  @override
+  void dispose() {
+    _ordersSubscription?.cancel();
+    super.dispose();
   }
 
   Future<void> fetchRestaurantName() async {
@@ -58,6 +71,46 @@ class _RestaurantDashboardState extends State<RestaurantDashboard> {
     }
   }
 
+  void listenToOrderChanges() {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+
+    final ordersRef = FirebaseFirestore.instance
+        .collection('restaurants')
+        .doc(uid)
+        .collection('orders');
+
+    _ordersSubscription = ordersRef.snapshots().listen((snapshot) {
+      int newCount = 0;
+      int preparingCount = 0;
+      int completedCount = 0;
+
+      for (var doc in snapshot.docs) {
+        final data = doc.data();
+        final status = data['orderStatus'] ?? '';
+
+        // DEBUG PRINT
+        print('Order ID: ${doc.id}, status: $status');
+
+        if (status == "Waiting for restaurant approval" ||
+            status == "Waiting for payment" ||
+            status == "Waiting for payment confirmation") {
+          newCount++;
+        } else if (status == "Preparing food") {
+          preparingCount++;
+        } else if (status == "Completed") {
+          completedCount++;
+        }
+      }
+
+      setState(() {
+        newOrderCount = newCount;
+        preparingOrderCount = preparingCount;
+        completedOrderCount = completedCount;
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     String title = 'Welcome $restaurantName !';
@@ -86,10 +139,10 @@ class _RestaurantDashboardState extends State<RestaurantDashboard> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      _buildStatusCard('New order', '0', onTap: () {
+                      _buildStatusCard('New order', '$newOrderCount', onTap: () {
                         Navigator.push(context, MaterialPageRoute(builder: (context) => NewOrder()));
                       }),
-                      _buildStatusCard('Preparing order', '0', onTap: () {
+                      _buildStatusCard('Preparing order', '$preparingOrderCount', onTap: () {
                         Navigator.push(context, MaterialPageRoute(builder: (context) => PreparingOrderRestaurant()));
                       }),
                     ],
@@ -98,7 +151,7 @@ class _RestaurantDashboardState extends State<RestaurantDashboard> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      _buildStatusCard('Completed', '0', onTap: () {
+                      _buildStatusCard('Completed', '$completedOrderCount', onTap: () {
                         Navigator.push(context, MaterialPageRoute(builder: (context) => CompletedOrderRestaurant()));
                       }),
                     ],
