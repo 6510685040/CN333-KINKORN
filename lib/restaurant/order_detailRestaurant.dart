@@ -598,12 +598,7 @@ class _OrderdetailRestaurantState extends State<OrderdetailRestaurant> {
                   },
                 ),
               ),
-              Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                child: CustomBottomNav(),
-              ),
+              
               Positioned.fill(
                 top: 250,
                 child: Padding(
@@ -773,6 +768,7 @@ class _OrderdetailRestaurantState extends State<OrderdetailRestaurant> {
           );
         },
       ),
+      bottomNavigationBar: const CustomBottomNav(),
     );
   }
 }

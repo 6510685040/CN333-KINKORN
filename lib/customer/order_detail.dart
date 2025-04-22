@@ -194,6 +194,7 @@ String formatDateTime(DateTime dateTime) {
                   },
                 ),
               ),
+              /*
               Positioned(
                 bottom: 0,
                 left: 0,
@@ -202,7 +203,7 @@ String formatDateTime(DateTime dateTime) {
                   screenHeight: screenHeight,
                   screenWidth: screenWidth,
                 ),
-              ),
+              ),*/
               Positioned.fill(
                 top: 250,
                 child: Padding(
@@ -400,6 +401,15 @@ String formatDateTime(DateTime dateTime) {
                   ),
                 ),
               ),
+              Positioned(
+            bottom: 0, // Adjusted to ensure it's at the bottom
+            left: 0,
+            right: 0,
+            child: BottomBar(
+              screenHeight: screenHeight,
+              screenWidth: screenWidth,
+            ),
+          ),
             ],
           );
         },
