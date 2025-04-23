@@ -5,14 +5,23 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
 class EditProfileCustomer extends StatefulWidget {
+  //final String userId;
   const EditProfileCustomer({super.key});
 
+  /*const EditProfileCustomer({
+    Key? key,
+    required this.userId,
+  }) : super(key: key);*/
+
   @override
+  // State<EditProfileCustomer> createState() => _EditProfileCustomerState();
   _EditProfileCustomerState createState() => _EditProfileCustomerState();
 }
 
 class _EditProfileCustomerState extends State<EditProfileCustomer> {
   File? _image; // ตัวแปรเก็บไฟล์รูปภาพที่เลือก
+
+  final TextEditingController emailController =TextEditingController();
 
   // ฟังก์ชันเลือกภาพจากแกลอรี่หรือกล้อง
   Future<void> _pickImage() async {
@@ -153,18 +162,16 @@ class _EditProfileCustomerState extends State<EditProfileCustomer> {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
               child: SingleChildScrollView(
-                padding: const EdgeInsets.only(bottom: 120),
+                padding: const EdgeInsets.only(bottom: 20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    _buildTextField(label: 'Username'),
+                    _buildTextField(label: 'Email'),
                     _buildTextField(label: 'Password', obscureText: true),
                     _buildTextField(
                         label: 'Confirm Password', obscureText: true),
                     _buildTextField(label: 'First Name'),
                     _buildTextField(label: 'Last Name'),
-                    _buildTextField(label: 'Restaurant Name'),
-                    _buildTextField(label: 'Email'),
                     _buildTextField(label: 'Mobile Number'),
                     const SizedBox(height: 15),
                     // ✅ ปุ่ม Save
@@ -172,7 +179,7 @@ class _EditProfileCustomerState extends State<EditProfileCustomer> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFAF1F1F),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25),
+                          borderRadius: BorderRadius.circular(50),
                         ),
                       ),
                       onPressed: () {
@@ -207,7 +214,7 @@ class _EditProfileCustomerState extends State<EditProfileCustomer> {
 
   Widget _buildTextField({required String label, bool obscureText = false}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 5.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -219,20 +226,21 @@ class _EditProfileCustomerState extends State<EditProfileCustomer> {
               color: Color(0xFFAF1F1F),
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 5),
           SizedBox(
             width: 300,
             child: TextField(
               obscureText: obscureText,
               decoration: InputDecoration(
+                contentPadding: const EdgeInsets.symmetric(vertical: 10),
                 filled: true,
                 fillColor: Colors.white,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(25),
-                  borderSide: BorderSide(color: Colors.grey),
+                  borderRadius: BorderRadius.circular(50),
+                  borderSide: BorderSide.none,
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(25),
+                  borderRadius: BorderRadius.circular(50),
                   borderSide: BorderSide(color: Color(0xFFAF1F1F), width: 2),
                 ),
               ),
