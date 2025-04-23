@@ -27,6 +27,29 @@ class BottomBar extends StatefulWidget {
 
 class _BottomBarState extends State<BottomBar> {
   @override
+  void navigateWithSlide(BuildContext context, Widget page) {
+  // Check if the current widget and the target widget are of the same type
+  if (ModalRoute.of(context)?.settings.name == page.runtimeType.toString()) {
+    return; // Already on the page, do nothing
+  }
+
+  Navigator.push(
+    context,
+    PageRouteBuilder(
+      settings: RouteSettings(name: page.runtimeType.toString()),
+      pageBuilder: (context, animation, secondaryAnimation) => page,
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        const begin = Offset(1.0, 0.0);
+        const end = Offset.zero;
+        final tween = Tween(begin: begin, end: end);
+        final offsetAnimation = animation.drive(tween);
+
+        return SlideTransition(position: offsetAnimation, child: child);
+      },
+    ),
+  );
+}
+
   Widget build(BuildContext context) {
     return Positioned(
       left: 0,
@@ -43,10 +66,7 @@ class _BottomBarState extends State<BottomBar> {
               icon: Icons.home,
               label: "Home",
               onTap: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const ChooseCanteen()),
-                );
+                navigateWithSlide(context, ChooseCanteen());
               },
             ),
             bottomBarItem(
@@ -54,10 +74,8 @@ class _BottomBarState extends State<BottomBar> {
               icon: Icons.shopping_cart,
               label: "Your Cart",
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => YourCart()),
-                );
+                navigateWithSlide(context, YourCart());
+
               },
             ),
             bottomBarItem(
@@ -65,21 +83,16 @@ class _BottomBarState extends State<BottomBar> {
               icon: Icons.notifications,
               label: "Status",
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => OrderStatusCustomer()),
-                );
+                navigateWithSlide(context, OrderStatusCustomer());
               },
             ),
             bottomBarItem(
               context,
               icon: Icons.more_horiz,
               label: "More",
-              onTap: () {Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const MoreCus()),
-                );},
+              onTap: () {
+                navigateWithSlide(context, MoreCus());
+                },
             ),
             bottomBarItem(
               context,

@@ -213,7 +213,15 @@ class _EditPaymentPageState extends State<EditPaymentPage> {
                             ),
                             Spacer(),
                             // Add Payment Button
-                            SizedBox(
+                            
+                          ],
+                        ),
+                        
+                      ),
+                      
+          ),
+          
+                          SizedBox(
                               width: double.infinity,
                               child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(
@@ -241,10 +249,6 @@ class _EditPaymentPageState extends State<EditPaymentPage> {
                                 ),
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-          ),
 
           const CustomBottomNav(),
         ],
