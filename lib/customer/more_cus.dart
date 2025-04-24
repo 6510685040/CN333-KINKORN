@@ -53,14 +53,49 @@ class MoreCus extends StatelessWidget {
                                   children: [
                                     SizedBox(width: 10),
                                     // ส่วนของ CircleAvatar (รูปคน)
-                                    CircleAvatar(
+                                    /*CircleAvatar(
                                       backgroundColor: Colors.white,
                                       radius: 20,
                                       child: Icon(
                                         Icons.person, // ใช้ไอคอนรูปคน
                                         color: Colors.red, // สีของไอคอน
                                       ),
+                                    ),*/
+                                    StreamBuilder<DocumentSnapshot>(
+                                      stream: FirebaseFirestore.instance.collection('users').doc(uid).snapshots(),
+                                      builder: (context, snapshot) {
+                                        if (snapshot.hasError) {
+                                          return const CircleAvatar(
+                                            radius: 20,
+                                            backgroundColor: Colors.white,
+                                            child: Icon(Icons.error, color: Colors.red),
+                                          );
+                                        }
+
+                                        if (!snapshot.hasData || !snapshot.data!.exists) {
+                                          return const CircleAvatar(
+                                            radius: 20,
+                                            backgroundColor: Colors.white,
+                                            child: CircularProgressIndicator(strokeWidth: 2),
+                                          );
+                                        }
+
+                                        final data = snapshot.data!.data()! as Map<String, dynamic>;
+                                        final imageProfileUrl = data['imageProfileUrl'] as String?;
+                                        
+                                        return CircleAvatar(
+                                          radius: 20,
+                                          backgroundColor: Colors.white,
+                                          backgroundImage: imageProfileUrl != null && imageProfileUrl.isNotEmpty
+                                              ? NetworkImage(imageProfileUrl)
+                                              : null,
+                                          child: imageProfileUrl == null || imageProfileUrl.isEmpty
+                                              ? const Icon(Icons.person, color: Colors.red)
+                                              : null,
+                                        );
+                                      },
                                     ),
+
                                     SizedBox(width: 20),
 
                                     // ดึงชื่อผู้ใช้มา
@@ -131,57 +166,6 @@ class MoreCus extends StatelessWidget {
                               ),
                             ],
                           ),
-                                    // ส่วนของข้อความ
-                                    /*Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          "เจนรดา",
-                                          style: TextStyle(
-                                            //fontFamily: 'Montserrat',
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Color(0xFFAF1F1F),
-                                          ),
-                                        ),
-                                        // ปุ่ม Edit and IconButton
-                                        Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            GestureDetector(
-                                              onTap: () {
-                                                Navigator.pop(context);
-                                              },
-                                              child: Text(
-                                                "Edit my profile",
-                                                style: TextStyle(
-                                                  //fontFamily: 'Montserrat',
-                                                  fontSize: 14,
-                                                  color: Color(0xFFAF1F1F),
-                                                ),
-                                              ),
-                                            ),
-                                            Align(
-                                              alignment: Alignment.center,
-                                              child: IconButton(
-                                                icon: const Icon(Icons.chevron_right, size: 20, color: Color(0xFFAF1F1F)),
-                                                onPressed: () {
-                                                  Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(builder: (context) => EditProfileCustomer()),
-                                                  );
-                                                },
-                                              ),
-                                            )
-                                          ],
-                                        )
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),*/
 
                           const SizedBox(height: 50),
 
