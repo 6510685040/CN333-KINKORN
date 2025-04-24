@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:kinkorn/customer/notification_cus.dart';
 import 'package:kinkorn/template/curve_app_bar.dart';
 import 'package:kinkorn/template/bottom_bar.dart';
 import 'package:kinkorn/template/restaurant_bottom_nav.dart';
@@ -254,6 +255,19 @@ class _OrderdetailRestaurantState extends State<OrderdetailRestaurant> {
     }
   }
 
+  // noti
+  String getNotificationMessage(String status) {
+    switch (status.toLowerCase()) {
+      case 'preparing food':
+        return 'ร้านกำลังเตรียมอาหารของคุณ';
+      case 'completed':
+        return 'อาหารของคุณเสร็จเรียบร้อยแล้ว';
+      default:
+        return 'สถานะออเดอร์อัปเดตเป็น: $status';
+    }
+  }
+
+
   // Build different bottom content based on status
   Widget buildStatusContent(Map<String, dynamic> data) {
     final status = data['statusText'].toLowerCase();
@@ -272,7 +286,14 @@ class _OrderdetailRestaurantState extends State<OrderdetailRestaurant> {
                 elevation: 5,
                 shadowColor: Colors.black.withOpacity(0.3),
               ),
-              onPressed: _isUpdating ? null : () => updateOrderStatus('Waiting for payment'),
+              onPressed: _isUpdating ? null : () async {
+                await updateOrderStatus('Waiting for payment');
+                // noti
+                NotificationCus().showNotification(
+                  'ออเดอร์ได้รับการยอมรับแล้ว', 'สถานะใหม่: Waiting for payment'
+                );
+              },
+              
               child: const Padding(
                 padding: EdgeInsets.symmetric(vertical: 12),
                 child: Center(

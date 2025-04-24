@@ -6,6 +6,7 @@ import 'package:kinkorn/customer/edit_profile_cus.dart';
 import 'package:kinkorn/Screen/home.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:kinkorn/customer/notification_cus.dart';
 
 class MoreCus extends StatelessWidget {
   const MoreCus({super.key});
@@ -52,15 +53,7 @@ class MoreCus extends StatelessWidget {
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   children: [
                                     SizedBox(width: 10),
-                                    // ส่วนของ CircleAvatar (รูปคน)
-                                    /*CircleAvatar(
-                                      backgroundColor: Colors.white,
-                                      radius: 20,
-                                      child: Icon(
-                                        Icons.person, // ใช้ไอคอนรูปคน
-                                        color: Colors.red, // สีของไอคอน
-                                      ),
-                                    ),*/
+                                    
                                     StreamBuilder<DocumentSnapshot>(
                                       stream: FirebaseFirestore.instance.collection('users').doc(uid).snapshots(),
                                       builder: (context, snapshot) {
@@ -208,7 +201,7 @@ class MoreCus extends StatelessWidget {
                               shadowColor: Colors.black.withOpacity(0.3),
                             ),
                             onPressed: () {
-                              
+                              //NotificationCus().showNotification();
                             },
                             child: const Padding(
                               padding: EdgeInsets.symmetric(vertical: 12),
