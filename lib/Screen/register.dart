@@ -126,12 +126,13 @@ Widget build(BuildContext context) {
                                   email: emailController.text,
                                   password: passwordController.text,
                                 );
+                                User? user = userCredential.user;
                                 List<dynamic> currentRoles = [];
                                 currentRoles.add('customer');
 
-                                FirebaseFirestore.instance
+                                await FirebaseFirestore.instance
                                     .collection('users')
-                                    .doc(userCredential.user?.uid)
+                                    .doc(user?.uid)
                                     .set({
                                   'firstName': firstNameController.text,
                                   'lastName': lastNameController.text,
@@ -139,11 +140,16 @@ Widget build(BuildContext context) {
                                   'roles': currentRoles
                                 });
 
-                           
+                                // Send email verification
+                                if (user != null && !user.emailVerified) {
+                                  await user.sendEmailVerification();
+                                }
+                         
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
                                       content: Text(
-                                          'Account created successfully!')),
+                                          'Account created successfully! A verification email has been sent. Please check your inbox.')
+                                  ),
                                 );
                             
                                 Navigator.pushReplacement(
@@ -152,6 +158,7 @@ Widget build(BuildContext context) {
                                       builder: (context) =>
                                           const LoginScreen()),
                                 );
+                              
                               } on FirebaseAuthException catch (e) {
                                 // Handle registration errors
                                 String message =
