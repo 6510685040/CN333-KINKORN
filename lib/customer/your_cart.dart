@@ -259,6 +259,7 @@ class _YourCartState extends State<YourCart> {
             child: BottomBar(
               screenHeight: screenHeight,
               screenWidth: MediaQuery.of(context).size.width,
+              initialIndex: 1,
             ),
           ),
         ],

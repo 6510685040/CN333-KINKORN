@@ -184,26 +184,16 @@ String formatDateTime(DateTime dateTime) {
                 child: CurveAppBar(title: 'Order Detail'),
               ),
               Positioned(
-                top: 40,
-                left: 16,
+                top: 70,
+                left: 20,
                 child: IconButton(
-                  icon: const Icon(Icons.chevron_left,
-                      size: 30, color: Colors.black),
+                  icon: Icon(Icons.chevron_left, size: 40, color: Colors.white),
+                  padding: EdgeInsets.zero,
                   onPressed: () {
                     Navigator.pop(context);
                   },
                 ),
               ),
-              /*
-              Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                child: BottomBar(
-                  screenHeight: screenHeight,
-                  screenWidth: screenWidth,
-                ),
-              ),*/
               Positioned.fill(
                 top: 250,
                 child: Padding(
@@ -401,7 +391,7 @@ String formatDateTime(DateTime dateTime) {
                   ),
                 ),
               ),
-              Positioned(
+              /*Positioned(
             bottom: 0, // Adjusted to ensure it's at the bottom
             left: 0,
             right: 0,
@@ -409,7 +399,7 @@ String formatDateTime(DateTime dateTime) {
               screenHeight: screenHeight,
               screenWidth: screenWidth,
             ),
-          ),
+          ),*/
             ],
           );
         },

@@ -62,14 +62,27 @@ class _RestaurantManagementPageState extends State<RestaurantManagementPage> {
           Container(
             padding: const EdgeInsets.fromLTRB(20, 60, 20, 20),
             width: double.infinity,
-            child: const Text(
-              'MANAGE\nRESTAURANT',
-              style: TextStyle(
-                color: Color(0xFFB71C1C),
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                IconButton(
+                  icon: Icon(Icons.chevron_left, size: 40, color: Color(0xFFB71C1C)),
+                  padding: EdgeInsets.zero,
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'MANAGE\nRESTAURANT',
+                  style: TextStyle(
+                    color: Color(0xFFB71C1C),
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            )
           ),
 
           // Main content

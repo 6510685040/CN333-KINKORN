@@ -31,8 +31,8 @@ class _LanguageSettingRestaurantState extends State<LanguageSettingCustomer> {
           ),
           // ✅ ปุ่มย้อนกลับ
           Positioned(
-            top: 40, // ✅ ตำแหน่งด้านซ้ายบน
-            left: 16,
+            top: 70, // ✅ ตำแหน่งด้านซ้ายบน
+            left: 20,
             child: IconButton(
               icon:
                   const Icon(Icons.chevron_left, size: 40, color: Colors.white),
@@ -89,19 +89,8 @@ class _LanguageSettingRestaurantState extends State<LanguageSettingCustomer> {
               ],
             ),
           ),
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: BottomBar(
-              screenHeight: MediaQuery.of(context).size.height,
-              screenWidth: MediaQuery.of(context).size.width,
-            ),
-          ),
         ],
-      ),
-      //bottomNavigationBar: const BottomBar(), // เพิ่มแถบเมนูด้านล่าง
-      
+      ),  
     );
   }
 

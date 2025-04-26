@@ -83,9 +83,14 @@ class _EditPaymentPageState extends State<EditPaymentPage> {
               bottom: 16,
             ),
             color: Color(0xFFFFFBE6),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
+                IconButton(
+                  icon: const Icon(Icons.chevron_left, size: 30, color: Color(0xFFB71C1C)),
+                  onPressed: () => Navigator.pop(context),
+                ),
+                const SizedBox(width: 8),
                 Text(
                   'EDIT PAYMENT',
                   style: TextStyle(
@@ -95,13 +100,13 @@ class _EditPaymentPageState extends State<EditPaymentPage> {
                   ),
                 ),
                 SizedBox(height: 16),
-                Text(
+                /*Text(
                   'List of Your Payment Methods',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 18,
                   ),
-                ),
+                ),*/
               ],
             ),
           ),
@@ -109,148 +114,144 @@ class _EditPaymentPageState extends State<EditPaymentPage> {
           // Payment Methods List
           Expanded(
             child: isLoading
-                ? Center(child: CircularProgressIndicator())
-                : accounts.isEmpty
-                    ? Center(child: Text('No payment methods found.'))
-                    : Padding(
-                        padding: EdgeInsets.all(16),
-                        child: Column(
-                          children: [
-                            ...accounts.map(
-                              (account) => Container(
-                                margin: EdgeInsets.only(bottom: 16),
-                                padding: EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(8),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
-                                      blurRadius: 4,
-                                      offset: Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Row(
-                                              children: [
-                                                Text(
-                                                  'Account Name : ',
-                                                  style: TextStyle(
-                                                    color: Colors.red[900],
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                                Text(account.accountName),
-                                              ],
+              ? Center(child: CircularProgressIndicator())
+              : accounts.isEmpty
+              ? Center(child: Text('No payment methods found.'))
+              : Padding(
+                padding: EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      ...accounts.map(
+                        (account) => Container(
+                          margin: EdgeInsets.only(bottom: 16),
+                          padding: EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 4,
+                                offset: Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment:MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Text(
+                                            'Account Name : ',
+                                            style: TextStyle(
+                                              color: Colors.red[900],
+                                              fontWeight: FontWeight.bold,
                                             ),
-                                            SizedBox(height: 4),
-                                            Row(
-                                              children: [
-                                                Text(
-                                                  'Bank name : ',
-                                                  style: TextStyle(
-                                                    color: Colors.red[900],
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                                Text(account.bankName),
-                                              ],
-                                            ),
-                                            SizedBox(height: 4),
-                                            Row(
-                                              children: [
-                                                Text(
-                                                  'Account Number : ',
-                                                  style: TextStyle(
-                                                    color: Colors.red[900],
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                                Text(account.accountNumber),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                        TextButton(
-                                        onPressed: () async {
-                                          final result = await Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) => EditPayment(
-                                                restaurantId: FirebaseAuth.instance.currentUser!.uid,
-                                                paymentMethodId: account.id,
-                                              ), 
-                                            ),
-                                          );
-                                          if (result == true) {
-                                            _loadPaymentMethods();
-                                          }
-                                        },
-                                        child: Text(
-                                          'edit',
-                                          style: TextStyle(
-                                            color: Colors.red[900],
                                           ),
-                                        ),
+                                          Text(account.accountName),
+                                        ],
                                       ),
-
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            Spacer(),
-                            // Add Payment Button
-                            
-                          ],
-                        ),
-                        
-                      ),
-                      
-          ),
-          
-                          SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.grey[300],
-                                  padding: const EdgeInsets.symmetric(
-                                      vertical: 14),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
+                                      SizedBox(height: 4),
+                                      Row(
+                                        children: [
+                                          Text(
+                                            'Bank name : ',
+                                            style: TextStyle(
+                                              color: Colors.red[900],
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          Text(account.bankName),
+                                        ],
+                                      ),
+                                      SizedBox(height: 4),
+                                      Row(
+                                        children: [
+                                          Text(
+                                            'Account Number : ',
+                                            style: TextStyle(
+                                              color: Colors.red[900],
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          Text(account.accountNumber),
+                                        ],
+                                      ),
+                                    ],
                                   ),
-                                ),
-                                onPressed: () async {
-                                  final result = await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => AddPayment()),
-                                  );
-                                  if (result == true) {
-                                    _loadPaymentMethods();
-                                  }
-                                },
-                                child: const Text(
-                                  'ADD PAYMENT METHOD',
-                                  style: TextStyle(
-                                      color: Colors.black, fontSize: 16),
-                                ),
+                                  TextButton(
+                                    onPressed: () async {
+                                      final result = await Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => EditPayment(
+                                            restaurantId: FirebaseAuth.instance.currentUser!.uid,
+                                            paymentMethodId: account.id,
+                                          ), 
+                                        ),
+                                      );
+                                      if (result == true) {
+                                        _loadPaymentMethods();
+                                      }
+                                    },
+                                    child: Text(
+                                      'edit',
+                                      style: TextStyle(
+                                        color: Colors.red[900],
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      Spacer(),
+                    ],
+                  ),
+              ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(50),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.grey[300],
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                onPressed: () async {
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => AddPayment()),
+                  );
+                  if (result == true) {
+                    _loadPaymentMethods();
+                  }
+                },
+                child: const Text(
+                  'ADD PAYMENT METHOD',
+                  style: TextStyle(
+                    color: Colors.black, 
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+            ),
+          )
 
-          const CustomBottomNav(),
+
+          //const CustomBottomNav(),
         ],
       ),
     );

@@ -32,7 +32,6 @@ class MoreCus extends StatelessWidget {
                       width: double.infinity,
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        //color: const Color(0xFFB71C1C),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Column(
@@ -308,6 +307,7 @@ class MoreCus extends StatelessWidget {
             child: BottomBar(
               screenHeight: MediaQuery.of(context).size.height,
               screenWidth: MediaQuery.of(context).size.width,
+              initialIndex: 3,
             ),
           ),
         ],

@@ -20,8 +20,8 @@ class ContactUs extends StatelessWidget {
             child: CurveAppBar(title: ''),
           ),
           Positioned(
-            top: 40,
-            left: 16,
+            top: 70,
+            left: 20,
             child: IconButton(
               icon: const Icon(Icons.chevron_left, size: 40, color: Colors.white),
               onPressed: () {
@@ -123,17 +123,6 @@ class ContactUs extends StatelessWidget {
                   ),
                 ],
               ),
-            ),
-          ),
-
-          // Bottom Bar
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: BottomBar(
-              screenHeight: MediaQuery.of(context).size.height,
-              screenWidth: MediaQuery.of(context).size.width,
             ),
           ),
         ],

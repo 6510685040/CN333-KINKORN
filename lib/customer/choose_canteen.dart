@@ -111,6 +111,7 @@ class ChooseCanteen extends StatelessWidget {
             child: BottomBar(
               screenHeight: screenHeight,
               screenWidth: screenWidth,
+              initialIndex: 0,
             ),
           ),
         ],

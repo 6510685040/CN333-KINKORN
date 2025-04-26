@@ -157,6 +157,17 @@ class _WaitingApproveState extends State<WaitingApprove> {
               title: "",
             ),
           ),
+          Positioned(
+            top: 70,
+            left: 20,
+            child: IconButton(
+              icon: Icon(Icons.chevron_left, size: 40, color: Colors.white),
+              padding: EdgeInsets.zero,
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
+          ),
           //ชื่อร้านอาหาร
           Positioned(
             top: 0.09 * screenHeight,
@@ -171,16 +182,6 @@ class _WaitingApproveState extends State<WaitingApprove> {
                   color: Color(0xFFFCF9CA),
                 ),
               ),
-            ),
-          ),
-          //footer bar
-          Positioned(
-            bottom: 0, // Adjusted to ensure it's at the bottom
-            left: 0,
-            right: 0,
-            child: BottomBar(
-              screenHeight: screenHeight,
-              screenWidth: screenWidth,
             ),
           ),
         ],

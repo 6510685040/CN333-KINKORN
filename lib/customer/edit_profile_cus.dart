@@ -119,8 +119,8 @@ class _EditProfileCustomerState extends State<EditProfileCustomer> {
             child: CurveAppBar(title: ''),
           ),
           Positioned(
-            top: 40,
-            left: 16,
+            top: 70,
+            left: 20,
             child: IconButton(
               icon:
                   const Icon(Icons.chevron_left, size: 40, color: Colors.white),
@@ -131,7 +131,7 @@ class _EditProfileCustomerState extends State<EditProfileCustomer> {
           ),
           // 🔹 หัวข้อ "Profile" และ กล่องรูปภาพ
           Positioned(
-            top: 50,
+            top: 80,
             left: 0,
             right: 0,
             child: Column(
@@ -221,7 +221,7 @@ class _EditProfileCustomerState extends State<EditProfileCustomer> {
           ),
           // 🔹 TextField ส่วนกรอกข้อมูล
           Positioned.fill(
-            top: 280, // ขยับลงมาจากกรอบรูป
+            top: 330, // ขยับลงมาจากกรอบรูป
             bottom: 80,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -231,9 +231,11 @@ class _EditProfileCustomerState extends State<EditProfileCustomer> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     _buildTextField(label: 'First Name', controller: firstNameController),
-                    _buildTextField(label: 'Last Name', controller: lastNameController),
-                    _buildTextField(label: 'Mobile Number', controller: mobileController),
                     const SizedBox(height: 15),
+                    _buildTextField(label: 'Last Name', controller: lastNameController),
+                    const SizedBox(height: 15),
+                    _buildTextField(label: 'Mobile Number', controller: mobileController),
+                    const SizedBox(height: 30),
                     // ✅ ปุ่ม Save
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
@@ -253,16 +255,6 @@ class _EditProfileCustomerState extends State<EditProfileCustomer> {
                   ],
                 ),
               ),
-            ),
-          ),
-          //footer bar
-          Positioned(
-            bottom: 0, // Adjusted to ensure it's at the bottom
-            left: 0,
-            right: 0,
-            child: BottomBar(
-              screenHeight: screenHeight,
-              screenWidth: screenWidth,
             ),
           ),
         ],

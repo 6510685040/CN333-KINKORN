@@ -180,7 +180,7 @@ class _RestaurantDashboardState extends State<RestaurantDashboard> {
               ),
             ),
           ),
-          const CustomBottomNav(),
+          const CustomBottomNav(initialIndex: 0),
         ],
       ),
     );

@@ -85,6 +85,13 @@ class ChooseMenuScreenState extends State<ChooseMenuScreen> {
             top: screenHeight * 0.09,
             child: Row(
               children: [
+                IconButton(
+                  icon: const Icon(Icons.chevron_left, size: 40, color: Colors.white),
+                  padding: EdgeInsets.zero,
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                ),
                 AutoSizeText(
                   widget.restaurantName,
                   style: const TextStyle(
@@ -122,7 +129,7 @@ class ChooseMenuScreenState extends State<ChooseMenuScreen> {
               top: screenHeight * 0.2,
               left: 0,
               right: 0,
-              bottom: 60,
+              bottom: 0,
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: GridView.builder(
@@ -140,7 +147,7 @@ class ChooseMenuScreenState extends State<ChooseMenuScreen> {
                 ),
               ),
             ),
-          Positioned(
+            /*Positioned(
             bottom: 0,
             left: 0,
             right: 0,
@@ -148,7 +155,7 @@ class ChooseMenuScreenState extends State<ChooseMenuScreen> {
               screenHeight: screenHeight,
               screenWidth: screenWidth,
             ),
-          ),
+          ),*/
         ],
       ),
     );

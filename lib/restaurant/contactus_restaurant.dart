@@ -20,8 +20,8 @@ class ContactUsRestaurant extends StatelessWidget {
             child: CurveAppBar(title: ''),
           ),
           Positioned(
-            top: 40,
-            left: 16,
+            top: 70,
+            left: 20,
             child: IconButton(
               icon: const Icon(Icons.chevron_left, size: 40, color: Color(0xFFFCF9CA)),
               onPressed: () {
@@ -126,7 +126,7 @@ class ContactUsRestaurant extends StatelessWidget {
           ),
         ],
       ),
-      bottomNavigationBar: const CustomBottomNav(),
+      //bottomNavigationBar: const CustomBottomNav(),
     );
   }
 }

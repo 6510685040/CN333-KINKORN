@@ -85,7 +85,7 @@ class _SalesReportState extends State<SalesReport> {
           // พื้นหลัง Title
           Container(
             width: MediaQuery.of(context).size.width,
-            height: 100,
+            height: 120,
             color: Color(0xFFFCF9CA),
           ),
 
@@ -93,7 +93,7 @@ class _SalesReportState extends State<SalesReport> {
           Align(
             alignment: Alignment.topCenter,
             child: Padding(
-              padding: EdgeInsets.only(top: 30),
+              padding: EdgeInsets.only(top: 50),
               child: Text(
                 "SALES REPORT",
                 style: TextStyle(
@@ -108,7 +108,7 @@ class _SalesReportState extends State<SalesReport> {
 
           // title
           Padding(
-            padding: EdgeInsets.only(top: 110),
+            padding: EdgeInsets.only(top: 130),
             child: Align(
               alignment: Alignment.topCenter,
               child: Container(
@@ -118,20 +118,6 @@ class _SalesReportState extends State<SalesReport> {
                     padding: EdgeInsets.only(top: 10),
                     child: Column(
                       children: [
-                        // title
-                        /*
-                        Align(
-                          alignment: Alignment.center,
-                          child: Text(
-                            "Sales Report for",
-                            style: TextStyle(
-                              //fontFamily: 'Montserrat',
-                              fontWeight: FontWeight.bold,
-                              fontSize: 26,
-                              color: Color(0xFFFCF9CA), //AF1F1F
-                            ),
-                          ),
-                        ),*/
                         Align(
                           alignment: Alignment.center,
                           child: Text(
@@ -324,7 +310,7 @@ class _SalesReportState extends State<SalesReport> {
           ),
         ]
       ),
-    bottomNavigationBar: const CustomBottomNav(),
+    bottomNavigationBar: const CustomBottomNav(initialIndex: 2,),
     );
   }
 }

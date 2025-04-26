@@ -16,7 +16,7 @@ class MenuPage extends StatelessWidget {
         children: [
           // Header
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(12),
             color: const Color(0xFFFFFBE6),
             child: SafeArea(
               child: Row(
@@ -42,7 +42,7 @@ class MenuPage extends StatelessWidget {
 
           // Title Section
           const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Align(
               alignment: Alignment.centerLeft,
               child: Column(
@@ -145,7 +145,7 @@ class MenuPage extends StatelessWidget {
 
           // Add Menu Button
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(50),
             child: SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -171,7 +171,7 @@ class MenuPage extends StatelessWidget {
           ),
 
           // Bottom Navigation
-          const CustomBottomNav(),
+          //const CustomBottomNav(),
         ],
       ),
     );

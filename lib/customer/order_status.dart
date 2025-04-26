@@ -124,6 +124,7 @@ class _OrderStatusCustomerState extends State<OrderStatusCustomer> {
             child: BottomBar(
               screenHeight: screenHeight,
               screenWidth: screenWidth,
+              initialIndex: 2,
             ),
           ),
         ],
@@ -311,8 +312,6 @@ class _OrderStatusCustomerState extends State<OrderStatusCustomer> {
   );
 }
 
-
-
   Widget _buildOrderCard({
   required String orderId,
   required String timeAgo,
@@ -436,8 +435,4 @@ class _OrderStatusCustomerState extends State<OrderStatusCustomer> {
     ),
   );
 }
-
-
-
-
 }

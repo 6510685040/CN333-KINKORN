@@ -114,8 +114,19 @@ class AddOnState extends State<AddOn> {
             child: CurveAppBar(title: ""),
           ),
           Positioned(
+            top: 70,
+            left: 20,
+            child: IconButton(
+              icon: Icon(Icons.chevron_left, size: 40, color: Colors.white),
+              padding: EdgeInsets.zero,
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
+          ),
+          Positioned(
             left: screenWidth * 0.1,
-            top: screenHeight * 0.1,
+            top: screenHeight * 0.15,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
@@ -305,7 +316,7 @@ class AddOnState extends State<AddOn> {
               ),
             ),
           ),
-          Positioned(
+          /*Positioned(
             bottom: 0,
             left: 0,
             right: 0,
@@ -313,7 +324,7 @@ class AddOnState extends State<AddOn> {
               screenHeight: screenHeight,
               screenWidth: screenWidth,
             ),
-          ),
+          ),*/
         ],
       ),
     );

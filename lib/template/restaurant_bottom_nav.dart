@@ -5,35 +5,54 @@ import 'package:kinkorn/restaurant/more_res.dart';
 import 'package:kinkorn/restaurant/homepage.dart';
 import 'package:kinkorn/restaurant/order_status.dart';
 
-class CustomBottomNav extends StatelessWidget {
-  const CustomBottomNav({super.key});
+class CustomBottomNav extends StatefulWidget {
+  final int initialIndex;
+
+  const CustomBottomNav({
+    super.key,
+    this.initialIndex = 0,
+  });
 
   @override
-
-  void navigateWithSlide(BuildContext context, Widget page) {
-  // Check if the current widget and the target widget are of the same type
-  if (ModalRoute.of(context)?.settings.name == page.runtimeType.toString()) {
-    return; // Already on the page, do nothing
-  }
-
-  Navigator.push(
-    context,
-    PageRouteBuilder(
-      settings: RouteSettings(name: page.runtimeType.toString()),
-      pageBuilder: (context, animation, secondaryAnimation) => page,
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        const begin = Offset(1.0, 0.0);
-        const end = Offset.zero;
-        final tween = Tween(begin: begin, end: end);
-        final offsetAnimation = animation.drive(tween);
-
-        return SlideTransition(position: offsetAnimation, child: child);
-      },
-    ),
-  );
+  State<CustomBottomNav> createState() => _CustomBottomNavState();
 }
 
+class _CustomBottomNavState extends State<CustomBottomNav> {
+  late int currentIndex;
 
+  @override
+  void initState() {
+    super.initState();
+    currentIndex = widget.initialIndex;
+  }
+
+  void navigateWithSlide(BuildContext context, Widget page, int index) {
+    if (ModalRoute.of(context)?.settings.name == page.runtimeType.toString()) {
+      return; // Already on the page, do nothing
+    }
+
+    setState(() {
+      currentIndex = index;
+    });
+
+    Navigator.pushReplacement(
+      context,
+      PageRouteBuilder(
+        settings: RouteSettings(name: page.runtimeType.toString()),
+        pageBuilder: (context, animation, secondaryAnimation) => page,
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          const begin = Offset(1.0, 0.0);
+          const end = Offset.zero;
+          final tween = Tween(begin: begin, end: end);
+          final offsetAnimation = animation.drive(tween);
+
+          return SlideTransition(position: offsetAnimation, child: child);
+        },
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -50,31 +69,29 @@ class CustomBottomNav extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          buildClickableNavItem(context, Icons.home, "home", () {
-            navigateWithSlide(context, RestaurantDashboard());
-            //Navigator.push(context, MaterialPageRoute(builder: (context) => RestaurantDashboard()));
+          buildClickableNavItem(context, 0, Icons.home, "home", () {
+            navigateWithSlide(context, RestaurantDashboard(), 0);
           }),
-          buildClickableNavItem(context, Icons.notifications, "status", () {
-            navigateWithSlide(context, OrderStatusRestaurant());
-            //Navigator.push(context, MaterialPageRoute(builder: (context) => OrderStatusRestaurant()));
+          buildClickableNavItem(context, 1, Icons.notifications, "status", () {
+            navigateWithSlide(context, OrderStatusRestaurant(), 1);
           }),
-          buildClickableNavItem(context, Icons.bar_chart, "sale report", () {
-            navigateWithSlide(context, SalesReport());
-            //Navigator.push(context, MaterialPageRoute(builder: (context) => SalesReport()));
+          buildClickableNavItem(context, 2, Icons.bar_chart, "sale report", () {
+            navigateWithSlide(context, SalesReport(), 2);
           }),
-          buildClickableNavItem(context, Icons.menu, "more", () {
-            navigateWithSlide(context, MoreRes());
-            //Navigator.push(context, MaterialPageRoute(builder: (context) => MoreRes()));
+          buildClickableNavItem(context, 3, Icons.menu, "more", () {
+            navigateWithSlide(context, MoreRes(), 3);
           }),
-          buildClickableNavItem(context, Icons.person_2, "customer", () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => ChooseCanteen()));
+          buildClickableNavItem(context, 4, Icons.person_2, "customer", () {
+            navigateWithSlide(context, ChooseCanteen(), 4);
           }),
         ],
       ),
     );
   }
 
-  Widget buildClickableNavItem(BuildContext context, IconData icon, String label, VoidCallback onTap) {
+  Widget buildClickableNavItem(BuildContext context, int index, IconData icon, String label, VoidCallback onTap) {
+    final bool isSelected = index == currentIndex;
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
@@ -83,13 +100,17 @@ class CustomBottomNav extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: const Color(0xFFAF1F1F), size: 28),
+            Icon(
+              icon,
+              color: isSelected ? Colors.black : const Color(0xFFAF1F1F), 
+              size: 28,
+            ),
             Text(
               label,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFFAF1F1F),
+                color: isSelected ? Colors.black : const Color(0xFFAF1F1F),
               ),
             ),
           ],
