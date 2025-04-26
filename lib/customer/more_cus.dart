@@ -132,7 +132,7 @@ class MoreCus extends StatelessWidget {
                                             Row(
                                               children: [
                                                 GestureDetector(
-                                                  onTap: () => Navigator.pop(context),
+                                                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const EditProfileCustomer()),),
                                                   child: const Text(
                                                     "Edit my profile",
                                                     style: TextStyle(
