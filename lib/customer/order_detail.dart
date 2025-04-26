@@ -75,6 +75,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
     customerName =
         '${userData['firstName'] ?? ''} ${userData['lastName'] ?? ''} ${userData['mobile'] ?? ''}';
   }
+  
 
   // โหลดชื่อร้าน
   String restaurantName = '';
@@ -103,12 +104,29 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
   'canteenName': canteenName,
   'orderTime': formattedOrderTime,
   'pickupTime': formattedPickupTime,
-  'menuItems': orders.map((e) => {
-      'name': e['name'],
-      'quantity': e['quantity'],
-      'price': e['price'],
-      'total': (e['price'] ?? 0) * (e['quantity'] ?? 0),
+  'menuItems': orders.map((e) {
+      final List<Map<String, dynamic>> parsedAddons = [];
+      if (e['addons'] != null && e['addons'] is List) {
+        for (var addon in e['addons']) {
+          if (addon is Map<String, dynamic>) {
+            parsedAddons.add({
+              'name': addon['name'] ?? '',
+              'quantity': addon['quantity'] ?? 0,
+              'price': addon['price'] ?? 0,
+            });
+          }
+        }
+      }
+
+      return {
+        'name': e['name'],
+        'quantity': e['quantity'],
+        'price': e['price'],
+        'total': (e['price'] ?? 0) * (e['quantity'] ?? 0),
+        'addons': parsedAddons,
+      };
     }).toList(),
+
   'totalAmount': orderData['totalAmount'].toString(),
   'statusText': orderData['orderStatus'],
   'statusColor': getStatusColor(orderData['orderStatus']),
@@ -308,27 +326,63 @@ String formatDateTime(DateTime dateTime) {
                                           fontWeight: FontWeight.bold),
                                     ),
                                    // const Divider(),
-                                    ...List<Map<String, dynamic>>.from(data['menuItems']).map((item) {
-                                      return Padding(
-                                        padding: const EdgeInsets.symmetric(vertical: 4),
-                                        child: Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Text(
-                                              "${item['name']}",
-                                              style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFB71C1C)),
-                                            ),
-                                            Text(
-                                              "x${item['quantity']}",
-                                              style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFB71C1C)),
-                                            ),
-                                            Text(
-                                              "${item['total']}฿",
-                                              style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFB71C1C)),
-                                            ),
-                                          ],
+                                    ...List<Map<String, dynamic>>.from(data['menuItems']).expand((item) {
+                                      final List<Map<String, dynamic>> addons = List<Map<String, dynamic>>.from(item['addons'] ?? []);
+
+                                      return [
+                                        // เมนูหลัก
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(vertical: 4),
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text(
+                                                "${item['name']}",
+                                                style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFB71C1C)),
+                                              ),
+                                              Text(
+                                                "x${item['quantity']}",
+                                                style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFB71C1C)),
+                                              ),
+                                              Text(
+                                                "${item['total']}฿",
+                                                style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFB71C1C)),
+                                              ),
+                                            ],
+                                          ),
                                         ),
-                                      );
+
+                                       ...addons.map((addon) => Padding(
+                                          padding: const EdgeInsets.only(left: 20, bottom: 2),
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            children: [
+                                      
+                                              Row(
+                                                children: [
+                                                  const Text('• ', style: TextStyle(color: Color(0xFFB71C1C), fontSize: 13)),
+                                                  Text(
+                                                    addon['name'],
+                                                    style: const TextStyle(color: Color(0xFFB71C1C), fontSize: 13),
+                                                  ),
+                                                  const SizedBox(width: 4),
+                                                  Text(
+                                                    "x${addon['quantity']}",
+                                                    style: const TextStyle(color: Color(0xFFB71C1C), fontSize: 13),
+                                                  ),
+                                                ],
+                                              ),
+                                            
+                                              Text(
+                                                addon['price'] != null
+                                                    ? "${(addon['price'] * addon['quantity']).toStringAsFixed(1)}฿"
+                                                    : '',
+                                                style: const TextStyle(color: Color(0xFFB71C1C), fontSize: 13),
+                                              ),
+                                            ],
+                                          ),
+                                        ))
+                                                                              ];
                                     }).toList(),
 
                                   ],

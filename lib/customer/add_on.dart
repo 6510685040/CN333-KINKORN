@@ -27,8 +27,10 @@ class AddOnState extends State<AddOn> {
     super.initState();
     final addons = widget.menuData['options'] as List<dynamic>? ?? [];
     for (var addon in addons) {
-      addonCounts[addon] = 0;
+      final addonName = addon['name'] as String? ?? '';
+      addonCounts[addonName] = 0;
     }
+
   }
 
   void incrementAddon(String addon) {
@@ -61,10 +63,17 @@ class AddOnState extends State<AddOn> {
   final cartProvider = Provider.of<CartProvider>(context, listen: false);
   final addons = widget.menuData['options'] as List<dynamic>? ?? [];
 
-  Map<String, int> selectedAddons = {};
+  List<Map<String, dynamic>> selectedAddons = [];
   for (var addon in addons) {
-    if (addonCounts[addon] != 0) {
-      selectedAddons[addon] = addonCounts[addon]!; 
+    final addonName = addon['name'] as String? ?? '';
+    final addonPrice = addon['price'] ?? 0;
+    final quantity = addonCounts[addonName] ?? 0;
+    if (quantity > 0) {
+      selectedAddons.add({
+        'name': addonName,
+        'price': addonPrice,
+        'quantity': quantity,
+      });
     }
   }
 
@@ -75,11 +84,10 @@ class AddOnState extends State<AddOn> {
     'quantity': quantity,
     'request': requestController.text,
     'imageUrl': widget.menuData['imageUrl'] ?? '',
-    'restaurantId': cartProvider.restaurantId,  
-    'customerId': cartProvider.customerId, 
+    'restaurantId': cartProvider.restaurantId,
+    'customerId': cartProvider.customerId,
   };
 
-  
   cartProvider.addToCart(orderData);
 
   Navigator.pushReplacement(
@@ -89,8 +97,6 @@ class AddOnState extends State<AddOn> {
     ),
   );
 }
-
-
 
 
   @override
@@ -179,32 +185,6 @@ class AddOnState extends State<AddOn> {
                   ),
                 ),
                 const SizedBox(height: 10),
-                if (addons.isNotEmpty) ...[
-                  Padding(
-                    padding: EdgeInsets.only(left: screenWidth * 0.01),
-                    child: Text(
-                      'Add-ons',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: screenWidth * 0.05,
-                        color: const Color(0xFFAF1F1F),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  ...addons.map((addon) => Column(
-                        children: [
-                          widgets.AddOnWidget(
-                            label: addon,
-                            count: addonCounts[addon] ?? 0,
-                            onIncrement: () => incrementAddon(addon),
-                            onDecrement: () => decrementAddon(addon),
-                          ),
-                          const SizedBox(height: 10),
-                        ],
-                      )),
-                ],
-                const SizedBox(height: 10),
                 Text(
                   'Quantity',
                   style: TextStyle(
@@ -234,6 +214,36 @@ class AddOnState extends State<AddOn> {
                     ),
                   ],
                 ),
+                if (addons.isNotEmpty) ...[
+                  Padding(
+                    padding: EdgeInsets.only(left: screenWidth * 0.01),
+                    child: Text(
+                      'Add-ons',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: screenWidth * 0.05,
+                        color: const Color(0xFFAF1F1F),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  ...addons.map((addon) {
+                    final addonName = addon['name'] as String? ?? '';
+                    final addonPrice = addon['price'] ?? 0;
+                    return Column(
+                      children: [
+                        widgets.AddOnWidget(
+                          label: '$addonName (+฿$addonPrice)',
+                          count: addonCounts[addonName] ?? 0,
+                          onIncrement: () => incrementAddon(addonName),
+                          onDecrement: () => decrementAddon(addonName),
+                        ),
+                        const SizedBox(height: 10),
+                      ],
+                    );
+                  }).toList(),
+                ],
+                const SizedBox(height: 10),
                 Padding(
                   padding: EdgeInsets.only(left: screenWidth * 0.01),
                   child: Text(

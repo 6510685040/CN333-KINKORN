@@ -166,8 +166,23 @@ class _OrderStatusRestaurantState extends State<OrderStatusRestaurant> {
                     final totalAmount = data['totalAmount'] ?? 0;
                     final status = data['orderStatus'] ?? 'unknown';
                     final customerId = data['customerId'] ?? '';
+     
                     final items = List<Map<String, dynamic>>.from(data['items'] ?? []);
-                    final menuItems = items.map((item) => '${item['name']} x${item['quantity']}').toList();
+                    final menuItems = items.expand((item) {
+                      List<String> combinedItems = [];
+
+                      combinedItems.add('${item['name']} x${item['quantity']}');
+
+                      if (item['addons'] != null && item['addons'] is List) {
+                        for (var addon in item['addons']) {
+                          if (addon is Map<String, dynamic>) {
+                            combinedItems.add('  • ${addon['name']} x${addon['quantity']}');
+                          }
+                        }
+                      }
+
+                      return combinedItems;
+                    }).toList();
 
                     final timeAgo = _getTimeAgo(createdAt);
                     final statusInfo = _getStatusInfo(status);
@@ -290,7 +305,7 @@ class _OrderStatusRestaurantState extends State<OrderStatusRestaurant> {
                       ),
                       const SizedBox(height: 8),
                       const Text("Order summary", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFFB71C1C))),
-                      ...menuItems.map((item) => Text("• $item", style: const TextStyle(fontSize: 12, color: Color(0xFFB71C1C)),)),
+                      ...menuItems.map((item) => Text(" $item", style: const TextStyle(fontSize: 12, color: Color(0xFFB71C1C)),)),
                       const SizedBox(height: 8),
                       Text("Pick up time : $pickUpTime", style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFB71C1C))),
                     ],

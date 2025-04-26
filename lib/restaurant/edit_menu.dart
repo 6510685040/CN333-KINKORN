@@ -30,6 +30,8 @@ class _EditMenuPageState extends State<EditMenuPage> {
   File? imageFile;
   final picker = ImagePicker();
   List<String> categoriesList = [];
+  List<Map<String, dynamic>> options = [];
+
 
   @override
   void initState() {
@@ -68,6 +70,8 @@ class _EditMenuPageState extends State<EditMenuPage> {
       descriptionController.text = data['description'] ?? '';
       category = data['category'];
       imageUrl = data['imageUrl'];
+      options = List<Map<String, dynamic>>.from(data['options'] ?? []);
+
       setState(() {});
     }
   }
@@ -108,6 +112,8 @@ class _EditMenuPageState extends State<EditMenuPage> {
       'description': description,
       'category': category,
       'imageUrl': imageUrlToSave,
+      'options': options,
+
     });
 
     await FirebaseFirestore.instance
@@ -119,6 +125,8 @@ class _EditMenuPageState extends State<EditMenuPage> {
       'description': description,
       'category': category,
       'imageUrl': imageUrlToSave,
+      'options': options,
+
     });
 
     
@@ -275,6 +283,11 @@ class _EditMenuPageState extends State<EditMenuPage> {
                       const SizedBox(height: 10),
                       _buildDropdownField('Category'),
                       const SizedBox(height: 20),
+                      _buildOptionFields(),
+                       const SizedBox(height: 20),
+                      
+                    
+
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
@@ -395,4 +408,129 @@ Widget _buildDropdownField(String hint) {
 
     Navigator.pop(context);
   }
+  Widget _buildOptionFields() {
+  final screenWidth = MediaQuery.of(context).size.width;
+
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const Text(
+        'Add-ons',
+        style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFB71C1C)),
+      ),
+      const SizedBox(height: 10),
+      ...options.asMap().entries.map((entry) {
+        int index = entry.key;
+        var option = entry.value;
+        bool isSmallScreen = screenWidth < 400;
+
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: isSmallScreen
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildNameField(index),
+                    const SizedBox(height: 8),
+                  ],
+                )
+              : Row(
+                  children: [
+                    Expanded(flex: 2, child: _buildNameField(index)),
+                    const SizedBox(width: 8),
+                    Expanded(flex: 1, child: _buildPriceField(index)),
+                    IconButton(
+                      icon: const Icon(Icons.remove_circle, color: Colors.red),
+                      onPressed: () {
+                        setState(() {
+                          options.removeAt(index);
+                        });
+                      },
+                    ),
+                  ],
+                ),
+        );
+      }).toList(),
+      const SizedBox(height: 10),
+      GestureDetector(
+        onTap: () {
+          setState(() {
+            options.add({'name': '', 'price': 0.0});
+          });
+        },
+        child: Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFFECECEC),
+            borderRadius: BorderRadius.circular(24),
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.add, size: 16),
+              SizedBox(width: 5),
+              Text('Add new options', style: TextStyle(fontSize: 11, color: Color(0xFF848484))),
+            ],
+          ),
+        ),
+      ),
+    ],
+  );
 }
+
+Widget _buildNameField(int index) {
+  return TextFormField(
+    initialValue: options[index]['name'],
+    onChanged: (val) => options[index]['name'] = val,
+    keyboardType: TextInputType.text,
+    decoration: InputDecoration(
+      hintText: 'Option name',
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(24),
+        borderSide: const BorderSide(color: Colors.white),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(24),
+        borderSide: const BorderSide(color: Colors.white),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(24),
+        borderSide: const BorderSide(color: Colors.white),
+      ),
+    ),
+  );
+}
+
+Widget _buildPriceField(int index) {
+  return TextFormField(
+    initialValue: options[index]['price'].toString(),
+    onChanged: (val) => options[index]['price'] = double.tryParse(val) ?? 0.0,
+    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+    decoration: InputDecoration(
+      hintText: '0.00',
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(24),
+        borderSide: const BorderSide(color: Colors.white),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(24),
+        borderSide: const BorderSide(color: Colors.white),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(24),
+        borderSide: const BorderSide(color: Colors.white),
+      ),
+    ),
+  );
+}
+
+
+
+}
+

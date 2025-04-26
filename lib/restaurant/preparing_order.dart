@@ -171,7 +171,21 @@ class _PreparingOrderRestaurantState extends State<PreparingOrderRestaurant> {
                     final status = data['orderStatus'] ?? 'unknown';
                     final customerId = data['customerId'] ?? '';
                     final items = List<Map<String, dynamic>>.from(data['items'] ?? []);
-                    final menuItems = items.map((item) => '${item['name']} x${item['quantity']}').toList();
+                    final List<String> menuItems = [];
+
+                      for (var item in items) {
+                        final name = item['name'] ?? 'Unnamed';
+                        final quantity = item['quantity'] ?? 0;
+                        menuItems.add('$name x$quantity');
+
+                        final addons = item['addons'] as List<dynamic>? ?? [];
+                        for (var addon in addons) {
+                          final addonName = addon['name'] ?? 'Unnamed Addon';
+                          final addonQuantity = addon['quantity'] ?? 0;
+                          menuItems.add('• $addonName x$addonQuantity');
+                        }
+                      }
+
 
                     final timeAgo = _getTimeAgo(createdAt);
                     final statusInfo = _getStatusInfo(status);
@@ -294,7 +308,7 @@ class _PreparingOrderRestaurantState extends State<PreparingOrderRestaurant> {
                       ),
                       const SizedBox(height: 8),
                       const Text("Order summary", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFFB71C1C))),
-                      ...menuItems.map((item) => Text("• $item", style: const TextStyle(fontSize: 12, color: Color(0xFFB71C1C)),)),
+                      ...menuItems.map((item) => Text(" $item", style: const TextStyle(fontSize: 12, color: Color(0xFFB71C1C)),)),
                       const SizedBox(height: 8),
                       Text("Pick up time : $pickUpTime", style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFB71C1C))),
                     ],

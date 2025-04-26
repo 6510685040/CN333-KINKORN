@@ -74,6 +74,7 @@ class ChooseMenuScreenState extends State<ChooseMenuScreen> {
           "name": data['name'] ?? '',
           "price": data['price'] ?? 0,
           "imageUrl": data['imageUrl'] ?? '',
+          "options": data['options'] ?? [],
         };
       }).toList();
     } catch (e) {
@@ -236,23 +237,24 @@ class ChooseMenuScreenState extends State<ChooseMenuScreen> {
               overflow: TextOverflow.ellipsis,
             ),
             GestureDetector(
-              onTap: isRestaurantOpen && user != null
-                  ? () {
-                      cartProvider.setRestaurantId(widget.restaurantId);
-                      cartProvider.setCustomerId(user.uid);
-                      cartProvider.addToCart({
-                        'name': menuItem['name'],
-                        'price': menuItem['price'],
-                        'quantity': 1,
-                      });
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => AddOn(menuData: menuItem),
-                        ),
-                      );
-                    }
-                  : null,
+            onTap: isRestaurantOpen && user != null
+                ? () {
+                    cartProvider.setRestaurantId(widget.restaurantId);
+                    cartProvider.setCustomerId(user.uid);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => AddOn(menuData: {
+                          'name': menuItem['name'],
+                          'price': menuItem['price'],
+                          'imageUrl': menuItem['imageUrl'],
+                          'restaurantId': widget.restaurantId,
+                          'options': menuItem['options'] ?? [], 
+                        }),
+                      ),
+                    );
+                  }
+                : null,
               child: Container(
                 margin: const EdgeInsets.only(top: 12),
                 width: 103,

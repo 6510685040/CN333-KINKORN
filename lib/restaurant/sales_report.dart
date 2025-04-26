@@ -91,7 +91,9 @@ class _SalesReportState extends State<SalesReport> {
         .where('orderStatus', isEqualTo: 'Completed')
         .get();
 
-    final Map<String, Map<String, Map<String, dynamic>>> agg = {};
+    print("📦 ${snapshot.docs.length} orders fetched");
+
+    final List<Map<String, dynamic>> newSalesList = [];
 
     for (var doc in snapshot.docs) {
       final data = doc.data() as Map<String, dynamic>;
@@ -101,40 +103,51 @@ class _SalesReportState extends State<SalesReport> {
 
       final dateKey = DateFormat('yyyy-MM-dd').format(ts.toDate());
 
-    
       final items = data['items'] as List<dynamic>? ?? [];
 
       for (var item in items) {
         final name = item['name'] as String? ?? 'Unnamed';
         final qty = (item['quantity'] as num?)?.toInt() ?? 0;
-        final price = (item['price'] as num?)?.toDouble() ?? 0.0; 
-        final revenue = qty * price; 
-        agg.putIfAbsent(dateKey, () => {});
-        if (agg[dateKey]![name] == null) {
-          agg[dateKey]![name] = {
-            'quantity': qty,
-            'revenue': revenue,
-          };
-        } else {
-          agg[dateKey]![name]!['quantity'] += qty;
-          agg[dateKey]![name]!['revenue'] += revenue;
+        final price = (item['price'] as num?)?.toDouble() ?? 0.0;
+        final revenue = qty * price;
+         final addons = item['addons'] as List<dynamic>? ?? [];
+
+       newSalesList.add({
+          'createdAt': dateKey,
+          'menu': name,
+          'quantity': qty.toString(),
+          'revenue': revenue.toStringAsFixed(2),
+          'addons': addons.map((addon) => {
+            'name': addon['name'] ?? '',
+            'quantity': addon['quantity'] ?? 0,
+            'price': addon['price'] ?? 0.0,
+          }).toList(),
+        });
+
+
+       
+        for (var addon in addons) {
+          final addonName = addon['name'] as String? ?? 'Unnamed Addon';
+          final addonQty = (addon['quantity'] as num?)?.toInt() ?? 0;
+          final addonPrice = (addon['price'] as num?)?.toDouble() ?? 0.0;
+          final addonRevenue = addonQty * addonPrice;
+
+          if (addonQty == 0) continue;
+
+          newSalesList.add({
+            'createdAt': dateKey,
+            'menu': addonName,
+            'quantity': addonQty.toString(),
+            'revenue': addonRevenue.toStringAsFixed(2),
+          });
         }
       }
     }
 
-    final Map<String, List<Map<String, dynamic>>> newSales = {};
-    agg.forEach((date, menuMap) {
-      newSales[date] = menuMap.entries.map((e) => {
-            'date': date,
-            'menu': e.key,
-            'quantity': e.value['quantity'].toString(),
-            'revenue': e.value['revenue'].toStringAsFixed(2), 
-          }).toList();
-    });
-
     setState(() {
-      salesData = newSales;
-      _updateSelectedSales();
+      salesData = {};  
+      selectedSales = newSalesList;  
+      print("👉 selectedSales = $selectedSales");
     });
   } catch (e) {
     print("❌ Error fetching sales: $e");
@@ -142,24 +155,34 @@ class _SalesReportState extends State<SalesReport> {
 }
 
 
+DateTime normalizeDate(DateTime date) {
+  return DateTime(date.year, date.month, date.day);
+}
 
-  void _updateSelectedSales() {
-    setState(() {
-      if (startDate == null || endDate == null) {
-        selectedSales = salesData.values.expand((v) => v).toList();
+
+ void _updateSelectedSales() {
+  if (salesData.isEmpty) return;  
+
+  setState(() {
+    selectedSales = [];
+
+    final normalizedStart = startDate != null ? normalizeDate(startDate!) : null;
+    final normalizedEnd = endDate != null ? normalizeDate(endDate!) : null;
+
+
+    salesData.forEach((date, sales) {
+      final dateObj = DateFormat('yyyy-MM-dd').parse(date);
+      if (normalizedStart != null && normalizedEnd != null) {
+        if (!dateObj.isBefore(normalizedStart) && !dateObj.isAfter(normalizedEnd)) {
+          selectedSales.addAll(sales);
+        }
       } else {
-        selectedSales = salesData.entries
-            .where((e) {
-              final d = DateTime.parse(e.key);
-              return !d.isBefore(startDate!) && !d.isAfter(endDate!);
-            })
-            .expand((e) => e.value)
-            .toList();
+        selectedSales.addAll(sales);
       }
-      print("👉 selectedSales = $selectedSales");
-
     });
-  }
+  });
+}
+
 
  // double calculateTotalSales() =>
      // selectedSales.fold(0, (sum, item) => sum + double.parse(item['price']));
@@ -270,19 +293,62 @@ Widget build(BuildContext context) {
                                 DataColumn(label: Text('Revenue', style: TextStyle(fontWeight: FontWeight.bold))), // เพิ่มคอลัมน์ Revenue
                               ],
                               rows: [
-                                ...selectedSales.map((sale) {
+                                ...selectedSales.where((sale) => sale.containsKey('addons')).map((sale) {
+                                  final List<Map<String, dynamic>> addons = (sale['addons'] as List<dynamic>?)?.cast<Map<String, dynamic>>() ?? [];
+
                                   return DataRow(cells: [
-                                    DataCell(Text(sale['menu'])),
-                                    DataCell(Text(
-                                      sale['quantity'],
-                                      style: TextStyle(fontWeight: FontWeight.bold),
-                                    )),
-                                    DataCell(Text( 
-                                      '฿${double.parse(sale['revenue']).toStringAsFixed(2)}',
-                                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green),
-                                    )),
+                                    DataCell(
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(sale['menu'], style: TextStyle(fontWeight: FontWeight.bold)),
+                                          ...addons.map((addon) => Padding(
+                                            padding: const EdgeInsets.only(left: 10.0, top: 4.0),
+                                            child: Row(
+                                              children: [
+                                                Text('• '),
+                                                Text('${addon['name']} x${addon['quantity']}'),
+                                              ],
+                                            ),
+                                          )),
+                                        ],
+                                      ),
+                                    ),
+                                    DataCell(
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(sale['quantity'], style: TextStyle(fontWeight: FontWeight.bold)),
+                                          ...addons.map((addon) => Padding(
+                                            padding: const EdgeInsets.only(top: 4.0),
+                                            child: Text(addon['quantity'].toString()),
+                                          )),
+                                        ],
+                                      ),
+                                    ),
+                                    DataCell(
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            '฿${double.parse(sale['revenue']).toStringAsFixed(2)}',
+                                            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green),
+                                          ),
+                                          ...addons.map((addon) => Padding(
+                                            padding: const EdgeInsets.only(top: 4.0),
+                                            child: Text(
+                                              '฿${(addon['quantity'] * addon['price']).toStringAsFixed(2)}',
+                                              style: TextStyle(color: Colors.green),
+                                            ),
+                                          )),
+                                        ],
+                                      ),
+                                    ),
                                   ]);
                                 }).toList(),
+
+
+
                               ],
                             ),
                           ),

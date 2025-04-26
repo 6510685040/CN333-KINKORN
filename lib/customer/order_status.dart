@@ -184,12 +184,22 @@ class _OrderStatusCustomerState extends State<OrderStatusCustomer> {
               ? DateFormat("MMM dd, HH:mm").format(createdAt)
               : '';
           final menuList = List<Map<String, dynamic>>.from(data['orders'] ?? []);
-          final List<Map<String, dynamic>> menuItems = menuList.map((item) {
-            return {
-              'name': item['name'] ?? '',
-              'quantity': item['quantity'] ?? 1,
-            };
-          }).toList();
+            final List<Map<String, dynamic>> menuItems = menuList.map((item) {
+              final addons = (item['addons'] as List<dynamic>?)?.map((addon) {
+                return {
+                  'name': addon['name'] ?? '',
+                  'quantity': addon['quantity'] ?? 0,
+                  'price': addon['price'] ?? 0,
+                };
+              }).toList() ?? [];
+
+              return {
+                'name': item['name'] ?? '',
+                'quantity': item['quantity'] ?? 1,
+                'addons': addons,
+              };
+            }).toList();
+
 
           final restaurantId = menuList.isNotEmpty ? menuList[0]['restaurantId'] ?? '' : '';
 
@@ -316,40 +326,60 @@ class _OrderStatusCustomerState extends State<OrderStatusCustomer> {
                 ),
               ),
               const SizedBox(height: 4),
-              ...menuItems.map((item) {
-                final name = item['name'] ?? '';
-                final quantity = item['quantity'] ?? 1;
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 2),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        margin: const EdgeInsets.only(right: 6),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          '${quantity}x',
-                          style: const TextStyle(
-                            color: Colors.black87,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: Text(
-                          name,
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              }).toList(),
-            ],
+              ...menuItems.expand((item) {
+  final List<Map<String, dynamic>> addons = List<Map<String, dynamic>>.from(item['addons'] ?? []);
+  
+  return [
+    Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+          margin: const EdgeInsets.only(right: 6),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Text(
+            '${item['quantity']}x',
+            style: const TextStyle(
+              color: Colors.black87,
+              fontWeight: FontWeight.bold,
+              fontSize: 12,
+            ),
+          ),
+        ),
+        Expanded(
+          child: Text(
+            item['name'],
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ],
+    ),
+          ...addons.map((addon) => Padding(
+            padding: const EdgeInsets.only(left: 30, bottom: 2),
+            child: Row(
+               children: [
+                const Text('• ', style: TextStyle(color: Colors.white, fontSize: 12)),
+                Text(
+                  addon['name'],
+                  style: const TextStyle(color: Colors.white, fontSize: 12),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  "x${addon['quantity']}",
+                  style: const TextStyle(color: Colors.white, fontSize: 12),
+                ),
+              ],
+            ),
+          )),
+        ];
+      }).toList(),
+
+                  ],
           ),
         ),
         // ขวา: เวลา + สถานะ

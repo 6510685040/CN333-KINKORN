@@ -42,11 +42,33 @@ class _YourCartState extends State<YourCart> {
       });
     }
   }
+  double calculateTotalPrice(List<Map<String, dynamic>> orders) {
+  double total = 0;
+  for (var order in orders) {
+    final int menuQuantity = order['quantity'] ?? 1;
+    final double menuPrice = (order['price'] ?? 0).toDouble();
+    final List<dynamic> addons = order['addons'] ?? [];
+
+    double menuTotal = menuQuantity * menuPrice;
+
+    double addonsTotal = 0;
+    for (var addon in addons) {
+      final int addonQuantity = addon['quantity'] ?? 0;
+      final double addonPrice = (addon['price'] ?? 0).toDouble();
+      addonsTotal += addonQuantity * addonPrice;
+    }
+
+    total += menuTotal + addonsTotal;
+  }
+  return total;
+}
+
 
   Future<void> _placeOrder(BuildContext context, CartProvider cartProvider) async {
   final customerId = FirebaseAuth.instance.currentUser?.uid;
   final orders = cartProvider.cartItems;
-  final totalAmount = cartProvider.totalPrice;
+  final totalAmount = calculateTotalPrice(orders);
+
 
   if (customerId == null) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -89,6 +111,7 @@ class _YourCartState extends State<YourCart> {
       'pickupTime': selectedTime ?? DateTime.now(),
       'slipUrl': '',
       'specialNote': specialNoteController.text.isEmpty ? '' : specialNoteController.text,
+      
     };
 
 
@@ -169,31 +192,79 @@ class _YourCartState extends State<YourCart> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ...orders.map((order) {
-                    final totalPrice = order['quantity'] * order['price'];
+                 ...orders.map((order) {
+                    final int menuQuantity = order['quantity'] ?? 1;
+                    final double menuPrice = (order['price'] ?? 0).toDouble();
+                    final List<dynamic> addons = order['addons'] ?? [];
+
+                    final double menuTotalPrice = menuQuantity * menuPrice;
+
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('${order['quantity']}x ${order['name']}',
-                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                         
                           Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('฿${totalPrice.toStringAsFixed(2)}',
-                                  style: TextStyle(fontSize: 18)),
-                              IconButton(
-                                onPressed: () {
-                                  cartProvider.removeFromCart(order);
-                                },
-                                icon: Icon(Icons.delete, color: Colors.red),
+                              Expanded(
+                                child: Text(
+                                  '${menuQuantity}x ${order['name']}',
+                                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                              Row(
+                                children: [
+                                  Text(
+                                    '฿${menuTotalPrice.toStringAsFixed(2)}',
+                                    style: const TextStyle(fontSize: 18),
+                                  ),
+                                  IconButton(
+                                    onPressed: () {
+                                      cartProvider.removeFromCart(order);
+                                    },
+                                    icon: const Icon(Icons.delete, color: Colors.red),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
+
+                          if (addons.isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.only(left: 20, top: 5),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: addons.map<Widget>((addon) {
+                                  final String addonName = addon['name'] ?? '';
+                                  final int addonQuantity = addon['quantity'] ?? 0;
+                                  final double addonPrice = (addon['price'] ?? 0).toDouble();
+                                  final double addonTotal = addonPrice * addonQuantity;
+
+                                  return Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          '• ${addonQuantity}x $addonName',
+                                          style: const TextStyle(fontSize: 16, color: Colors.black54),
+                                        ),
+                                      ),
+                                      Text(
+                                        '฿${addonTotal.toStringAsFixed(2)}',
+                                        style: const TextStyle(fontSize: 16, color: Colors.black54),
+                                      ),
+                                    ],
+                                  );
+                                }).toList(),
+                              ),
+                            ),
                         ],
                       ),
                     );
-                  }),
+                  }).toList(),
+
 
                   SizedBox(height: 10),
                   Padding(
@@ -206,7 +277,7 @@ class _YourCartState extends State<YourCart> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
-                        'Total : ฿${cartProvider.totalPrice.toStringAsFixed(2)}',
+                        'Total : ฿${calculateTotalPrice(orders).toStringAsFixed(2)}',
                         style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
                         textAlign: TextAlign.right,
                       ),

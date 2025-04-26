@@ -16,13 +16,14 @@ class AddOnWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width; // ✅ แก้เพิ่มตัวนี้เข้ามา
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
           label,
           style: const TextStyle(
-            fontFamily: 'GeistFont',
             fontWeight: FontWeight.w600,
             fontSize: 18,
             color: Color(0xFFAF1F1F),
@@ -31,15 +32,19 @@ class AddOnWidget extends StatelessWidget {
         Row(
           children: [
             IconButton(
-              icon: const Icon(Icons.remove_circle_outline),
-              onPressed: onDecrement,
-              color: Colors.red,
+              onPressed: onDecrement, 
+              icon: const Icon(Icons.remove_circle, color: Colors.red),
             ),
-            Text('$count'),
+            Text(
+              '$count', 
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: screenWidth * 0.06,
+              ),
+            ),
             IconButton(
-              icon: const Icon(Icons.add_circle_outline),
-              onPressed: onIncrement,
-              color: Colors.green,
+              onPressed: onIncrement, 
+              icon: const Icon(Icons.add_circle, color: Colors.green),
             ),
           ],
         ),
@@ -47,6 +52,7 @@ class AddOnWidget extends StatelessWidget {
     );
   }
 }
+
 
 class SummaryPayment extends StatelessWidget {
   final String menuName;

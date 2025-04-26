@@ -1,3 +1,5 @@
+// CompletedOrderRestaurant.dart - แก้ไฟล์เพิ่ม Add-ons ให้ใน Order summary
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -21,50 +23,22 @@ class _CompletedOrderRestaurantState extends State<CompletedOrderRestaurant> {
   @override
   void initState() {
     super.initState();
-    // Initialize with the start of today
-    _fromDate = DateTime(
-      DateTime.now().year,
-      DateTime.now().month,
-      DateTime.now().day,
-    );
-    // Initialize with the end of today
-    _tillDate = DateTime(
-      DateTime.now().year,
-      DateTime.now().month,
-      DateTime.now().day,
-    );
-  }
-  
-  // Get start of the from date (midnight)
-  DateTime _getStartOfDay() {
-    return DateTime(
-      _fromDate.year,
-      _fromDate.month,
-      _fromDate.day,
-    );
+    _fromDate = DateTime.now();
+    _tillDate = DateTime.now();
   }
 
-  // Get end of the till date (23:59:59)
-  DateTime _getEndOfDay() {
-    return DateTime(
-      _tillDate.year,
-      _tillDate.month,
-      _tillDate.day,
-      23,
-      59,
-      59,
-    );
-  }
+  DateTime _getStartOfDay() => DateTime(_fromDate.year, _fromDate.month, _fromDate.day);
+  DateTime _getEndOfDay() => DateTime(_tillDate.year, _tillDate.month, _tillDate.day, 23, 59, 59);
 
   Future<void> _selectDate(BuildContext context, bool isFromDate) async {
     DateTime initialDate = isFromDate ? _fromDate : _tillDate;
-    final DateTime? picked = await showDatePicker(
+    final picked = await showDatePicker(
       context: context,
       initialDate: initialDate,
       firstDate: DateTime(2020),
       lastDate: DateTime(2030),
     );
-    if (picked != null && picked != initialDate) {
+    if (picked != null) {
       setState(() {
         if (isFromDate) {
           _fromDate = picked;
@@ -76,17 +50,16 @@ class _CompletedOrderRestaurantState extends State<CompletedOrderRestaurant> {
   }
 
   Future<String> _getCustomerName(String customerId) async {
-    String customerName = 'Unknown';
     try {
-      final customerDoc = await FirebaseFirestore.instance.collection('users').doc(customerId).get();
-      if (customerDoc.exists) {
-        final userData = customerDoc.data()!;
-        customerName = '${userData['firstName'] ?? ''} ${userData['lastName'] ?? ''} ${userData['mobile'] ?? ''}';
+      final doc = await FirebaseFirestore.instance.collection('users').doc(customerId).get();
+      if (doc.exists) {
+        final data = doc.data()!;
+        return '${data['firstName'] ?? ''} ${data['lastName'] ?? ''} ${data['mobile'] ?? ''}';
       }
     } catch (e) {
-      print("Error fetching customer name: $e");
+      print("Error fetching customer: $e");
     }
-    return customerName;
+    return 'Unknown';
   }
 
   @override
@@ -98,7 +71,6 @@ class _CompletedOrderRestaurantState extends State<CompletedOrderRestaurant> {
       body: Stack(
         children: [
           const Positioned(top: 0, left: 0, right: 0, child: CurveAppBar(title: '')),
-
           Positioned(
             top: 40,
             left: 16,
@@ -107,7 +79,6 @@ class _CompletedOrderRestaurantState extends State<CompletedOrderRestaurant> {
               onPressed: () => Navigator.pop(context),
             ),
           ),
-
           const Positioned(
             top: 80,
             left: 0,
@@ -119,7 +90,6 @@ class _CompletedOrderRestaurantState extends State<CompletedOrderRestaurant> {
               ),
             ),
           ),
-
           Positioned(
             top: 220,
             left: 16,
@@ -137,22 +107,18 @@ class _CompletedOrderRestaurantState extends State<CompletedOrderRestaurant> {
               ],
             ),
           ),
-
           Positioned.fill(
             top: 260,
             child: StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
-              .collection('restaurants')
-              .doc(restaurantId)
-              .collection('orders')
-              .where('createdAt', isGreaterThanOrEqualTo: Timestamp.fromDate(_getStartOfDay()))
-              .where('createdAt', isLessThanOrEqualTo: Timestamp.fromDate(_getEndOfDay()))
-              .where('orderStatus', whereIn: [
-                "Completed",
-              ])
-              .orderBy('createdAt', descending: true)
-              .snapshots(),
-
+                .collection('restaurants')
+                .doc(restaurantId)
+                .collection('orders')
+                .where('createdAt', isGreaterThanOrEqualTo: Timestamp.fromDate(_getStartOfDay()))
+                .where('createdAt', isLessThanOrEqualTo: Timestamp.fromDate(_getEndOfDay()))
+                .where('orderStatus', isEqualTo: 'Completed')
+                .orderBy('createdAt', descending: true)
+                .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -160,9 +126,8 @@ class _CompletedOrderRestaurantState extends State<CompletedOrderRestaurant> {
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                   return const Center(child: Text("No orders found"));
                 }
-
                 return ListView(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.all(16),
                   children: snapshot.data!.docs.map((doc) {
                     final data = doc.data() as Map<String, dynamic>;
                     final createdAt = (data['createdAt'] as Timestamp).toDate();
@@ -171,24 +136,30 @@ class _CompletedOrderRestaurantState extends State<CompletedOrderRestaurant> {
                     final status = data['orderStatus'] ?? 'unknown';
                     final customerId = data['customerId'] ?? '';
                     final items = List<Map<String, dynamic>>.from(data['items'] ?? []);
-                    final menuItems = items.map((item) => '${item['name']} x${item['quantity']}').toList();
+
+                    final List<String> menuItems = [];
+                    for (var item in items) {
+                      final name = item['name'] ?? 'Unnamed';
+                      final quantity = item['quantity'] ?? 0;
+                      menuItems.add('$name x$quantity');
+
+                      final addons = item['addons'] as List<dynamic>? ?? [];
+                      for (var addon in addons) {
+                        final addonName = addon['name'] ?? 'Unnamed Addon';
+                        final addonQty = addon['quantity'] ?? 0;
+                        menuItems.add('  • $addonName x$addonQty');
+                      }
+                    }
 
                     final timeAgo = _getTimeAgo(createdAt);
                     final statusInfo = _getStatusInfo(status);
 
                     return GestureDetector(
                       onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => OrderdetailRestaurant(
-                              orderId: doc.id,
-                              customerId: customerId,
-                            ),
-                          ),
-                        );
+                        Navigator.push(context, MaterialPageRoute(
+                          builder: (context) => OrderdetailRestaurant(orderId: doc.id, customerId: customerId),
+                        ));
                       },
-                      
                       child: FutureBuilder<String>(
                         future: _getCustomerName(customerId),
                         builder: (context, nameSnapshot) {
@@ -276,10 +247,7 @@ class _CompletedOrderRestaurantState extends State<CompletedOrderRestaurant> {
                 child: Container(
                   margin: const EdgeInsets.all(8),
                   padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
+                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -287,14 +255,12 @@ class _CompletedOrderRestaurantState extends State<CompletedOrderRestaurant> {
                         children: [
                           const CircleAvatar(radius: 12, backgroundColor: Color.fromARGB(255, 250, 176, 47), child: Icon(Icons.person, color: Colors.white, size: 14)),
                           const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFFB71C1C)), overflow: TextOverflow.ellipsis),
-                          ),
+                          Expanded(child: Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFFB71C1C)), overflow: TextOverflow.ellipsis)),
                         ],
                       ),
                       const SizedBox(height: 8),
                       const Text("Order summary", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFFB71C1C))),
-                      ...menuItems.map((item) => Text("• $item", style: const TextStyle(fontSize: 12, color: Color(0xFFB71C1C)),)),
+                      ...menuItems.map((item) => Text(item, style: const TextStyle(fontSize: 12, color: Color(0xFFB71C1C)))),
                       const SizedBox(height: 8),
                       Text("Pick up time : $pickUpTime", style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFB71C1C))),
                     ],
@@ -311,7 +277,7 @@ class _CompletedOrderRestaurantState extends State<CompletedOrderRestaurant> {
                     padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
                     width: 100,
                     decoration: BoxDecoration(color: statusColor, borderRadius: BorderRadius.circular(8)),
-                    child: Text(statusText, style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold), textAlign: TextAlign.center,),
+                    child: Text(statusText, style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
                   ),
                 ],
               ),
@@ -324,10 +290,10 @@ class _CompletedOrderRestaurantState extends State<CompletedOrderRestaurant> {
   }
 
   String _getTimeAgo(DateTime dateTime) {
-    final difference = DateTime.now().difference(dateTime);
-    if (difference.inMinutes < 1) return "just now";
-    if (difference.inMinutes < 60) return "${difference.inMinutes} mins ago";
-    if (difference.inHours < 24) return "${difference.inHours} hours ago";
+    final diff = DateTime.now().difference(dateTime);
+    if (diff.inMinutes < 1) return "just now";
+    if (diff.inMinutes < 60) return "${diff.inMinutes} mins ago";
+    if (diff.inHours < 24) return "${diff.inHours} hours ago";
     return DateFormat("dd MMM").format(dateTime);
   }
 
@@ -340,7 +306,7 @@ class _CompletedOrderRestaurantState extends State<CompletedOrderRestaurant> {
       case "Waiting for payment confirmation":
         return {"text": "Waiting for payment\nconfirmation", "color": Colors.yellow, "icon": Symbols.receipt_long};
       case "Preparing food":
-        return {"text": "Preparing food", "color": Color.fromARGB(255, 132, 132, 132), "icon": Symbols.skillet};
+        return {"text": "Preparing food", "color": const Color.fromARGB(255, 132, 132, 132), "icon": Symbols.skillet};
       case "Completed":
         return {"text": "Completed", "color": Colors.green, "icon": Symbols.restaurant};
       case "Canceled":
