@@ -22,6 +22,7 @@ class _AddMenuPageState extends State<AddMenuPage> {
   String? category;
   File? imageFile;
   final picker = ImagePicker();
+  List<String> categoriesList = [];
 
   Future<void> pickImage(ImageSource source) async {
     final pickedFile = await picker.pickImage(source: source);
@@ -31,7 +32,23 @@ class _AddMenuPageState extends State<AddMenuPage> {
       });
     }
   }
-
+  Future<void> fetchCategories() async {
+  try {
+    final snapshot = await FirebaseFirestore.instance.collection('categories').get();
+    final fetchedCategories = snapshot.docs.first['categories'] as List<dynamic>;
+    
+    setState(() {
+      categoriesList = fetchedCategories.map((e) => e.toString()).toList();
+    });
+  } catch (e) {
+    print("Error fetching categories: $e");
+  }
+}
+@override
+  void initState() {
+    super.initState();
+    fetchCategories(); 
+  }
   Future<void> saveMenu() async {
     final name = nameController.text.trim();
     final price = double.tryParse(priceController.text.trim()) ?? 0.0;
@@ -253,32 +270,36 @@ class _AddMenuPageState extends State<AddMenuPage> {
   }
 
   Widget _buildDropdownField(String hint) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          hint: Text(
-            hint,
-            style: const TextStyle(color: Color(0xFFB71C1C)),
-          ),
-          value: category,
-          isExpanded: true,
-          items: const [
-            DropdownMenuItem(value: 'drink', child: Text('Drink')),
-            DropdownMenuItem(value: 'food', child: Text('Food')),
-            DropdownMenuItem(value: 'dessert', child: Text('Dessert')),
-          ],
-          onChanged: (value) {
-            setState(() {
-              category = value;
-            });
-          },
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 16),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(10),
+    ),
+    child: DropdownButtonHideUnderline(
+      child: DropdownButton<String>(
+        hint: Text(
+          hint,
+          style: const TextStyle(color: Color(0xFFB71C1C)),
         ),
+        value: category,
+        isExpanded: true,
+        items: categoriesList.isEmpty
+            ? [] 
+            : categoriesList.map((category) {
+                return DropdownMenuItem<String>(
+                  value: category,
+                  child: Text(category),
+                );
+              }).toList(),
+        onChanged: (value) {
+          setState(() {
+            category = value; 
+          });
+        },
       ),
-    );
-  }
+    ),
+  );
+}
+
 }

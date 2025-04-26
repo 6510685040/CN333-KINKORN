@@ -1,7 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:kinkorn/template/restaurant_bottom_nav.dart';
-import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // format วันที่
+import 'package:intl/intl.dart';
 
 class SalesReport extends StatefulWidget {
   @override
@@ -9,322 +10,334 @@ class SalesReport extends StatefulWidget {
 }
 
 class _SalesReportState extends State<SalesReport> {
-  DateTime? startDate; // วันที่เริ่มต้น
-  DateTime? endDate; // วันที่สิ้นสุด
-  List<Map<String, String>> selectedSales = [];
-  // ค้นหายอดขายตามช่วงวันที่
-    void _updateSelectedSales() {
-      if (startDate == null || endDate == null) return;
+  DateTime? startDate;
+  DateTime? endDate;
+  Map<String, List<Map<String, dynamic>>> salesData = {};
+  List<Map<String, dynamic>> selectedSales = [];
+  String restaurantName = '';
+  String restaurantId = '';
 
-      setState(() {
-        selectedSales = salesData.entries
-            .where((entry) {
-              DateTime entryDate = DateTime.parse(entry.key);
-              return entryDate.isAfter(startDate!.subtract(Duration(days: 1))) &&
-                    entryDate.isBefore(endDate!.add(Duration(days: 1)));
-            })
-            .expand((entry) => entry.value)
-            .toList();
-      });
+  @override
+  void initState() {
+    super.initState();
+    startDate = DateTime.now(); 
+     endDate = DateTime.now(); 
+    _loadRestaurantAndSales();
+  }
+
+  Future<void> _loadRestaurantAndSales() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+    final docRef = FirebaseFirestore.instance.collection('restaurants').doc(uid);
+    final docSnap = await docRef.get();
+
+    if (docSnap.exists) {
+      restaurantId = docSnap.id;
+      restaurantName = docSnap.data()?['restaurantName'] ?? 'Unnamed';
+      setState(() {});
+      await fetchSalesFromFirestore(restaurantId);
+    } else {
+
+      final qs = await FirebaseFirestore.instance
+          .collection('restaurants')
+          .where('ownerId', isEqualTo: uid)
+          .limit(1)
+          .get();
+      if (qs.docs.isNotEmpty) {
+        final doc = qs.docs.first;
+        restaurantId = doc.id;
+        restaurantName = doc.data()['restaurantName'] ?? 'Unnamed';
+        setState(() {});
+        await fetchSalesFromFirestore(restaurantId);
+      } else {
+        print('⚠️ No restaurant found for user $uid');
+      }
     }
+  }
 
-  Map<String, List<Map<String, String>>> salesData = {
-    "2025-02-23": [
-      {"menu": "ข้าวกะเพราหมูสับ", "quantity": "2", "price": "90.00"},
-      {"menu": "ข้าวผัดไข่", "quantity": "1", "price": "45.00"},
-    ],
-    "2025-02-24": [
-      {"menu": "ข้าวมันไก่", "quantity": "3", "price": "150.00"},
-    ],
-  };
-
-  // ฟังก์ชันเลือกวันที่
   Future<void> _selectDate(BuildContext context, bool isStart) async {
-    DateTime? picked = await showDatePicker(
+    final picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
       firstDate: DateTime(2020),
       lastDate: DateTime(2030),
     );
-
-    if (picked != null) {
-      setState(() {
-        if (isStart) {
-          startDate = picked;
-          if (endDate != null && startDate!.isAfter(endDate!)) {
-            endDate = null; // รีเซ็ตวันที่สิ้นสุดถ้าน้อยกว่าวันที่เริ่ม
-          }
-        } else {
-          if (startDate != null && picked.isBefore(startDate!)) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text("วันที่สิ้นสุดต้องมากกว่าหรือเท่ากับวันที่เริ่มต้น")),
-            );
-          } else {
-            endDate = picked;
-          }
+    if (picked == null) return;
+    setState(() {
+      if (isStart) {
+        startDate = picked;
+        if (endDate != null && endDate!.isBefore(startDate!)) {
+          endDate = null;
         }
-        _updateSelectedSales();
-      });
-    }
+      } else {
+        if (startDate != null && picked.isBefore(startDate!)) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("วันที่สิ้นสุดต้องไม่ก่อนวันที่เริ่มต้น")),
+          );
+        } else {
+          endDate = picked;
+        }
+      }
+      _updateSelectedSales();
+    });
   }
 
-  @override
-  Widget build(BuildContext context) {
-    String formattedStartDate = startDate != null
-        ? DateFormat('yyyy-MM-dd').format(startDate!)
-        : "Start Date";
+ Future<void> fetchSalesFromFirestore(String id) async {
+  try {
+    final snapshot = await FirebaseFirestore.instance
+        .collection('restaurants')
+        .doc(id)
+        .collection('orders')
+        .where('orderStatus', isEqualTo: 'Completed')
+        .get();
 
-    String formattedEndDate = endDate != null
-        ? DateFormat('yyyy-MM-dd').format(endDate!)
-        : "Last Date";
+    final Map<String, Map<String, Map<String, dynamic>>> agg = {};
 
-    return Scaffold(
-      backgroundColor: Color(0xFFAF1F1F),
-      body: Stack(
-        children: [
-          // พื้นหลัง Title
-          Container(
-            width: MediaQuery.of(context).size.width,
-            height: 100,
-            color: Color(0xFFFCF9CA),
-          ),
+    for (var doc in snapshot.docs) {
+      final data = doc.data() as Map<String, dynamic>;
 
-          // SALES REPORT
-          Align(
-            alignment: Alignment.topCenter,
-            child: Padding(
-              padding: EdgeInsets.only(top: 30),
-              child: Text(
-                "SALES REPORT",
-                style: TextStyle(
-                  //fontFamily: 'Montserrat',
-                  fontWeight: FontWeight.bold,
-                  fontSize: MediaQuery.of(context).size.width * 0.087,
-                  color: Color(0xFFAF1F1F),
-                ),
+      final ts = data['createdAt'] as Timestamp?;
+      if (ts == null) continue;
+
+      final dateKey = DateFormat('yyyy-MM-dd').format(ts.toDate());
+
+    
+      final items = data['items'] as List<dynamic>? ?? [];
+
+      for (var item in items) {
+        final name = item['name'] as String? ?? 'Unnamed';
+        final qty = (item['quantity'] as num?)?.toInt() ?? 0;
+        final price = (item['price'] as num?)?.toDouble() ?? 0.0; 
+        final revenue = qty * price; 
+        agg.putIfAbsent(dateKey, () => {});
+        if (agg[dateKey]![name] == null) {
+          agg[dateKey]![name] = {
+            'quantity': qty,
+            'revenue': revenue,
+          };
+        } else {
+          agg[dateKey]![name]!['quantity'] += qty;
+          agg[dateKey]![name]!['revenue'] += revenue;
+        }
+      }
+    }
+
+    final Map<String, List<Map<String, dynamic>>> newSales = {};
+    agg.forEach((date, menuMap) {
+      newSales[date] = menuMap.entries.map((e) => {
+            'date': date,
+            'menu': e.key,
+            'quantity': e.value['quantity'].toString(),
+            'revenue': e.value['revenue'].toStringAsFixed(2), 
+          }).toList();
+    });
+
+    setState(() {
+      salesData = newSales;
+      _updateSelectedSales();
+    });
+  } catch (e) {
+    print("❌ Error fetching sales: $e");
+  }
+}
+
+
+
+  void _updateSelectedSales() {
+    setState(() {
+      if (startDate == null || endDate == null) {
+        selectedSales = salesData.values.expand((v) => v).toList();
+      } else {
+        selectedSales = salesData.entries
+            .where((e) {
+              final d = DateTime.parse(e.key);
+              return !d.isBefore(startDate!) && !d.isAfter(endDate!);
+            })
+            .expand((e) => e.value)
+            .toList();
+      }
+      print("👉 selectedSales = $selectedSales");
+
+    });
+  }
+
+ // double calculateTotalSales() =>
+     // selectedSales.fold(0, (sum, item) => sum + double.parse(item['price']));
+double calculateTotalSales() =>
+    selectedSales.fold(0.0, (sum, item) {
+      final revenue = double.parse(item['revenue']);
+      return sum + revenue;  
+    });
+
+  int calculateTotalQuantity() =>
+      selectedSales.fold(0, (sum, item) => sum + int.parse(item['quantity']));
+
+@override
+Widget build(BuildContext context) {
+  final formattedStart =
+      startDate != null ? DateFormat('yyyy-MM-dd').format(startDate!) : 'Start Date';
+  final formattedEnd =
+      endDate != null ? DateFormat('yyyy-MM-dd').format(endDate!) : 'End Date';
+
+  return Scaffold(
+    backgroundColor: Color(0xFFAF1F1F),
+    body: Stack(
+      children: [
+        Container(
+          width: double.infinity,
+          height: 100,
+          color: Color(0xFFFCF9CA),
+        ),
+        Align(
+          alignment: Alignment.topCenter,
+          child: Padding(
+            padding: EdgeInsets.only(top: 30),
+            child: Text(
+              "SALES REPORT",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: MediaQuery.of(context).size.width * 0.087,
+                color: Color(0xFFAF1F1F),
               ),
             ),
           ),
-
-          // title
-          Padding(
-            padding: EdgeInsets.only(top: 110),
-            child: Align(
-              alignment: Alignment.topCenter,
-              child: Container(
-                child: Align(
-                  alignment: Alignment.topCenter,
-                  child: Padding(
-                    padding: EdgeInsets.only(top: 10),
-                    child: Column(
-                      children: [
-                        // title
-                        /*
-                        Align(
-                          alignment: Alignment.center,
-                          child: Text(
-                            "Sales Report for",
-                            style: TextStyle(
-                              //fontFamily: 'Montserrat',
-                              fontWeight: FontWeight.bold,
-                              fontSize: 26,
-                              color: Color(0xFFFCF9CA), //AF1F1F
-                            ),
-                          ),
-                        ),*/
-                        Align(
-                          alignment: Alignment.center,
-                          child: Text(
-                            "ร้าน ครัวสุขใจ - อาหารนานาชาติ",
-                            style: TextStyle(
-                              //fontFamily: 'Montserrat',
-                              fontWeight: FontWeight.bold,
-                              fontSize: 26,
-                              color: Color(0xFFFCF9CA), //AF1F1F
-                            ),
-                          ),
+        ),
+        Padding(
+          padding: EdgeInsets.only(top: 110),
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: Column(
+              children: [
+                Text(
+                  restaurantName.isNotEmpty ? restaurantName : 'Loading...',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 26,
+                    color: Color(0xFFFCF9CA),
+                  ),
+                ),
+                SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text('Since ', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFFFCF9CA))),
+                    ElevatedButton(
+                      onPressed: () => _selectDate(context, true),
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: Size(120, 30),
+                        backgroundColor: Color(0xFFECECEC),
+                        foregroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      child: Text(formattedStart),
+                    ),
+                    SizedBox(width: 10),
+                    Text('Till ', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFFFCF9CA))),
+                    ElevatedButton(
+                      onPressed: () => _selectDate(context, false),
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: Size(120, 30),
+                        backgroundColor: Color(0xFFECECEC),
+                        foregroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
                         ),
+                      ),
+                      child: Text(formattedEnd),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 10),
 
-                        // เลือกวันที่
-                        Padding(
-                          padding: EdgeInsets.only(left: 10),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text("Since ", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFFFCF9CA))),
-                                  SizedBox(width: 5),
-                                  ElevatedButton(
-                                    onPressed: () => _selectDate(context, true),
-                                    style: ElevatedButton.styleFrom(
-                                      minimumSize: Size(120, 30), //กว้าง, สูง
-                                      backgroundColor: Color(0xFFECECEC),
-                                      foregroundColor: Colors.black,
-                                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 0),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      elevation: 5,
-                                    ),
-                                    child: Text(formattedStartDate,
-                                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.normal)),
-                                  ),
-                                  SizedBox(width: 10),
-                                  Text("Till ", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFFFCF9CA))),
-                                  SizedBox(width: 5),
-                                  ElevatedButton(
-                                    onPressed: () => _selectDate(context, false),
-                                    style: ElevatedButton.styleFrom(
-                                      minimumSize: Size(120, 30), //กว้าง, สูง
-                                      backgroundColor: Color(0xFFECECEC),
-                                      foregroundColor: Colors.black,
-                                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 0),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      elevation: 5,
-                                    ),
-                                    child: Text(formattedEndDate,
-                                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.normal)),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                        SizedBox(height: 10),
-
-                        // Total sales
-                        Align(
-                          alignment: Alignment.center, // จัดข้อความแรกตรงกลาง
-                          child: Text(
-                            "Total Sales",
-                            style: TextStyle(
-                              //fontFamily: 'Montserrat',
-                              fontWeight: FontWeight.bold,
-                              fontSize: 26,
-                              color: Color(0xFFFFFFFF), //AF1F1F
-                            ),
-                          ),
-                        ),
-                        Align(
-                          alignment: Alignment.center, // จัดข้อความแรกตรงกลาง
-                          child: Text(
-                            // แก้เป็นยอดรวม
-                            "135.00 Baht",
-                            style: TextStyle(
-                              //fontFamily: 'Montserrat',
-                              fontWeight: FontWeight.bold,
-                              fontSize: 28,
-                              color: Color(0xFFFFFFFF), //AF1F1F
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: 20),
-
-                        // แสดงยอดขายของช่วงวันที่ที่เลือก
-                        Container(
-                          padding: EdgeInsets.all(15),
-                          width: MediaQuery.of(context).size.width * 0.8,
-                          height: MediaQuery.of(context).size.height * 0.5,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Order Number
-                                Center(
-                                  child: Text(
-                                    "Order number : 1", 
-                                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.red),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                                SizedBox(height: 5),
-
-                                // แสดงวันที่เลือก
-                                Center(
-                                  child: Text(
-                                    "23 Feb 2025  12:30",
-                                    //"${DateFormat('dd MMM yyyy HH:mm').format(startDate!)}", 
-                                    style: TextStyle(fontSize: 16, color: Colors.black54),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-
-                                // ตารางสินค้า
-                                SingleChildScrollView(
-                                  scrollDirection: Axis.horizontal,
-                                  child: DataTable(
-                                    columnSpacing: 20,
-                                    dataRowMinHeight: 30,
-                                    dataRowMaxHeight: 35,
-                                    border: TableBorder(
-                                      horizontalInside: BorderSide.none,
-                                      verticalInside: BorderSide.none,
-                                      top: BorderSide.none, 
-                                      bottom: BorderSide.none,
-                                      left: BorderSide.none, 
-                                      right: BorderSide.none,
-                                    ),
-                                    columns: [
-                                      DataColumn(label: Text('Menu', style: TextStyle(fontWeight: FontWeight.bold))),
-                                      DataColumn(label: Center(child: Text('Quantity', style: TextStyle(fontWeight: FontWeight.bold)))),
-                                      DataColumn(label: Center(child: Text('Price\n(Baht)', style: TextStyle(fontWeight: FontWeight.bold)))),
-                                    ],
-                                    rows: [
-                                      // แสดงข้อมูลสินค้า
-                                      ...salesData["2025-02-23"]!.map((sale) {
-                                        return DataRow(
-                                          cells: [
-                                            DataCell(Text(sale['menu']!)),
-                                            DataCell(Center(child: Text(sale['quantity']!))),
-                                            DataCell(Center(child: Text(sale['price']!))),
-                                          ]);
-                                      }).toList(),
-
-                                      // แสดงผลรวม
-                                      DataRow(
-                                        cells: [
-                                          // รวมจำนวน
-                                          DataCell(Text('Total', style: TextStyle(fontWeight: FontWeight.bold))),
-                                          DataCell(Center(child: Text(
-                                            salesData["2025-02-23"]!
-                                                .map((sale) => int.parse(sale['quantity']!))
-                                                .reduce((a, b) => a + b)
-                                                .toString(),
-                                            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
-                                          ))),
-                                          // รวมราคา
-                                          DataCell(Center(child: Text(
-                                            salesData["2025-02-23"]!
-                                                .map((sale) => double.parse(sale['price']!))
-                                                .reduce((a, b) => a + b)
-                                                .toStringAsFixed(2),
-                                            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
-                                          ))),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
+                // ตารางข้อมูล
+                Expanded(
+                  child: Container(
+                    margin: EdgeInsets.symmetric(horizontal: 20),
+                    padding: EdgeInsets.all(15),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: selectedSales.isEmpty
+                        ? Center(child: Text('No sales data'))
+                        : SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: DataTable(
+                              columnSpacing: 20,
+                              columns: [
+                                DataColumn(label: Text('Menu', style: TextStyle(fontWeight: FontWeight.bold))),
+                                DataColumn(label: Text('Quantity', style: TextStyle(fontWeight: FontWeight.bold))),
+                                DataColumn(label: Text('Revenue', style: TextStyle(fontWeight: FontWeight.bold))), // เพิ่มคอลัมน์ Revenue
+                              ],
+                              rows: [
+                                ...selectedSales.map((sale) {
+                                  return DataRow(cells: [
+                                    DataCell(Text(sale['menu'])),
+                                    DataCell(Text(
+                                      sale['quantity'],
+                                      style: TextStyle(fontWeight: FontWeight.bold),
+                                    )),
+                                    DataCell(Text( 
+                                      '฿${double.parse(sale['revenue']).toStringAsFixed(2)}',
+                                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green),
+                                    )),
+                                  ]);
+                                }).toList(),
                               ],
                             ),
+                          ),
+                  ),
+                ),
+
+                // กรอบ Total อยู่ข้างล่างสุด
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Container(
+                    padding: EdgeInsets.all(15),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Total Quantity',
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                            ),
+                            Text(
+                              calculateTotalQuantity().toString(),
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.red),
+                            ),
+                          ],
+                        ),
+                        Divider(),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Total Sales',
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                            ),
+                            Text(
+                              '฿${calculateTotalSales().toStringAsFixed(2)}',
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.red),
+                            ),
+                          ],
                         ),
                       ],
                     ),
                   ),
                 ),
-              ),
+              ],
             ),
           ),
-        ]
-      ),
+        ),
+      ],
+    ),
     bottomNavigationBar: const CustomBottomNav(),
-    );
-  }
+  );
+}
 }

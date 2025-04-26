@@ -29,11 +29,28 @@ class _EditMenuPageState extends State<EditMenuPage> {
   String? imageUrl;
   File? imageFile;
   final picker = ImagePicker();
+  List<String> categoriesList = [];
 
   @override
   void initState() {
     super.initState();
     _loadMenuData();
+    fetchCategories();
+  }
+  Future<void> fetchCategories() async {
+    try {
+      final snapshot = await FirebaseFirestore.instance.collection('categories').get();
+      List<String> categoriesListTemp = [];
+      snapshot.docs.forEach((doc) {
+        var categories = List.from(doc['categories']);
+        categoriesListTemp.addAll(categories.map((category) => category.toString()).toList());
+      });
+      setState(() {
+        categoriesList = categoriesListTemp;
+      });
+    } catch (e) {
+      print("Error fetching categories: $e");
+    }
   }
 
   Future<void> _loadMenuData() async {
@@ -307,8 +324,7 @@ class _EditMenuPageState extends State<EditMenuPage> {
       ),
     );
   }
-
-  Widget _buildDropdownField(String hint) {
+Widget _buildDropdownField(String hint) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
@@ -323,21 +339,23 @@ class _EditMenuPageState extends State<EditMenuPage> {
           ),
           value: category,
           isExpanded: true,
-          items: const [
-            DropdownMenuItem(value: 'drink', child: Text('Drink')),
-            DropdownMenuItem(value: 'food', child: Text('Food')),
-            DropdownMenuItem(value: 'dessert', child: Text('Dessert')),
-          ],
+          items: categoriesList.isEmpty
+              ? []
+              : categoriesList.map((category) {
+                  return DropdownMenuItem<String>(
+                    value: category,
+                    child: Text(category),
+                  );
+                }).toList(),
           onChanged: (value) {
             setState(() {
-              category = value;
+              category = value; 
             });
           },
         ),
       ),
     );
   }
-
   void _confirmDelete(BuildContext context) {
     showDialog(
       context: context,
