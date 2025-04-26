@@ -15,6 +15,7 @@ class EditRestaurantPage extends StatefulWidget {
 class _EditRestaurantPageState extends State<EditRestaurantPage> {
   final _nameController = TextEditingController();
   final _timeController = TextEditingController();
+  final _descriptionController = TextEditingController();
   String? _selectedCategory;
   String? _selectedCanteenId;
   File? _imageFile;
@@ -75,6 +76,7 @@ class _EditRestaurantPageState extends State<EditRestaurantPage> {
         _selectedCategory = data['category'];
         _timeController.text = data['openingTime'] ?? '';
         _logoUrl = data['logoUrl'];
+        _descriptionController.text = data['description'] ?? '';
       });
     }
   }
@@ -118,6 +120,7 @@ class _EditRestaurantPageState extends State<EditRestaurantPage> {
       'canteenId': _selectedCanteenId,
       'logoUrl': imageUrl,
       'openingDays': _openingDays,
+      'description': _descriptionController.text.trim(),
     }, SetOptions(merge: true));
 
     setState(() {
@@ -151,6 +154,7 @@ class _EditRestaurantPageState extends State<EditRestaurantPage> {
   void dispose() {
     _nameController.dispose();
     _timeController.dispose();
+    _descriptionController.dispose();
     super.dispose();
   }
 
@@ -246,6 +250,8 @@ class _EditRestaurantPageState extends State<EditRestaurantPage> {
                           const SizedBox(height: 20),
                           _buildLabeledTextField('Restaurant Name', _nameController),
                           const SizedBox(height: 15),
+                          _buildLabeledTextField('Description', _descriptionController, maxLines: 5),
+                          const SizedBox(height: 15),
                           _buildLabeledDropdownField('Category'),
                           const SizedBox(height: 20),
                           _buildTimePickerField('Time', _timeController),
@@ -288,15 +294,23 @@ class _EditRestaurantPageState extends State<EditRestaurantPage> {
     );
   }
 
-  Widget _buildLabeledTextField(String label, TextEditingController controller) {
+  Widget _buildLabeledTextField(String label, TextEditingController controller, {int maxLines = 1}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: Color(0xFFB71C1C), fontSize: 16, fontWeight: FontWeight.bold)),
+        Text(
+          label,
+          style: const TextStyle(
+            color: Color(0xFFB71C1C),
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         const SizedBox(height: 8),
         TextField(
           controller: controller,
           readOnly: label == 'Canteen',
+          maxLines: maxLines,
           decoration: InputDecoration(
             hintText: label,
             hintStyle: const TextStyle(color: Color(0xFFB71C1C)),
@@ -311,7 +325,8 @@ class _EditRestaurantPageState extends State<EditRestaurantPage> {
         ),
       ],
     );
-  }
+}
+
 
   Widget _buildCanteenDropdown() {
     return Column(

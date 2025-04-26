@@ -26,16 +26,28 @@ class ChooseRestaurantScreen extends StatelessWidget {
             child: CurveAppBar(title: ""),
           ),
           Positioned(
-            left: screenWidth * 0.07,
+            left: screenWidth * 0.02,
             top: screenHeight * 0.09,
-            child: Text(
-              "Choose Restaurant....",
-              style: TextStyle(
-                fontWeight: FontWeight.w700,
-                fontSize: screenWidth * 0.08,
-                color: const Color(0xFFFCF9CA),
-              ),
-            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.chevron_left, size: 40, color: Colors.white),
+                  padding: EdgeInsets.zero,
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                ),
+                Text(
+                  "Choose Restaurant....",
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: screenWidth * 0.08,
+                    color: const Color(0xFFFCF9CA),
+                  ),
+                )
+              ],
+            )
           ),
           Positioned(
             left: screenWidth * 0.1,

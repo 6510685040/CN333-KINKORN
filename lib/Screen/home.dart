@@ -1,20 +1,46 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart'; // นำเข้า SvgPicture
-import 'login.dart'; // นำเข้า LoginScreen
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:kinkorn/customer/choose_canteen.dart';
+import 'login.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    // ใช้ Future.delayed เพื่อไปหน้า Login อัตโนมัติ
-    Future.delayed(const Duration(seconds: 2), () {
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _navigateUser();
+  }
+
+  void _navigateUser() async {
+    await Future.delayed(const Duration(seconds: 2));
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (!mounted) return;
+
+    if (user != null) {
+      // User is signed in
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const ChooseCanteen()),
+      );
+    } else {
+      // Not signed in
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const LoginScreen()),
       );
-    });
+    }
+  }
 
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -25,7 +51,6 @@ class HomeScreen extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Logo หรือ รูปภาพด้านบน
                 SvgPicture.asset(
                   'assets/images/logo.svg',
                   width: 100,
@@ -48,4 +73,3 @@ class HomeScreen extends StatelessWidget {
     );
   }
 }
-

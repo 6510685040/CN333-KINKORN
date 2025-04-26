@@ -220,17 +220,20 @@ class MoreRes extends StatelessWidget {
                           // Log out
                           ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                            backgroundColor:Color(0xFFB7B7B7),
+                              backgroundColor: const Color(0xFFB7B7B7),
                               shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20)
+                                borderRadius: BorderRadius.circular(20),
                               ),
-                              elevation: 5, // ✅ ทำให้ปุ่มลอยขึ้น
+                              elevation: 5,
                               shadowColor: Colors.black.withOpacity(0.3),
                             ),
-                            onPressed: () {
-                              Navigator.push(
+                            onPressed: () async {
+                              await FirebaseAuth.instance.signOut();
+
+                              Navigator.pushAndRemoveUntil(
                                 context,
-                                MaterialPageRoute(builder: (context) => HomeScreen()),
+                                MaterialPageRoute(builder: (context) => const HomeScreen()),
+                                (Route<dynamic> route) => false,
                               );
                             },
                             child: const Padding(
