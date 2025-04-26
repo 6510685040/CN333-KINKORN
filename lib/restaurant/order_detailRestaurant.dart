@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:kinkorn/customer/notification_cus.dart';
 import 'package:kinkorn/template/curve_app_bar.dart';
 import 'package:kinkorn/template/bottom_bar.dart';
 import 'package:kinkorn/template/restaurant_bottom_nav.dart';
@@ -23,11 +24,89 @@ class _OrderdetailRestaurantState extends State<OrderdetailRestaurant> {
   late Future<Map<String, dynamic>> _orderData;
   bool _isUpdating = false;
 
+  // Noti
+  final NotificationCus _notificationCus = NotificationCus();
+  Set<String> _notifiedOrderIds = {};
+
+  final Map<String, String> latestOrderStatus = {};
+
   @override
   void initState() {
     super.initState();
     _orderData = fetchOrderData();
+    _listenToOrderChanges();
   }
+
+  void _listenToOrderChanges() async {
+    final userID = FirebaseAuth.instance.currentUser?.uid;
+    if (userID == null) return;
+
+    final restaurantDoc = await FirebaseFirestore.instance
+      .collection('restaurants')
+      .doc(userID)
+      .get();
+
+    if (!restaurantDoc.exists) return;
+
+    final restaurantId = restaurantDoc.id;
+
+    FirebaseFirestore.instance
+      .collection('restaurants')
+      .doc(restaurantId)
+      .collection('orders')
+      .snapshots()
+      .listen((snapshot) {
+        for (var change in snapshot.docChanges) {
+          final data = change.doc.data();
+          if (data == null) continue;
+
+          final orderId = change.doc.id;
+          final orderStatus = data['orderStatus'] ?? '';
+
+          if (change.type == DocumentChangeType.added) {
+            // new order
+            if (!NotificationCus.notifiedOrderIds.contains(orderId)) {
+              _notificationCus.showNotification('ออเดอร์ใหม่', 'You have a new order');
+              NotificationCus.notifiedOrderIds.add(orderId);
+            }
+            latestOrderStatus[orderId] = orderStatus;
+          }
+          // payment
+          else if (change.type == DocumentChangeType.modified) {
+            final orders = change.doc.data();
+            final orderId = change.doc.id;
+
+            if (orders != null) {
+              final orderStatus = orders['orderStatus'];
+              final slipUrl = orders['slipUrl']; // รับข้อมูล slipUrl
+              final oldStatus = latestOrderStatus[orderId];
+
+              print('🔁 Order: $orderId | Old: $oldStatus ➜ New: $orderStatus');
+
+              if (oldStatus == 'Waiting for payment' && slipUrl != null && slipUrl.isNotEmpty) {
+                if (orderStatus != 'Waiting for payment confirmation') {
+                  FirebaseFirestore.instance
+                      .collection('restaurants')
+                      .doc(restaurantId)
+                      .collection('orders')
+                      .doc(orderId)
+                      .update({
+                        'orderStatus': 'Waiting for payment confirmation',
+                      });
+
+                  // ส่งการแจ้งเตือน
+                  _notificationCus.showNotification('ลูกค้าชำระเงินแล้ว', 'Waiting for your confirmation');
+                  NotificationCus.notifiedOrderIds.add('$orderId|paid');
+                }
+              }
+              NotificationCus.notifiedOrderIds.add('$orderId|paid');
+            }
+            // อัปเดตสถานะเก่าภายในแคช
+            latestOrderStatus[orderId] = orderStatus;
+          }
+        }
+      });
+    }
 
   Future<Map<String, dynamic>> fetchOrderData() async {
     final orderDoc = await FirebaseFirestore.instance
@@ -272,7 +351,10 @@ class _OrderdetailRestaurantState extends State<OrderdetailRestaurant> {
                 elevation: 5,
                 shadowColor: Colors.black.withOpacity(0.3),
               ),
-              onPressed: _isUpdating ? null : () => updateOrderStatus('Waiting for payment'),
+              onPressed: _isUpdating ? null : () async {
+                await updateOrderStatus('Waiting for payment');
+              },
+              
               child: const Padding(
                 padding: EdgeInsets.symmetric(vertical: 12),
                 child: Center(
@@ -308,102 +390,102 @@ class _OrderdetailRestaurantState extends State<OrderdetailRestaurant> {
         );
       
       case 'waiting for payment confirmation':
-  return Column(
-    children: [
-      const SizedBox(height: 10),
-      Container(
-        width: double.infinity,
-        height: 200, // Increased height for better image display
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: data['slipUrl'] != null && data['slipUrl'].isNotEmpty
-          ? ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                data['slipUrl'],
-                fit: BoxFit.contain,
-                loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return Center(
-                    child: CircularProgressIndicator(
-                      value: loadingProgress.expectedTotalBytes != null
-                          ? loadingProgress.cumulativeBytesLoaded / 
-                            loadingProgress.expectedTotalBytes!
-                          : null,
+        return Column(
+          children: [
+            const SizedBox(height: 10),
+            Container(
+              width: double.infinity,
+              height: 200, // Increased height for better image display
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: data['slipUrl'] != null && data['slipUrl'].isNotEmpty
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.network(
+                      data['slipUrl'],
+                      fit: BoxFit.contain,
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Center(
+                          child: CircularProgressIndicator(
+                            value: loadingProgress.expectedTotalBytes != null
+                                ? loadingProgress.cumulativeBytesLoaded / 
+                                  loadingProgress.expectedTotalBytes!
+                                : null,
+                          ),
+                        );
+                      },
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Center(
+                          child: Text(
+                            'Unable to load payment slip',
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
-                errorBuilder: (context, error, stackTrace) {
-                  return const Center(
+                  )
+                : const Center(
                     child: Text(
-                      'Unable to load payment slip',
+                      'No payment slip available',
                       style: TextStyle(color: Colors.grey),
                     ),
-                  );
-                },
-              ),
-            )
-          : const Center(
-              child: Text(
-                'No payment slip available',
-                style: TextStyle(color: Colors.grey),
-              ),
+                  ),
             ),
-      ),
-      const SizedBox(height: 10),
-      Row(
-        children: [
-          Expanded(
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                elevation: 5,
-                shadowColor: Colors.black.withOpacity(0.3),
-              ),
-              onPressed: _isUpdating ? null : () => updateOrderStatus('Canceled'),
-              child: const Padding(
-                padding: EdgeInsets.symmetric(vertical: 12),
-                child: Center(
-                  child: Text(
-                    'Cancel',
-                    style: TextStyle(color: Color(0xFFAF1F1F), fontSize: 16),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      elevation: 5,
+                      shadowColor: Colors.black.withOpacity(0.3),
+                    ),
+                    onPressed: _isUpdating ? null : () => updateOrderStatus('Canceled'),
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 12),
+                      child: Center(
+                        child: Text(
+                          'Cancel',
+                          style: TextStyle(color: Color(0xFFAF1F1F), fontSize: 16),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF4c9534),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                elevation: 5,
-                shadowColor: Colors.black.withOpacity(0.3),
-              ),
-              onPressed: _isUpdating ? null : () => updateOrderStatus('Preparing food'),
-              child: const Padding(
-                padding: EdgeInsets.symmetric(vertical: 12),
-                child: Center(
-                  child: Text(
-                    'Confirm',
-                    style: TextStyle(color: Colors.white, fontSize: 16),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF4c9534),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      elevation: 5,
+                      shadowColor: Colors.black.withOpacity(0.3),
+                    ),
+                    onPressed: _isUpdating ? null : () => updateOrderStatus('Preparing food'),
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 12),
+                      child: Center(
+                        child: Text(
+                          'Confirm',
+                          style: TextStyle(color: Colors.white, fontSize: 16),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
-          ),
-        ],
-      ),
-    ],
-  );
+          ],
+        );
       
       case 'preparing food':
         return Column(

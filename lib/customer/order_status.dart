@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:kinkorn/customer/order_detail.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:kinkorn/customer/notification_cus.dart';
 
 
 class OrderStatusCustomer extends StatefulWidget {
@@ -19,6 +20,44 @@ class OrderStatusCustomer extends StatefulWidget {
 class _OrderStatusCustomerState extends State<OrderStatusCustomer> {
   DateTime _fromDate = DateTime.now();
   DateTime _tillDate = DateTime.now();
+
+  // Noti
+  final NotificationCus _notificationCus = NotificationCus();
+  Set<String> _notifiedOrderIds = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _listenToOrderChanges();
+  }
+
+  void _listenToOrderChanges() {
+    final userID = FirebaseAuth.instance.currentUser?.uid;
+    if (userID == null) return;
+
+    FirebaseFirestore.instance
+      .collection('users')
+      .doc(userID)
+      .collection('orders')
+      .snapshots()
+      .listen((snapshot) {
+        for (var change in snapshot.docChanges) {
+          if (change.type == DocumentChangeType.modified) {
+            final data = change.doc.data();
+            final orderStatus = data?['orderStatus'];
+            final orderId = change.doc.id;
+
+            final key = '$orderId|$orderStatus';
+            if (!_notifiedOrderIds.contains(key)) {
+              _notificationCus.showNotification('สถานะออเดอร์อัปเดต', 'Your order is now : $orderStatus');
+              _notifiedOrderIds.add(key);
+            }
+            print('🔁 Order: $orderId | ➜ New: $orderStatus');
+          }
+        }
+      });
+  }
+
   Future<void> _selectDate(BuildContext context, bool isFromDate) async {
     DateTime initialDate = isFromDate ? _fromDate : _tillDate;
     final DateTime? picked = await showDatePicker(
