@@ -72,8 +72,8 @@ class _CompletedOrderRestaurantState extends State<CompletedOrderRestaurant> {
         children: [
           const Positioned(top: 0, left: 0, right: 0, child: CurveAppBar(title: '')),
           Positioned(
-            top: 40,
-            left: 16,
+            top: 75,
+            left: 20,
             child: IconButton(
               icon: const Icon(Icons.chevron_left, size: 30, color: Color(0xFFFCF9CA)),
               onPressed: () => Navigator.pop(context),
@@ -186,7 +186,7 @@ class _CompletedOrderRestaurantState extends State<CompletedOrderRestaurant> {
           ),
         ],
       ),
-      bottomNavigationBar: const CustomBottomNav(),
+      //bottomNavigationBar: const CustomBottomNav(),
     );
   }
 

@@ -4,11 +4,36 @@ import 'package:kinkorn/customer/choose_menu.dart';
 import 'package:kinkorn/template/bottom_bar.dart';
 import 'package:kinkorn/template/curve_app_bar.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:easy_localization/easy_localization.dart';
 
-class ChooseRestaurantScreen extends StatelessWidget {
+class ChooseRestaurantScreen extends StatefulWidget {
   final String canteenId;
 
   const ChooseRestaurantScreen({super.key, required this.canteenId});
+
+  @override
+  State<ChooseRestaurantScreen> createState() => _ChooseRestaurantScreenState();
+}
+
+class _ChooseRestaurantScreenState extends State<ChooseRestaurantScreen> {
+  final TextEditingController searchController = TextEditingController();
+  String searchQuery = '';
+
+  @override
+  void initState() {
+    super.initState();
+    searchController.addListener(() {
+      setState(() {
+        searchQuery = searchController.text.toLowerCase();
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,8 +41,12 @@ class ChooseRestaurantScreen extends StatelessWidget {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFCF9CA),
-      body: Stack(
+  backgroundColor: const Color(0xFFFCF9CA),
+  resizeToAvoidBottomInset: true,
+  body: SingleChildScrollView(
+    child: SizedBox(
+      height: MediaQuery.of(context).size.height,
+      child: Stack(
         children: [
           const Positioned(
             top: 0,
@@ -39,7 +68,7 @@ class ChooseRestaurantScreen extends StatelessWidget {
                   },
                 ),
                 Text(
-                  "Choose Restaurant....",
+                  'choose_restaurant'.tr(),
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: screenWidth * 0.08,
@@ -47,14 +76,42 @@ class ChooseRestaurantScreen extends StatelessWidget {
                   ),
                 )
               ],
-            )
+            ),
           ),
-          
+          Positioned(
+            top: screenHeight * 0.20,
+            left: screenWidth * 0.1,
+            right: screenWidth * 0.1,
+            child: Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: screenWidth * 0.04,
+                vertical: screenHeight * 0.005,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(1.0),
+                borderRadius: BorderRadius.circular(screenWidth * 0.1),
+              ),
+              child: TextField(
+                controller: searchController,
+                decoration: InputDecoration(
+                  hintText: "search_restaurant".tr(),
+                  prefixIcon: Icon(Icons.search, color: Colors.grey, size: screenWidth * 0.06),
+                  border: InputBorder.none,
+                  filled: false,
+                  hintStyle: TextStyle(
+                    color: Colors.grey.shade600,
+                    fontSize: screenWidth * 0.04,
+                  ),
+                ),
+                style: TextStyle(color: Colors.black, fontSize: screenWidth * 0.045),
+              ),
+            ),
+          ),
           Positioned.fill(
-            top: screenHeight * 0.32,
+            top: screenHeight * 0.28,
             bottom: screenHeight * 0.09,
             child: FutureBuilder<DocumentSnapshot>(
-              future: FirebaseFirestore.instance.collection('canteens').doc(canteenId).get(),
+              future: FirebaseFirestore.instance.collection('canteens').doc(widget.canteenId).get(),
               builder: (context, canteenSnapshot) {
                 if (!canteenSnapshot.hasData) {
                   return const Center(child: CircularProgressIndicator());
@@ -66,31 +123,40 @@ class ChooseRestaurantScreen extends StatelessWidget {
                 return StreamBuilder<QuerySnapshot>(
                   stream: FirebaseFirestore.instance
                       .collection('restaurants')
-                      .where('canteenId', isEqualTo: canteenId)
+                      .where('canteenId', isEqualTo: widget.canteenId)
                       .where('isApproved', isEqualTo: true)
                       .snapshots(),
-
                   builder: (context, snapshot) {
                     if (!snapshot.hasData) {
                       return const Center(child: CircularProgressIndicator());
                     }
 
                     final docs = snapshot.data!.docs;
+                    final filteredDocs = docs.where((doc) {
+                      final data = doc.data() as Map<String, dynamic>;
+                      final name = data['restaurantName'] ?? '';
+                      return name.toLowerCase().contains(searchQuery);
+                    }).toList();
 
-                    if (docs.isEmpty) {
-                      return const Center(child: Text("No restaurants found."));
+                    if (filteredDocs.isEmpty) {
+                      return Center(
+                        child: Text(
+                          'no_restaurants_found'.tr(),
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                      );
                     }
 
                     return ListView.builder(
                       padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.08),
-                      itemCount: docs.length,
+                      itemCount: filteredDocs.length,
                       itemBuilder: (context, index) {
-                        final data = docs[index].data() as Map<String, dynamic>;
+                        final data = filteredDocs[index].data() as Map<String, dynamic>;
 
                         final name = data['restaurantName'] ?? '';
                         final status = data['openStatus'] ?? '';
                         final logoUrl = data['logoUrl'] ?? '';
-                        final restaurantId = docs[index].id;
+                        final restaurantId = filteredDocs[index].id;
 
                         return Padding(
                           padding: EdgeInsets.only(bottom: screenHeight * 0.025),
@@ -133,7 +199,6 @@ class ChooseRestaurantScreen extends StatelessWidget {
                                           )
                                         : const Center(child: Icon(Icons.restaurant, size: 40)),
                                   ),
-
                                   Expanded(
                                     child: Padding(
                                       padding: EdgeInsets.symmetric(
@@ -166,7 +231,7 @@ class ChooseRestaurantScreen extends StatelessWidget {
                                               borderRadius: BorderRadius.circular(21),
                                             ),
                                             child: Text(
-                                              status == 'open' ? "open to order" : "closed",
+                                              status == 'open' ? 'open_to_order'.tr() : 'closed'.tr(),
                                               style: TextStyle(
                                                 fontWeight: FontWeight.w600,
                                                 fontSize: screenWidth * 0.03,
@@ -176,7 +241,7 @@ class ChooseRestaurantScreen extends StatelessWidget {
                                           ),
                                           Flexible(
                                             child: Text(
-                                              "Location: $canteenLocation",
+                                              canteenLocation,
                                               style: TextStyle(
                                                 fontWeight: FontWeight.w600,
                                                 fontSize: screenWidth * 0.03,
@@ -211,6 +276,8 @@ class ChooseRestaurantScreen extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    ),
       ),
     );
   }

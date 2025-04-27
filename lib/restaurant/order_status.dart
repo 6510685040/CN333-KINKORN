@@ -236,7 +236,7 @@ class _OrderStatusRestaurantState extends State<OrderStatusRestaurant> {
           ),
         ],
       ),
-      bottomNavigationBar: const CustomBottomNav(),
+      bottomNavigationBar: const CustomBottomNav(initialIndex: 1,),
     );
   }
 

@@ -4,17 +4,22 @@ import 'package:kinkorn/customer/choose_restaurant.dart';
 import 'package:kinkorn/template/curve_app_bar.dart';
 import 'package:kinkorn/template/bottom_bar.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:easy_localization/easy_localization.dart'; 
 
-class ChooseCanteen extends StatelessWidget {
+class ChooseCanteen extends StatefulWidget {
   const ChooseCanteen({super.key});
 
+  @override
+  State<ChooseCanteen> createState() => _ChooseCanteenState();
+}
+
+class _ChooseCanteenState extends State<ChooseCanteen> {
   @override
   Widget build(BuildContext context) {
     final Size screenSize = MediaQuery.of(context).size;
     final double screenWidth = screenSize.width;
     final double screenHeight = screenSize.height;
 
-    // ตั้งค่าขนาดแบบ responsive
     final double horizontalPadding = screenWidth * 0.07;
     final double titleTopPadding = screenHeight * 0.09;
     final double titleFontSize = screenWidth * 0.087;
@@ -39,7 +44,7 @@ class ChooseCanteen extends StatelessWidget {
             left: horizontalPadding,
             top: titleTopPadding,
             child: Text(
-              "Where to eat?",
+              'where_to_eat'.tr(), 
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: titleFontSize,
@@ -60,7 +65,12 @@ class ChooseCanteen extends StatelessWidget {
                 final docs = snapshot.data!.docs;
 
                 if (docs.isEmpty) {
-                  return const Center(child: Text('No canteens available.'));
+                  return Center(
+                    child: Text(
+                      'no_canteens_available'.tr(), 
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  );
                 }
 
                 return ListView.builder(
@@ -99,6 +109,7 @@ class ChooseCanteen extends StatelessWidget {
             child: BottomBar(
               screenHeight: screenHeight,
               screenWidth: screenWidth,
+              initialIndex: 0,
             ),
           ),
         ],
