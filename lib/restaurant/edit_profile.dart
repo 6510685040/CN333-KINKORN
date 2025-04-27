@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:kinkorn/template/curve_app_bar.dart';
@@ -49,7 +50,7 @@ class _EditProfileRestaurantState extends State<EditProfileRestaurant> {
     final mobile = mobileController.text.trim();
     if (firstName.isEmpty || lastName.isEmpty || mobile.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill in all fields')),
+        SnackBar(content: Text('fill_all_fields'.tr())),
       );
       return;
     }
@@ -64,7 +65,7 @@ class _EditProfileRestaurantState extends State<EditProfileRestaurant> {
 
     });
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Profile update successfully!')),
+      SnackBar(content: Text('profile_update_success'.tr())),
     );
     Navigator.pop(context);
   }
@@ -135,8 +136,8 @@ class _EditProfileRestaurantState extends State<EditProfileRestaurant> {
             right: 0,
             child: Column(
               children: [
-                const Text(
-                  'Profile',
+                Text(
+                  'profile'.tr(),
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
@@ -191,9 +192,11 @@ class _EditProfileRestaurantState extends State<EditProfileRestaurant> {
                       minimumSize: const Size(0, 0), // ขนาดเล็กสุด
                     ),
                     child: Text(
-                      _image == null ? 'choose your photo' : 'edit your photo',
-                      style: const TextStyle(
-                          color: Colors.white, fontSize: 12),
+                      (_image == null ? 'choose_photo' : 'edit_photo').tr(),
+                      style: TextStyle(
+                        color: Colors.white, 
+                        fontSize: screenWidth * 0.035
+                      ),
                     ),
                   ),
                 // ปุ่มแก้ไขรูปภาพถ้ามีการเลือกรูป
@@ -209,10 +212,10 @@ class _EditProfileRestaurantState extends State<EditProfileRestaurant> {
                           vertical: 6, horizontal: 12), // เล็กลง
                       minimumSize: const Size(0, 0), // ขนาดเล็กสุด
                     ),
-                    child: const Text(
-                      'edit your photo',
+                    child: Text(
+                      'edit_photo'.tr(),
                       style: TextStyle(
-                          color: Colors.white, fontSize: 12), // เล็กลง
+                          color: Colors.white, fontSize: screenWidth * 0.035), // เล็กลง
                     ),
                   ),
               ],
@@ -229,11 +232,11 @@ class _EditProfileRestaurantState extends State<EditProfileRestaurant> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    _buildTextField(label: 'First Name', controller: firstNameController),
+                    _buildTextField(label: 'first_name'.tr(), controller: firstNameController),
                     const SizedBox(height: 15),
-                    _buildTextField(label: 'Last Name', controller: lastNameController),
+                    _buildTextField(label: 'last_name'.tr(), controller: lastNameController),
                     const SizedBox(height: 15),
-                    _buildTextField(label: 'Mobile Number', controller: mobileController),
+                    _buildTextField(label: 'mobile_number'.tr(), controller: mobileController),
                     const SizedBox(height: 30),
                     // ✅ ปุ่ม Save
                     ElevatedButton(
@@ -244,11 +247,11 @@ class _EditProfileRestaurantState extends State<EditProfileRestaurant> {
                         ),
                       ),
                       onPressed: _saveProfile,
-                      child: const Padding(
+                      child: Padding(
                         padding:
                             EdgeInsets.symmetric(vertical: 12, horizontal: 40),
                         child:
-                            Text('Save', style: TextStyle(color: Colors.white)),
+                            Text('save'.tr(), style: TextStyle(color: Colors.white)),
                       ),
                     ),
                   ],

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:kinkorn/restaurant/contactus_restaurant.dart';
@@ -97,7 +98,7 @@ class MoreRes extends StatelessWidget {
                                           .snapshots(),
                                       builder: (context, snapshot) {
                                         if (snapshot.hasError) {
-                                          return const Text('Error',
+                                          return Text('error_loading'.tr(),
                                             style: TextStyle(
                                               fontSize: 16,
                                               fontWeight: FontWeight.bold,
@@ -114,7 +115,7 @@ class MoreRes extends StatelessWidget {
                                         final data = snapshot.data!.data()! as Map<String, dynamic>;
                                         final firstName = data['firstName'] as String? ?? '';
                                         final lastName = data['lastName'] as String? ?? '';
-                                        final name = (firstName + ' ' + lastName).trim().isNotEmpty ? '$firstName $lastName' : 'ไม่มีชื่อ';
+                                        final name = (firstName + ' ' + lastName).trim().isNotEmpty ? '$firstName $lastName' : 'no_name'.tr();
 
                                         return Column(
                                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -131,8 +132,8 @@ class MoreRes extends StatelessWidget {
                                               children: [
                                                 GestureDetector(
                                                   onTap: () => Navigator.pop(context),
-                                                  child: const Text(
-                                                    "Edit my profile",
+                                                  child: Text(
+                                                    'edit_my_profile'.tr(),
                                                     style: TextStyle(
                                                       fontSize: 14,
                                                       color: Color(0xFFAF1F1F),
@@ -161,138 +162,38 @@ class MoreRes extends StatelessWidget {
                           const SizedBox(height: 50),
 
                           // Language
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                            backgroundColor:Color(0xFFAF1F1F),
-                              shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20)
-                              ),
-                              elevation: 5, // ✅ ทำให้ปุ่มลอยขึ้น
-                              shadowColor: Colors.black.withOpacity(0.3),
-                            ),
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) => LanguageSettingRestaurant()),
-                              );
-                            },
-                            child: const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 12),
-                              child: Center(
-                                child: Text(
-                                  'Language',
-                                  style: TextStyle(color: Color(0xFFFCF9CA), fontSize: 16),
-                                ),
-                              ),
-                            ),
-                          ),
+                          _buildMenuButton(context, "language".tr(), () {
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => const LanguageSettingRestaurant()));
+                          }),
                           const SizedBox(height: 30),
 
                           // Notification
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                            backgroundColor:Color(0xFFAF1F1F),
-                              shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20)
-                              ),
-                              elevation: 5, // ✅ ทำให้ปุ่มลอยขึ้น
-                              shadowColor: Colors.black.withOpacity(0.3),
-                            ),
-                            onPressed: () {
-                              //NotificationCus().showNotification();
-                            },
-                            child: const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 12),
-                              child: Center(
-                                child: Text(
-                                  'Notification',
-                                  style: TextStyle(color: Color(0xFFFCF9CA), fontSize: 16),
-                                ),
-                              ),
-                            ),
-                          ),
+                          _buildMenuButton(context, "notification".tr(), () {
+                            // Future use
+                          }),
                           const SizedBox(height: 30),
 
                           // Contact us
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                            backgroundColor:Color(0xFFAF1F1F),
-                              shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20)
-                              ),
-                              elevation: 5, // ✅ ทำให้ปุ่มลอยขึ้น
-                              shadowColor: Colors.black.withOpacity(0.3),
-                            ),
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) => ContactUsRestaurant()),
-                              );
-                            },
-                            child: const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 12),
-                              child: Center(
-                                child: Text(
-                                  'Contact us',
-                                  style: TextStyle(color: Color(0xFFFCF9CA), fontSize: 16),
-                                ),
-                              ),
-                            ),
-                          ),
+                          _buildMenuButton(context, "contact_us".tr(), () {
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => const ContactUsRestaurant()));
+                          }),
                           const SizedBox(height: 30),
 
                           // Log out
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFB7B7B7),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              elevation: 5,
-                              shadowColor: Colors.black.withOpacity(0.3),
-                            ),
-                            onPressed: () async {
-                              await FirebaseAuth.instance.signOut();
-
-                              Navigator.pushAndRemoveUntil(
-                                context,
-                                MaterialPageRoute(builder: (context) => const HomeScreen()),
-                                (Route<dynamic> route) => false,
-                              );
-                            },
-                            child: const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 12),
-                              child: Center(
-                                child: Text(
-                                  'Log out',
-                                  style: TextStyle(color: Color(0xFFFCF9CA), fontSize: 16),
-                                ),
-                              ),
-                            ),
-                          ),
+                          _buildMenuButton(context, "logout".tr(), () async {
+                            await FirebaseAuth.instance.signOut();
+                            Navigator.pushAndRemoveUntil(
+                              context,
+                              MaterialPageRoute(builder: (context) => const HomeScreen()),
+                              (route) => false,
+                            );
+                          }, color: const Color(0xFFB7B7B7)),
                           const SizedBox(height: 30),
 
                           // Delete account
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Color(0xFFFF0606),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              elevation: 5, // ✅ ทำให้ปุ่มลอยขึ้น
-                              shadowColor: Colors.black.withOpacity(0.3),
-                            ),
-                            onPressed: () {},
-                            child: const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 12),
-                              child: Center(
-                                child: Text(
-                                  'Delete account',
-                                  style: TextStyle(color: Color(0xFFFCF9CA), fontSize: 16),
-                                ),
-                              ),
-                            ),
-                          ),
+                          _buildMenuButton(context, "delete_account".tr(), () {
+                            // Future use
+                          }, color: const Color(0xFFFF0606)),
                         ],
                       ),
                     ),
@@ -304,6 +205,28 @@ class MoreRes extends StatelessWidget {
         ],
       ),
       bottomNavigationBar: const CustomBottomNav(initialIndex: 3),
+    );
+  }
+  Widget _buildMenuButton(BuildContext context, String title, VoidCallback onPressed, {Color color = const Color(0xFFAF1F1F)}) {
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: color,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        elevation: 5,
+        shadowColor: Colors.black.withOpacity(0.3),
+      ),
+      onPressed: onPressed,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Center(
+          child: Text(
+            title,
+            style: const TextStyle(color: Color(0xFFFCF9CA), fontSize: 16),
+          ),
+        ),
+      ),
     );
   }
 }

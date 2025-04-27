@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:kinkorn/customer/choose_canteen.dart';
 import 'package:kinkorn/restaurant/sales_report.dart';
@@ -69,19 +70,19 @@ class _CustomBottomNavState extends State<CustomBottomNav> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          buildClickableNavItem(context, 0, Icons.home, "home", () {
+          buildClickableNavItem(context, 0, Icons.home, "home".tr(), () {
             navigateWithSlide(context, RestaurantDashboard(), 0);
           }),
-          buildClickableNavItem(context, 1, Icons.notifications, "status", () {
+          buildClickableNavItem(context, 1, Icons.notifications, "status".tr(), () {
             navigateWithSlide(context, OrderStatusRestaurant(), 1);
           }),
-          buildClickableNavItem(context, 2, Icons.bar_chart, "sale report", () {
+          buildClickableNavItem(context, 2, Icons.bar_chart, "sales_report".tr(), () {
             navigateWithSlide(context, SalesReport(), 2);
           }),
-          buildClickableNavItem(context, 3, Icons.menu, "more", () {
+          buildClickableNavItem(context, 3, Icons.menu, "more".tr(), () {
             navigateWithSlide(context, MoreRes(), 3);
           }),
-          buildClickableNavItem(context, 4, Icons.person_2, "customer", () {
+          buildClickableNavItem(context, 4, Icons.person_2, "customer".tr(), () {
             navigateWithSlide(context, ChooseCanteen(), 4);
           }),
         ],

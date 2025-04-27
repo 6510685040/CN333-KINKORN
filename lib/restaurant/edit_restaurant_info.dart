@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -27,13 +28,13 @@ class _EditRestaurantPageState extends State<EditRestaurantPage> {
   List<String> _categories = [];
 
   Map<String, bool> _openingDays = {
-  'Monday': false,
-  'Tuesday': false,
-  'Wednesday': false,
-  'Thursday': false,
-  'Friday': false,
-  'Saturday': false,
-  'Sunday': false,
+  'monday'.tr(): false,
+  'tuesday'.tr(): false,
+  'wednesday'.tr(): false,
+  'thursday'.tr(): false,
+  'friday'.tr(): false,
+  'saturday'.tr(): false,
+  'sunday'.tr(): false,
 };
 
 
@@ -128,7 +129,7 @@ class _EditRestaurantPageState extends State<EditRestaurantPage> {
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Saved successfully')),
+      SnackBar(content: Text('save_success'.tr())),
     );
   }
 
@@ -165,8 +166,8 @@ class _EditRestaurantPageState extends State<EditRestaurantPage> {
       appBar: AppBar(
         backgroundColor: const Color(0xFFFFF8E1),
         elevation: 0,
-        title: const Text(
-          'EDIT RESTAURANT',
+        title: Text(
+          'edit_res'.tr(),
           style: TextStyle(color: Color(0xFFB71C1C), fontSize: 24, fontWeight: FontWeight.bold),
         ),
         leading: IconButton(
@@ -191,8 +192,8 @@ class _EditRestaurantPageState extends State<EditRestaurantPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Please edit your restaurant',
+                          Text(
+                            'please_edit_res'.tr(),
                             style: TextStyle(color: Color(0xFFB71C1C), fontSize: 18, fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 20),
@@ -220,9 +221,9 @@ class _EditRestaurantPageState extends State<EditRestaurantPage> {
                                     ],
                                   ),
                                   child: _imageFile == null && _logoUrl == null
-                                      ? const Center(
+                                      ? Center(
                                           child: Text(
-                                            'Add\nyour\nPicture',
+                                            'add_your_picture'.tr(),
                                             textAlign: TextAlign.center,
                                             style: TextStyle(color: Color(0xFFB71C1C), fontSize: 16),
                                           ),
@@ -238,8 +239,8 @@ class _EditRestaurantPageState extends State<EditRestaurantPage> {
                                       color: Colors.grey[300],
                                       borderRadius: BorderRadius.circular(20),
                                     ),
-                                    child: const Text(
-                                      'edit logo',
+                                    child: Text(
+                                      'edit_photo'.tr(),
                                       style: TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
                                     ),
                                   ),
@@ -248,13 +249,13 @@ class _EditRestaurantPageState extends State<EditRestaurantPage> {
                             ),
                           ),
                           const SizedBox(height: 20),
-                          _buildLabeledTextField('Restaurant Name', _nameController),
+                          _buildLabeledTextField('res_name'.tr(), _nameController),
                           const SizedBox(height: 15),
-                          _buildLabeledTextField('Description', _descriptionController, maxLines: 5),
+                          _buildLabeledTextField('description'.tr(), _descriptionController, maxLines: 5),
                           const SizedBox(height: 15),
-                          _buildLabeledDropdownField('Category'),
+                          _buildLabeledDropdownField('category'.tr()),
                           const SizedBox(height: 20),
-                          _buildTimePickerField('Time', _timeController),
+                          _buildTimePickerField('time'.tr(), _timeController),
                           const SizedBox(height: 15),
                           _buildCanteenDropdown(),
                           const SizedBox(height: 15),
@@ -271,7 +272,7 @@ class _EditRestaurantPageState extends State<EditRestaurantPage> {
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                               ),
-                              child: const Text('save',style: TextStyle(color: Color.fromARGB(255, 255, 255, 255)),),
+                              child: Text('save'.tr(),style: TextStyle(color: Color.fromARGB(255, 255, 255, 255)),),
                             ),
                           ),
                         ],
@@ -309,7 +310,7 @@ class _EditRestaurantPageState extends State<EditRestaurantPage> {
         const SizedBox(height: 8),
         TextField(
           controller: controller,
-          readOnly: label == 'Canteen',
+          readOnly: label == 'canteen'.tr(),
           maxLines: maxLines,
           decoration: InputDecoration(
             hintText: label,
@@ -332,7 +333,7 @@ class _EditRestaurantPageState extends State<EditRestaurantPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Canteen', style: TextStyle(color: Color(0xFFB71C1C), fontSize: 16, fontWeight: FontWeight.bold)),
+        Text('canteen'.tr(), style: TextStyle(color: Color(0xFFB71C1C), fontSize: 16, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -400,8 +401,8 @@ class _EditRestaurantPageState extends State<EditRestaurantPage> {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      const Text(
-        'Days Open',
+      Text(
+        'days_open'.tr(),
         style: TextStyle(color: Color(0xFFB71C1C), fontSize: 16, fontWeight: FontWeight.bold),
       ),
       const SizedBox(height: 8),

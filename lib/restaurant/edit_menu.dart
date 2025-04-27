@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -132,7 +133,7 @@ class _EditMenuPageState extends State<EditMenuPage> {
     
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Menu updated successfully')),
+      SnackBar(content: Text('menu_update_success'.tr())),
     );
     Navigator.pop(context);
   }
@@ -152,8 +153,8 @@ class _EditMenuPageState extends State<EditMenuPage> {
       appBar: AppBar(
         backgroundColor: const Color(0xFFFFF8E1),
         elevation: 0,
-        title: const Text(
-          'EDIT MENU',
+        title: Text(
+          'edit_menu'.tr(),
           style: TextStyle(
             color: Color(0xFFB71C1C),
             fontSize: 24,
@@ -186,8 +187,8 @@ class _EditMenuPageState extends State<EditMenuPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Edit your menu details',
+                      Text(
+                        'edit_menu_detail'.tr(),
                         style: TextStyle(
                           color: Color(0xFFB71C1C),
                           fontSize: 18,
@@ -204,7 +205,7 @@ class _EditMenuPageState extends State<EditMenuPage> {
                               children: [
                                 ListTile(
                                   leading: const Icon(Icons.camera_alt),
-                                  title: const Text('Take a photo'),
+                                  title: Text('take_photo'.tr()),
                                   onTap: () {
                                     Navigator.pop(context);
                                     pickImage(ImageSource.camera);
@@ -212,7 +213,7 @@ class _EditMenuPageState extends State<EditMenuPage> {
                                 ),
                                 ListTile(
                                   leading: const Icon(Icons.photo),
-                                  title: const Text('Choose from gallery'),
+                                  title: Text('choose_your_photo'.tr()),
                                   onTap: () {
                                     Navigator.pop(context);
                                     pickImage(ImageSource.gallery);
@@ -248,12 +249,12 @@ class _EditMenuPageState extends State<EditMenuPage> {
                                       : null),
                             ),
                             child: imageFile == null && imageUrl == null
-                                ? const Center(
+                                ? Center(
                                     child: Column(
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
                                         Text(
-                                          'Edit\nyour\nPicture',
+                                          'edit_your_picture'.tr(),
                                           textAlign: TextAlign.center,
                                           style: TextStyle(
                                             color: Color(0xFFB71C1C),
@@ -275,13 +276,13 @@ class _EditMenuPageState extends State<EditMenuPage> {
                         ),
                       ),
                       const SizedBox(height: 20),
-                      _buildTextField('Name of menu', controller: nameController),
+                      _buildTextField('name_of_menu'.tr(), controller: nameController),
                       const SizedBox(height: 10),
-                      _buildTextField('Price', controller: priceController, keyboardType: TextInputType.number),
+                      _buildTextField('price'.tr(), controller: priceController, keyboardType: TextInputType.number),
                       const SizedBox(height: 10),
-                      _buildTextField('About', controller: descriptionController, maxLines: 3),
+                      _buildTextField('about_manu'.tr(), controller: descriptionController, maxLines: 3),
                       const SizedBox(height: 10),
-                      _buildDropdownField('Category'),
+                      _buildDropdownField('category'.tr()),
                       const SizedBox(height: 20),
                       _buildOptionFields(),
                        const SizedBox(height: 20),
@@ -299,8 +300,8 @@ class _EditMenuPageState extends State<EditMenuPage> {
                               borderRadius: BorderRadius.circular(10),
                             ),
                           ),
-                          child: const Text(
-                            'Save Changes',
+                          child: Text(
+                            'save_changes'.tr(),
                             style: TextStyle(color: Colors.white),
                           ),
                         ),
@@ -373,16 +374,16 @@ Widget _buildDropdownField(String hint) {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Delete Menu'),
-        content: const Text('Are you sure you want to delete this menu?'),
+        title: const Text('delete_menu').tr(),
+        content: const Text('delete_confirmation').tr(),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text('cancel'.tr())),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
               _deleteMenu();
             },
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            child: Text('delete'.tr(), style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -403,7 +404,7 @@ Widget _buildDropdownField(String hint) {
         .delete();
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Menu deleted successfully')),
+      SnackBar(content: Text('menu_delete_success'.tr())),
     );
 
     Navigator.pop(context);
@@ -414,8 +415,8 @@ Widget _buildDropdownField(String hint) {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      const Text(
-        'Add-ons',
+      Text(
+        'addons'.tr(),
         style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFB71C1C)),
       ),
       const SizedBox(height: 10),
@@ -455,7 +456,7 @@ Widget _buildDropdownField(String hint) {
       GestureDetector(
         onTap: () {
           setState(() {
-            options.add({'name': '', 'price': 0.0});
+            options.add({'name'.tr(): '', 'price'.tr(): 0.0});
           });
         },
         child: Container(
@@ -464,12 +465,12 @@ Widget _buildDropdownField(String hint) {
             borderRadius: BorderRadius.circular(24),
           ),
           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-          child: const Row(
+          child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(Icons.add, size: 16),
               SizedBox(width: 5),
-              Text('Add new options', style: TextStyle(fontSize: 11, color: Color(0xFF848484))),
+              Text('add_options'.tr(), style: TextStyle(fontSize: 11, color: Color(0xFF848484))),
             ],
           ),
         ),
