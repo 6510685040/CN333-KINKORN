@@ -331,7 +331,7 @@ String formatDateTime(DateTime dateTime) {
     );
 
     setState(() {
-      _orderData = fetchOrderData(); // reload
+      _orderStream = streamOrderData(); // reload
     });
   } catch (e) {
     print('Error confirming pickup: $e');
