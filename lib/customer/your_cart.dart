@@ -17,6 +17,7 @@ class YourCart extends StatefulWidget {
 }
 
 class _YourCartState extends State<YourCart> {
+  bool hasPickedTime = false;
   DateTime selectedTime = DateTime.now();
   final TextEditingController specialNoteController = TextEditingController();
 
@@ -27,36 +28,52 @@ class _YourCartState extends State<YourCart> {
   }
 
   void _showCupertinoTimePicker() {
+    final now = DateTime.now();
+    final minimumPickupTime = now.add(const Duration(minutes: 15));
+    DateTime tempPickedTime = minimumPickupTime;
+
     showModalBottomSheet(
       context: context,
       builder: (_) {
         return Container(
-          height: 250,
+          height: 300,
           color: Colors.white,
           child: Column(
             children: [
+               Padding(
+                padding: EdgeInsets.all(8.0),
+                child: Text(
+                  'time_pick'.tr(),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
+                ),
+              ),
               SizedBox(
                 height: 200,
                 child: CupertinoDatePicker(
                   mode: CupertinoDatePickerMode.time,
-                  initialDateTime: selectedTime,
+                  initialDateTime: tempPickedTime,
+                  minimumDate: minimumPickupTime,
                   use24hFormat: true,
                   onDateTimeChanged: (DateTime newTime) {
-                    setState(() {
-                      selectedTime = DateTime(
-                        selectedTime.year,
-                        selectedTime.month,
-                        selectedTime.day,
-                        newTime.hour,
-                        newTime.minute,
-                      );
-                    });
+                    tempPickedTime = DateTime(
+                      minimumPickupTime.year,
+                      minimumPickupTime.month,
+                      minimumPickupTime.day,
+                      newTime.hour,
+                      newTime.minute,
+                    );
                   },
                 ),
               ),
               TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('done').tr(), 
+                onPressed: () {
+                  setState(() {
+                    selectedTime = tempPickedTime;
+                    hasPickedTime = true;
+                  });
+                  Navigator.pop(context);
+                },
+                child: const Text('done').tr(),
               )
             ],
           ),
@@ -96,7 +113,7 @@ class _YourCartState extends State<YourCart> {
       for (var item in orders) {
         if (item['restaurantId'] != restaurantId) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('only_one_restaurant').tr()), 
+            SnackBar(content: Text('only_one_restaurant').tr()),
           );
           return;
         }
@@ -144,7 +161,7 @@ class _YourCartState extends State<YourCart> {
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('error_placing_order').tr(args: [e.toString()])), 
+        SnackBar(content: Text('error_placing_order').tr(args: [e.toString()])),
       );
     }
   }
@@ -153,7 +170,6 @@ class _YourCartState extends State<YourCart> {
   Widget build(BuildContext context) {
     final cartProvider = Provider.of<CartProvider>(context);
     final orders = cartProvider.cartItems;
-
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
@@ -163,7 +179,7 @@ class _YourCartState extends State<YourCart> {
           Container(width: screenWidth, height: screenHeight, color: Colors.yellow[100]),
           Positioned(
             top: 0, left: 0, right: 0,
-            child: CurveAppBar(title: 'your_cart'.tr()), // ✅ แบบนี้สวยสุด
+            child: CurveAppBar(title: 'your_cart'.tr()),
           ),
           SingleChildScrollView(
             child: Padding(
@@ -271,7 +287,9 @@ class _YourCartState extends State<YourCart> {
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                           ),
                           child: Text(
-                            '${'picked_time'.tr()} : ${selectedTime.hour.toString().padLeft(2, '0')}:${selectedTime.minute.toString().padLeft(2, '0')}',
+                            hasPickedTime
+                                ? '${'picked_time'.tr()} : ${selectedTime.hour.toString().padLeft(2, '0')}:${selectedTime.minute.toString().padLeft(2, '0')}'
+                                : 'select_pickup_time'.tr(),
                             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                           ),
                         ),
@@ -334,7 +352,7 @@ class _YourCartState extends State<YourCart> {
             right: 0,
             child: BottomBar(
               screenHeight: screenHeight,
-              screenWidth: MediaQuery.of(context).size.width,
+              screenWidth: screenWidth,
               initialIndex: 1,
             ),
           ),

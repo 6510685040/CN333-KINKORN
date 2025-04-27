@@ -99,7 +99,7 @@ class _SalesReportState extends State<SalesReport> {
       if (ts == null) continue;
 
       final dateKey = DateFormat('yyyy-MM-dd').format(ts.toDate());
-      final items = data['items'] as List<dynamic>? ?? [];
+      final items = data['orders'] as List<dynamic>? ?? [];
 
       for (var item in items) {
         final name = item['name'] as String? ?? 'Unnamed';
@@ -163,14 +163,29 @@ DateTime normalizeDate(DateTime date) {
 
  // double calculateTotalSales() =>
      // selectedSales.fold(0, (sum, item) => sum + double.parse(item['price']));
-double calculateTotalSales() =>
-    selectedSales.fold(0.0, (sum, item) {
-      final revenue = double.parse(item['revenue']);
-      return sum + revenue;  
-    });
+double calculateTotalSales() {
+  double total = 0.0;
+  for (var sale in selectedSales) {
+    final double menuRevenue = double.parse(sale['revenue']);
+    total += menuRevenue;
 
-  int calculateTotalQuantity() =>
-      selectedSales.fold(0, (sum, item) => sum + int.parse(item['quantity']));
+    final List<dynamic> addons = sale['addons'] ?? [];
+    for (var addon in addons) {
+      final int addonQuantity = addon['quantity'] ?? 0;
+      final double addonPrice = (addon['price'] ?? 0).toDouble();
+      total += addonQuantity * addonPrice;
+    }
+  }
+  return total;
+}
+int calculateTotalQuantity() {
+  int total = 0;
+  for (var sale in selectedSales) {
+    total += int.tryParse(sale['quantity'] ?? '0') ?? 0;
+  }
+  return total;
+}
+
 
 @override
 Widget build(BuildContext context) {
@@ -278,30 +293,31 @@ Widget build(BuildContext context) {
                               ? List<Map<String, dynamic>>.from(sale['addons'])
                               : [];
                             return DataRow(cells: [
-                              DataCell(
+                             DataCell(
                                 Column(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.start, // <-- ขยับตัวหนังสือไปซ้าย
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Text(
                                       sale['menu'],
-                                      style: TextStyle(fontWeight: FontWeight.bold),
+                                      style: const TextStyle(fontWeight: FontWeight.bold),
                                     ),
                                     ...addons.map((addon) => Padding(
                                       padding: const EdgeInsets.only(left: 8.0, top: 2.0),
-                                        child: Row(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            Text('• '),
-                                            Expanded(
-                                              child: Text('${addon['name']} x${addon['quantity']}'),
-                                            ),
-                                          ],
-                                        ),
-                                      )),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.start, // <-- ขยับ bullet point ไปทางซ้ายด้วย
+                                        children: [
+                                          const Text('• '),
+                                          Expanded(
+                                            child: Text('${addon['name']} x${addon['quantity']}'),
+                                          ),
+                                        ],
+                                      ),
+                                    )),
                                   ],
                                 ),
                               ),
+
                               DataCell(
                                 Align(
                                   alignment: Alignment.center,

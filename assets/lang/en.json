@@ -89,7 +89,9 @@
     "choose_photo": "Choose your photo",
     "edit_photo": "Edit your photo",
     "about_us":"About us",
-    "about_us_detail": "Developed by members of the Faculty of Engineering, Computer Engineering Department, Thammasat University, to address the issue of overcrowding in the cafeteria."
+    "about_us_detail": "Developed by members of the Faculty of Engineering, Computer Engineering Department, Thammasat University, to address the issue of overcrowding in the cafeteria.",
+    "confirm_received": "Confirm receive",
+    "time_pick": "Please select pickup yime after 15 mins"
       
   }
 

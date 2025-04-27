@@ -475,20 +475,27 @@ Widget build(BuildContext context) {
                                 ),
                               ),
                             ),
-                            if (data['statusText'] == 'Waiting for pickup') ...[
+                            const SizedBox(height: 20),
+                           if (data['statusText'] == 'Waiting for pickup') ...[
                               ElevatedButton(
                                 onPressed: _confirmPickup,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.green,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8), 
+                                  ),
+                                ),
                                 child: Padding(
                                   padding: EdgeInsets.symmetric(vertical: 12),
                                   child: Center(
                                     child: Text(
-                                      'confirm_received'.tr(), // เปลี่ยนเป็น รับอาหารแล้ว
+                                      'confirm_received'.tr(),
                                       style: TextStyle(color: Colors.white, fontSize: 16),
                                     ),
                                   ),
                                 ),
                               ),
-                            ],
+],
                           ],
                         ),
                       ),
