@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:kinkorn/restaurant/add_menu.dart';
 import 'package:kinkorn/restaurant/edit_menu.dart';
@@ -27,7 +28,7 @@ class MenuPage extends StatelessWidget {
                   ),
                   const SizedBox(width: 110),
                   Text(
-                    'MENU',
+                    'menu_page_title'.tr(),
                     style: TextStyle(
                       color: Colors.red[800],
                       fontSize: MediaQuery.of(context).size.width * 0.07,
@@ -41,7 +42,7 @@ class MenuPage extends StatelessWidget {
           ),
 
           // Title Section
-          const Padding(
+          Padding(
             padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Align(
               alignment: Alignment.centerLeft,
@@ -49,7 +50,7 @@ class MenuPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'All Menus',
+                    'all_menu'.tr(),
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 22,
@@ -83,9 +84,9 @@ class MenuPage extends StatelessWidget {
                   }
 
                   if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                    return const Center(
+                    return Center(
                       child: Text(
-                        'No menu items found.',
+                        'no_menu_found'.tr(),
                         style: TextStyle(color: Colors.black54),
                       ),
                     );
@@ -144,7 +145,7 @@ class MenuPage extends StatelessWidget {
                           backgroundColor: const Color(0xFFB71C1C),
                           foregroundColor: Colors.white,
                         ),
-                        child: const Text('Edit'),
+                        child: const Text('edit').tr(),
                       ),
 
                       );
@@ -174,8 +175,8 @@ class MenuPage extends StatelessWidget {
                     MaterialPageRoute(builder: (context) => const AddMenuPage()),
                   );
                 },
-                child: const Text(
-                  'ADD MENU',
+                child: Text(
+                  'add_menu'.tr(),
                   style: TextStyle(color: Colors.black, fontSize: 16),
                 ),
               ),

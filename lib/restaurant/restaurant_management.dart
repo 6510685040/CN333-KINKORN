@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:kinkorn/restaurant/edit_payment.dart';
@@ -16,7 +17,7 @@ class RestaurantManagementPage extends StatefulWidget {
 }
 
 class _RestaurantManagementPageState extends State<RestaurantManagementPage> {
-  String _openStatus = 'close';
+  String _openStatus = 'closed'.tr();
 
   @override
   void initState() {
@@ -83,7 +84,7 @@ class _RestaurantManagementPageState extends State<RestaurantManagementPage> {
                   child: Padding(
                     padding: EdgeInsets.only(top: 0),
                     child: Text(
-                      "MANAGE RESTAURANT",
+                      "manage".tr(),
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: MediaQuery.of(context).size.width * 0.07,
@@ -112,7 +113,7 @@ class _RestaurantManagementPageState extends State<RestaurantManagementPage> {
                     children: [
                       _buildManagementButton(
                         icon: Icons.restaurant_menu,
-                        label: 'Edit Menu',
+                        label: 'edit_menu'.tr(),
                         onTap: () {
                           Navigator.push(
                             context,
@@ -122,7 +123,7 @@ class _RestaurantManagementPageState extends State<RestaurantManagementPage> {
                       ),
                       _buildManagementButton(
                         icon: Icons.payments_outlined,
-                        label: 'Edit Payment',
+                        label: 'edit_payment'.tr(),
                         onTap: () {
                           Navigator.push(
                             context,
@@ -132,7 +133,7 @@ class _RestaurantManagementPageState extends State<RestaurantManagementPage> {
                       ),
                       _buildManagementButton(
                         icon: Icons.store,
-                        label: 'Edit Restaurant',
+                        label: 'edit_res'.tr(),
                         onTap: () {
                           Navigator.push(
                             context,
@@ -144,9 +145,9 @@ class _RestaurantManagementPageState extends State<RestaurantManagementPage> {
                         icon: Icons.power_settings_new,
                         label: _openStatus.toUpperCase(),
                         onTap: _toggleOpenStatus,
-                        iconColor: _openStatus == 'open' ? Colors.green : Colors.grey,
-                        textColor: _openStatus == 'open' ? Colors.green : Colors.grey,
-                        backgroundColor: _openStatus == 'open' ? Colors.white : const Color(0xFFFFF8E1),
+                        iconColor: _openStatus == 'open'.tr() ? Colors.green : Colors.grey,
+                        textColor: _openStatus == 'open'.tr() ? Colors.green : Colors.grey,
+                        backgroundColor: _openStatus == 'open'.tr() ? Colors.white : const Color(0xFFFFF8E1),
                       ),
 
 

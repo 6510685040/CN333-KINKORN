@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:kinkorn/template/restaurant_bottom_nav.dart';
@@ -208,7 +209,7 @@ Widget build(BuildContext context) {
           child: Padding(
             padding: EdgeInsets.only(top: 40),
             child: Text(
-              "SALES REPORT",
+              "sales_report_page".tr(),
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: MediaQuery.of(context).size.width * 0.087,
@@ -237,8 +238,10 @@ Widget build(BuildContext context) {
 
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Text('Since  ', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFFFCF9CA))),
+                      Text('from'.tr(), style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFFFCF9CA))),
+                      const SizedBox(width: 10),
                       ElevatedButton(
                         onPressed: () => _selectDate(context, true),
                         style: ElevatedButton.styleFrom(
@@ -250,7 +253,8 @@ Widget build(BuildContext context) {
                         child: Text(formattedStart),
                       ),
                       SizedBox(width: 10),
-                      Text('Till  ', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFFFCF9CA))),
+                      Text('till'.tr(), style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFFFCF9CA))),
+                      const SizedBox(width: 10),
                       ElevatedButton(
                         onPressed: () => _selectDate(context, false),
                         style: ElevatedButton.styleFrom(
@@ -276,15 +280,15 @@ Widget build(BuildContext context) {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: selectedSales.isEmpty
-                        ? Center(child: Text('No sales data'))
+                        ? Center(child: Text('no_sales_data'.tr()))
                         : SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
                           child: DataTable(
                             columnSpacing: 50,
                             columns: [
-                              DataColumn(label: Text('Menu', style: TextStyle(fontWeight: FontWeight.bold))),
-                              DataColumn(label: Text('Quantity', style: TextStyle(fontWeight: FontWeight.bold))),
-                              DataColumn(label: Text('Revenue', style: TextStyle(fontWeight: FontWeight.bold))),
+                              DataColumn(label: Text('menu_page_title'.tr(), style: TextStyle(fontWeight: FontWeight.bold))),
+                              DataColumn(label: Text('quantity'.tr(), style: TextStyle(fontWeight: FontWeight.bold))),
+                              DataColumn(label: Text('revenue'.tr(), style: TextStyle(fontWeight: FontWeight.bold))),
                             ],
                             rows: selectedSales
                               .where((sale) => !(sale['isAddon'] ?? false))  
@@ -373,7 +377,7 @@ Widget build(BuildContext context) {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                'Total Quantity',
+                                'total_quantity'.tr(),
                                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                               ),
                               Text(
@@ -387,7 +391,7 @@ Widget build(BuildContext context) {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                'Total Sales',
+                                'total_sales'.tr(),
                                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                               ),
                               Text(

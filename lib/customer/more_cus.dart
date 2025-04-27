@@ -6,7 +6,6 @@ import 'package:kinkorn/customer/edit_profile_cus.dart';
 import 'package:kinkorn/Screen/home.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:kinkorn/customer/notification_cus.dart';
 import 'package:easy_localization/easy_localization.dart';
 
 class MoreCus extends StatelessWidget {

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -69,7 +70,7 @@ class _AddMenuPageState extends State<AddMenuPage> {
 
     if (imageFile == null || name.isEmpty || category == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill in all fields and add an image')),
+        SnackBar(content: Text('please_fill_fields').tr()),
       );
       return;
     }
@@ -106,7 +107,7 @@ class _AddMenuPageState extends State<AddMenuPage> {
         .set(menuItem);
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Menu added successfully')),
+      SnackBar(content: Text('menu_added_success').tr()),
     );
     Navigator.pop(context);
   }
@@ -133,8 +134,8 @@ void _removeOptionField(int index) {
       appBar: AppBar(
         backgroundColor: const Color(0xFFFFF8E1),
         elevation: 0,
-        title: const Text(
-          'ADD MENU',
+        title: Text(
+          'add_menu'.tr(),
           style: TextStyle(
             color: Color(0xFFB71C1C),
             fontSize: 26,
@@ -163,8 +164,8 @@ void _removeOptionField(int index) {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Please add your new menu',
+                      Text(
+                        'please_add_manu'.tr(),
                         style: TextStyle(
                           color: Color(0xFFB71C1C),
                           fontSize: 18,
@@ -181,7 +182,7 @@ void _removeOptionField(int index) {
                               children: [
                                 ListTile(
                                   leading: const Icon(Icons.camera_alt),
-                                  title: const Text('Take a photo'),
+                                  title: const Text('take_photo').tr(),
                                   onTap: () {
                                     Navigator.pop(context);
                                     pickImage(ImageSource.camera);
@@ -189,7 +190,7 @@ void _removeOptionField(int index) {
                                 ),
                                 ListTile(
                                   leading: const Icon(Icons.photo),
-                                  title: const Text('Choose from gallery'),
+                                  title: const Text('choose_your_photo').tr(),
                                   onTap: () {
                                     Navigator.pop(context);
                                     pickImage(ImageSource.gallery);
@@ -220,12 +221,12 @@ void _removeOptionField(int index) {
                                   : null,
                             ),
                             child: imageFile == null
-                                ? const Center(
+                                ? Center(
                                     child: Column(
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
                                         Text(
-                                          'Add\nyour\nPicture',
+                                          'add_your_picture'.tr(),
                                           textAlign: TextAlign.center,
                                           style: TextStyle(
                                             color: Color(0xFFB71C1C),
@@ -240,13 +241,13 @@ void _removeOptionField(int index) {
                         ),
                       ),
                       const SizedBox(height: 20),
-                      _buildTextField('Name of menu', controller: nameController , keyboardType: TextInputType.text,),
+                      _buildTextField('name_of_menu'.tr(), controller: nameController , keyboardType: TextInputType.text,),
                       const SizedBox(height: 10),
-                      _buildTextField('Price', controller: priceController, keyboardType: TextInputType.number),
+                      _buildTextField('price'.tr(), controller: priceController, keyboardType: TextInputType.number),
                       const SizedBox(height: 10),
-                      _buildTextField('about', controller: descriptionController, maxLines: 3, keyboardType: TextInputType.text,),
+                      _buildTextField('about_manu'.tr(), controller: descriptionController, maxLines: 3, keyboardType: TextInputType.text,),
                       const SizedBox(height: 10),
-                      _buildDropdownField('category'),
+                      _buildDropdownField('category'.tr()),
                       const SizedBox(height: 20),
                       _buildOptionFields(),
                       const SizedBox(height: 20),
@@ -261,7 +262,7 @@ void _removeOptionField(int index) {
                               borderRadius: BorderRadius.circular(10),
                             ),
                           ),
-                          child: const Text('save',
+                          child: Text('save'.tr(),
                                           style: TextStyle(
                                             color: Color.fromARGB(255, 255, 255, 255),
                                           ),),
@@ -338,8 +339,8 @@ Widget _buildOptionFields() {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      const Text(
-        'Add-ons',
+      Text(
+        'addons'.tr(),
         style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFB71C1C)),
       ),
       const SizedBox(height: 10),
@@ -380,12 +381,12 @@ Widget _buildOptionFields() {
             borderRadius: BorderRadius.circular(24),
           ),
           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-          child: const Row(
+          child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(Icons.add, size: 16),
               SizedBox(width: 5),
-              Text('add new options', style: TextStyle(fontSize: 11, color: Colors.blueGrey)),
+              Text('add_options'.tr(), style: TextStyle(fontSize: 11, color: Colors.blueGrey)),
             ],
           ),
         ),
