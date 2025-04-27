@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:kinkorn/template/restaurant_bottom_nav.dart';
+import 'package:kinkorn/restaurant/payment_list.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -104,13 +104,13 @@ class _AddPaymentState extends State<AddPayment> {
         children: [
           Container(
             width: MediaQuery.of(context).size.width,
-            height: 100,
+            height: 110,
             color: Color(0xFFFCF9CA),
           ),
           Align(
             alignment: Alignment.topCenter,
             child: Padding(
-              padding: EdgeInsets.only(top: 30),
+              padding: EdgeInsets.only(top: 40),
               child: Text(
                 "ADD YOUR PAYMENT",
                 style: TextStyle(
@@ -123,104 +123,105 @@ class _AddPaymentState extends State<AddPayment> {
             ),
           ),
           Padding(
-  padding: EdgeInsets.only(top: 130),
-  child: Align(
-    alignment: Alignment.topCenter,
-    child: Container(
-      width: MediaQuery.of(context).size.width * 0.9,
-      height: 200,
-      decoration: BoxDecoration(
-        color: Color(0xFFFCF9CA),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Padding(
-        padding: EdgeInsets.only(top: 10),
-        child: Column(
-          children: [
-            Text(
-              "List of Your Bank Accounts",
-              style: TextStyle(
-                //fontFamily: 'Montserrat',
-                fontWeight: FontWeight.bold,
-                fontSize: 24,
-                color: Color(0xFFAF1F1F),
-              ),
-            ),
-            SizedBox(height: 10),
-            Expanded(
-              child: FutureBuilder<String?>(
-                future: _getRestaurantIdFromUser(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Center(child: CircularProgressIndicator());
-                  }
-                  if (!snapshot.hasData || snapshot.data == null) {
-                    return Center(child: Text("No restaurant ID found."));
-                  }
-
-                  final restaurantId = snapshot.data!;
-
-                  return StreamBuilder<QuerySnapshot>(
-                    stream: FirebaseFirestore.instance
-                        .collection('restaurants')
-                        .doc(restaurantId)
-                        .collection('paymentMethods')
-                        .snapshots(),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return Center(child: CircularProgressIndicator());
-                      }
-
-                      if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                        return Padding(
-                          padding: const EdgeInsets.only(left: 10),
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text("No bank accounts found."),
-                          ),
-                        );
-                      }
-
-                      final docs = snapshot.data!.docs;
-                      return Padding(
-                        padding: EdgeInsets.only(left: 10),
-                        child: ListView.builder(
-                          itemCount: docs.length,
-                          itemBuilder: (context, index) {
-                            final data = docs[index].data() as Map<String, dynamic>;
-                            final accountName = data['accountName'] ?? '';
-                            final bankName = data['bankName'] ?? '';
-                            final accountNumber = data['accountNumber'] ?? '';
-                            return Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text("${index + 1}. Account Name : $accountName"),
-                                Text("    Bank : $bankName        Number : $accountNumber"),
-                                SizedBox(height: 4),
-                              ],
-                            );
-                          },
-                        ),
-                      );
-                    },
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-    ),
-  ),
-),
-
-          Padding(
-            padding: EdgeInsets.only(top: 325),
+            padding: EdgeInsets.only(top: 130),
             child: Align(
               alignment: Alignment.topCenter,
               child: Container(
                 width: MediaQuery.of(context).size.width * 0.9,
-                height: MediaQuery.of(context).size.height * 0.47,
+                height: 200,
+                decoration: BoxDecoration(
+                  color: Color(0xFFFCF9CA),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Padding(
+                  padding: EdgeInsets.only(top: 10),
+                  child: Column(
+                    children: [
+                      Text(
+                        "List of Your Bank Accounts",
+                        style: TextStyle(
+                          //fontFamily: 'Montserrat',
+                          fontWeight: FontWeight.bold,
+                          fontSize: 24,
+                          color: Color(0xFFAF1F1F),
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      Expanded(
+                        child: FutureBuilder<String?>(
+                          future: _getRestaurantIdFromUser(),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState == ConnectionState.waiting) {
+                              return Center(child: CircularProgressIndicator());
+                            }
+                            if (!snapshot.hasData || snapshot.data == null) {
+                              return Center(child: Text("No restaurant ID found."));
+                            }
+
+                            final restaurantId = snapshot.data!;
+
+                            return StreamBuilder<QuerySnapshot>(
+                              stream: FirebaseFirestore.instance
+                                  .collection('restaurants')
+                                  .doc(restaurantId)
+                                  .collection('paymentMethods')
+                                  .snapshots(),
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState == ConnectionState.waiting) {
+                                  return Center(child: CircularProgressIndicator());
+                                }
+
+                                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                                  return Padding(
+                                    padding: const EdgeInsets.only(left: 10),
+                                    child: Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: Text("No bank accounts found."),
+                                    ),
+                                  );
+                                }
+
+                                final docs = snapshot.data!.docs;
+                                return Padding(
+                                  padding: EdgeInsets.only(left: 10),
+                                  child: ListView.builder(
+                                    itemCount: docs.length,
+                                    itemBuilder: (context, index) {
+                                      final data = docs[index].data() as Map<String, dynamic>;
+                                      final accountName = data['accountName'] ?? '';
+                                      final bankName = data['bankName'] ?? '';
+                                      final accountNumber = data['accountNumber'] ?? '';
+                                      return Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text("${index + 1}. Account Name : $accountName"),
+                                          Text("    Bank : $bankName        Number : $accountNumber"),
+                                          SizedBox(height: 4),
+                                        ],
+                                      );
+                                    },
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          // Add Payment Method
+          Padding(
+            padding: EdgeInsets.only(top: 350),
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: Container(
+                width: MediaQuery.of(context).size.width * 0.9,
+                height: MediaQuery.of(context).size.height * 0.52,
                 decoration: BoxDecoration(
                   color: Color(0xFFFFFFFF),
                   borderRadius: BorderRadius.circular(20),
@@ -334,24 +335,20 @@ class _AddPaymentState extends State<AddPayment> {
               ),
             ),
           ),
+          // button
           Positioned(
             left: 0,
             right: 0,
             bottom: 20,
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20),
+              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
-                        setState(() {
-                          selectedBank = null;
-                          _selectedImage = null;
-                          accountNameController.clear();
-                          accountNumberController.clear();
-                        });
+                        Navigator.pop(context);
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Color(0xFFFCF9CA),
@@ -377,7 +374,7 @@ class _AddPaymentState extends State<AddPayment> {
           ),
         ],
       ),
-      bottomNavigationBar: const CustomBottomNav(),
+      //bottomNavigationBar: const CustomBottomNav(),
     );
   }
 }

@@ -3,6 +3,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:kinkorn/restaurant/homepage.dart';
 import 'package:kinkorn/restaurant/order_detailRestaurant.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -72,11 +73,16 @@ class _CompletedOrderRestaurantState extends State<CompletedOrderRestaurant> {
         children: [
           const Positioned(top: 0, left: 0, right: 0, child: CurveAppBar(title: '')),
           Positioned(
-            top: 40,
-            left: 16,
+            top: 75,
+            left: 20,
             child: IconButton(
               icon: const Icon(Icons.chevron_left, size: 30, color: Color(0xFFFCF9CA)),
-              onPressed: () => Navigator.pop(context),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => RestaurantDashboard()),
+                );
+              },
             ),
           ),
           const Positioned(
@@ -135,7 +141,7 @@ class _CompletedOrderRestaurantState extends State<CompletedOrderRestaurant> {
                     final totalAmount = data['totalAmount'] ?? 0;
                     final status = data['orderStatus'] ?? 'unknown';
                     final customerId = data['customerId'] ?? '';
-                    final items = List<Map<String, dynamic>>.from(data['items'] ?? []);
+                    final items = List<Map<String, dynamic>>.from(data['orders'] ?? []);
 
                     final List<String> menuItems = [];
                     for (var item in items) {
@@ -143,7 +149,8 @@ class _CompletedOrderRestaurantState extends State<CompletedOrderRestaurant> {
                       final quantity = item['quantity'] ?? 0;
                       menuItems.add('$name x$quantity');
 
-                      final addons = item['addons'] as List<dynamic>? ?? [];
+                      final addons = (item['addons'] is List) ? List<Map<String, dynamic>>.from(item['addons']) : [];
+
                       for (var addon in addons) {
                         final addonName = addon['name'] ?? 'Unnamed Addon';
                         final addonQty = addon['quantity'] ?? 0;
@@ -185,7 +192,7 @@ class _CompletedOrderRestaurantState extends State<CompletedOrderRestaurant> {
           ),
         ],
       ),
-      bottomNavigationBar: const CustomBottomNav(),
+      //bottomNavigationBar: const CustomBottomNav(),
     );
   }
 

@@ -10,6 +10,9 @@ import 'package:kinkorn/Screen/home.dart';
 import 'package:kinkorn/provider/cartprovider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:kinkorn/customer/language_setting.dart'; 
+import 'package:easy_localization/easy_localization.dart';
+
 import 'package:firebase_auth/firebase_auth.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -77,6 +80,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await EasyLocalization.ensureInitialized(); 
 
   await Firebase.initializeApp();
   await FirebaseAppCheck.instance.activate(
@@ -138,7 +142,15 @@ Future<void> main() async {
 
   //listenOrderStatusChanges();
 
-  runApp(const MyApp());
+  runApp(
+    EasyLocalization(
+      supportedLocales: [Locale('en'), Locale('th')],
+      path: 'assets/lang',
+      fallbackLocale: Locale('en'), 
+      
+      child: const MyApp(),
+  ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -153,13 +165,18 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         navigatorKey: navigatorKey,
         debugShowCheckedModeBanner: false,
+        locale: context.locale, 
+        supportedLocales: context.supportedLocales, 
+        localizationsDelegates: context.localizationDelegates, 
         home: const HomeScreen(),
         theme: ThemeData(
           textTheme: GoogleFonts.kanitTextTheme(
             Theme.of(context).textTheme,
           ),
         ),
-      ),
+      )
+
+
     );
   }
 }

@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:kinkorn/customer/add_on.dart';
 import 'package:kinkorn/template/curve_app_bar.dart';
-import 'package:kinkorn/template/bottom_bar.dart';
 import 'package:kinkorn/provider/cartprovider.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class ChooseMenuScreen extends StatefulWidget {
   final String restaurantId;
@@ -24,13 +24,22 @@ class ChooseMenuScreen extends StatefulWidget {
 
 class ChooseMenuScreenState extends State<ChooseMenuScreen> {
   List<Map<String, dynamic>> menuItems = [];
+  List<Map<String, dynamic>> filteredItems = [];
   bool isLoading = true;
   bool isRestaurantOpen = false;
+  final TextEditingController searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     loadData();
+    searchController.addListener(_onSearchChanged);
+  }
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
   }
 
   Future<void> loadData() async {
@@ -42,23 +51,19 @@ class ChooseMenuScreenState extends State<ChooseMenuScreen> {
   }
 
   Future<void> fetchRestaurantStatus() async {
-  try {
-    final doc = await FirebaseFirestore.instance
-        .collection('restaurants')
-        .doc(widget.restaurantId)
-        .get();
-
-    if (doc.exists) {
-      final status = doc.data()?['openStatus'] ?? '';
-      setState(() {
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('restaurants')
+          .doc(widget.restaurantId)
+          .get();
+      if (doc.exists) {
+        final status = doc.data()?['openStatus'] ?? '';
         isRestaurantOpen = status.toString().toLowerCase() == 'open';
-      });
+      }
+    } catch (e) {
+      print('Error fetching restaurant status: $e');
     }
-  } catch (e) {
-    print('Error fetching restaurant status: $e');
   }
-}
-
 
   Future<void> fetchMenuItems() async {
     try {
@@ -67,7 +72,6 @@ class ChooseMenuScreenState extends State<ChooseMenuScreen> {
           .where('restaurantId', isEqualTo: widget.restaurantId)
           .where('status', isEqualTo: 'available')
           .get();
-
       menuItems = menuSnapshot.docs.map((doc) {
         final data = doc.data();
         return {
@@ -77,9 +81,20 @@ class ChooseMenuScreenState extends State<ChooseMenuScreen> {
           "options": data['options'] ?? [],
         };
       }).toList();
+      filteredItems = menuItems;
     } catch (e) {
       print('Error fetching menu items: $e');
     }
+  }
+
+  void _onSearchChanged() {
+    final query = searchController.text.toLowerCase();
+    setState(() {
+      filteredItems = menuItems.where((item) {
+        final name = item['name']?.toLowerCase() ?? '';
+        return name.contains(query);
+      }).toList();
+    });
   }
 
   @override
@@ -102,20 +117,33 @@ class ChooseMenuScreenState extends State<ChooseMenuScreen> {
             child: CurveAppBar(title: ""),
           ),
           Positioned(
-            left: screenWidth * 0.07,
-            top: screenHeight * 0.09,
+            left: screenWidth * 0.05,
+            top: screenHeight * 0.092,
+            right: screenWidth * 0.1,
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                AutoSizeText(
-                  widget.restaurantName,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 24,
-                    color: Color(0xFFFCF9CA),
+                IconButton(
+                  icon: const Icon(Icons.chevron_left, size: 40, color: Colors.white),
+                  padding: EdgeInsets.zero,
+                  onPressed: () => Navigator.pop(context),
+                ),
+                Expanded(
+                  child: AutoSizeText(
+                    widget.restaurantName,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFFFCF9CA),
+                    ),
+                    presetFontSizes: [
+                      screenWidth * 0.08,
+                      screenWidth * 0.07,
+                      screenWidth * 0.06,
+                      16,
+                    ],
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  maxLines: 1,
-                  minFontSize: 12,
-                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(width: 10),
                 Container(
@@ -125,7 +153,7 @@ class ChooseMenuScreenState extends State<ChooseMenuScreen> {
                     borderRadius: BorderRadius.circular(21),
                   ),
                   child: Text(
-                    isRestaurantOpen ? "open to order" : "closed",
+                    isRestaurantOpen ? "open_to_order".tr() : "closed".tr(),
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
                       fontSize: screenWidth * 0.03,
@@ -136,18 +164,49 @@ class ChooseMenuScreenState extends State<ChooseMenuScreen> {
               ],
             ),
           ),
+          Positioned(
+            top: screenHeight * 0.22, 
+            left: screenWidth * 0.1,
+            right: screenWidth * 0.1,
+            child: Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: screenWidth * 0.03,
+                vertical: screenHeight * 0.006,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(1.0),
+                borderRadius: BorderRadius.circular(screenWidth * 0.1),
+              ),
+              child: TextField(
+                controller: searchController,
+                decoration: InputDecoration(
+                  hintText: "search_menu".tr(),
+                  prefixIcon: Icon(Icons.search, color: Colors.grey, size: screenWidth * 0.06),
+                  border: InputBorder.none,
+                  filled: false,
+                  hintStyle: TextStyle(
+                    color: Colors.grey.shade600,
+                    fontSize: screenWidth * 0.04,
+                  ),
+                ),
+                style: TextStyle(color: Colors.black, fontSize: screenWidth * 0.045),
+              ),
+            ),
+          ),
+
+
           if (isLoading)
             const Center(child: CircularProgressIndicator())
           else
             Positioned(
-              top: screenHeight * 0.2,
+              top: screenHeight * 0.26,
               left: 0,
               right: 0,
-              bottom: 60,
+              bottom: 0,
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: GridView.builder(
-                  itemCount: menuItems.length,
+                  itemCount: filteredItems.length,
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                     crossAxisSpacing: 16,
@@ -155,20 +214,11 @@ class ChooseMenuScreenState extends State<ChooseMenuScreen> {
                     childAspectRatio: 0.8,
                   ),
                   itemBuilder: (context, index) {
-                    return buildMenuItem(context, menuItems[index]);
+                    return buildMenuItem(context, filteredItems[index]);
                   },
                 ),
               ),
             ),
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: BottomBar(
-              screenHeight: screenHeight,
-              screenWidth: screenWidth,
-            ),
-          ),
         ],
       ),
     );
@@ -237,24 +287,24 @@ class ChooseMenuScreenState extends State<ChooseMenuScreen> {
               overflow: TextOverflow.ellipsis,
             ),
             GestureDetector(
-            onTap: isRestaurantOpen && user != null
-                ? () {
-                    cartProvider.setRestaurantId(widget.restaurantId);
-                    cartProvider.setCustomerId(user.uid);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => AddOn(menuData: {
-                          'name': menuItem['name'],
-                          'price': menuItem['price'],
-                          'imageUrl': menuItem['imageUrl'],
-                          'restaurantId': widget.restaurantId,
-                          'options': menuItem['options'] ?? [], 
-                        }),
-                      ),
-                    );
-                  }
-                : null,
+              onTap: isRestaurantOpen && user != null
+                  ? () {
+                      cartProvider.setRestaurantId(widget.restaurantId);
+                      cartProvider.setCustomerId(user.uid);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => AddOn(menuData: {
+                            'name': menuItem['name'],
+                            'price': menuItem['price'],
+                            'imageUrl': menuItem['imageUrl'],
+                            'restaurantId': widget.restaurantId,
+                            'options': menuItem['options'] ?? [],
+                          }),
+                        ),
+                      );
+                    }
+                  : null,
               child: Container(
                 margin: const EdgeInsets.only(top: 12),
                 width: 103,
@@ -265,7 +315,7 @@ class ChooseMenuScreenState extends State<ChooseMenuScreen> {
                 ),
                 alignment: Alignment.center,
                 child: AutoSizeText(
-                  isRestaurantOpen ? "add" : "closed",
+                  isRestaurantOpen ? "add".tr() : "closed".tr(),
                   style: TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 15,

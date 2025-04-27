@@ -8,6 +8,7 @@ import 'package:kinkorn/customer/order_detail.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:kinkorn/customer/notification_cus.dart';
+import 'package:easy_localization/easy_localization.dart'; 
 
 
 class OrderStatusCustomer extends StatefulWidget {
@@ -100,7 +101,7 @@ class _OrderStatusCustomerState extends State<OrderStatusCustomer> {
           ),
           Stack(
             children: [
-              const CurveAppBar(title: "Order status"),
+              CurveAppBar(title: "order_status".tr()),
               Positioned(
                 top: 180,
                 bottom: 10, // ปรับตำแหน่งขึ้นลง
@@ -127,6 +128,7 @@ class _OrderStatusCustomerState extends State<OrderStatusCustomer> {
             child: BottomBar(
               screenHeight: screenHeight,
               screenWidth: screenWidth,
+              initialIndex: 2,
             ),
           ),
         ],
@@ -138,10 +140,10 @@ class _OrderStatusCustomerState extends State<OrderStatusCustomer> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _buildDateLabel("From"),
+        _buildDateLabel("from".tr()),
         _buildDatePickerBox(context, _fromDate, true),
         const SizedBox(width: 16),
-        _buildDateLabel("Till"),
+        _buildDateLabel("till".tr()),
         _buildDatePickerBox(context, _tillDate, false),
       ],
     );
@@ -149,7 +151,7 @@ class _OrderStatusCustomerState extends State<OrderStatusCustomer> {
 
   Widget _buildDateLabel(String text) {
     return Padding(
-      padding: const EdgeInsets.all(3), // ✅ กำหนด padding 3px
+      padding: const EdgeInsets.all(3),
       child: Text(
         text,
         style: const TextStyle(
@@ -231,7 +233,7 @@ class _OrderStatusCustomerState extends State<OrderStatusCustomer> {
         .get(),
     builder: (context, snapshot) {
       if (snapshot.connectionState == ConnectionState.waiting) {
-        return const Center(child: CircularProgressIndicator());
+        return Center(child: Text("error_loading_orders".tr())); 
       }
 
       if (snapshot.hasError) {
@@ -240,9 +242,9 @@ class _OrderStatusCustomerState extends State<OrderStatusCustomer> {
 
       final ordersSnapshot = snapshot.data;
       if (ordersSnapshot == null || ordersSnapshot.docs.isEmpty) {
-        return const Center(
+        return  Center(
           child: Text(
-            "ไม่พบออเดอร์ในช่วงเวลาที่เลือก",
+             "no_orders_found".tr(),
             style: TextStyle(fontSize: 16, color: Colors.black54),
           ),
         );
@@ -269,21 +271,29 @@ class _OrderStatusCustomerState extends State<OrderStatusCustomer> {
               ? DateFormat("MMM dd, HH:mm").format(createdAt)
               : '';
           final menuList = List<Map<String, dynamic>>.from(data['orders'] ?? []);
-            final List<Map<String, dynamic>> menuItems = menuList.map((item) {
-              final addons = (item['addons'] as List<dynamic>?)?.map((addon) {
-                return {
-                  'name': addon['name'] ?? '',
-                  'quantity': addon['quantity'] ?? 0,
-                  'price': addon['price'] ?? 0,
-                };
-              }).toList() ?? [];
 
-              return {
-                'name': item['name'] ?? '',
-                'quantity': item['quantity'] ?? 1,
-                'addons': addons,
-              };
-            }).toList();
+          final List<Map<String, dynamic>> menuItems = menuList.map((item) {
+            final List<Map<String, dynamic>> addons = (item['addons'] != null && item['addons'] is List)
+                ? List<Map<String, dynamic>>.from(item['addons'].map((addon) {
+                    if (addon is Map<String, dynamic>) {
+                      return {
+                        'name': addon['name'] ?? '',
+                        'quantity': addon['quantity'] ?? 0,
+                        'price': addon['price'] ?? 0,
+                      };
+                    } else {
+                      return {'name': '', 'quantity': 0, 'price': 0};
+                    }
+                  }))
+                : [];
+
+            return {
+              'name': item['name'] ?? '',
+              'quantity': item['quantity'] ?? 1,
+              'addons': addons,
+            };
+          }).toList();
+
 
 
           final restaurantId = menuList.isNotEmpty ? menuList[0]['restaurantId'] ?? '' : '';
@@ -297,8 +307,11 @@ class _OrderStatusCustomerState extends State<OrderStatusCustomer> {
           } else if (orderStatus == "Waiting for payment confirmation") {
             statusColor = const Color(0xFFFDDC5C);
           } else if (orderStatus == "Preparing food") {
-            statusColor = Color.fromARGB(255, 132, 132, 132);
-          } else if (orderStatus == "Completed") {
+            statusColor = Color.fromARGB(255, 132, 132, 132);           
+          } else if (orderStatus == "Waiting for pickup") {
+            statusColor = Colors.blue;
+          }
+          else if (orderStatus == "Completed") {
             statusColor = Colors.green;
           } else if (orderStatus == "Canceled") {
             statusColor = Colors.black;
@@ -369,8 +382,6 @@ class _OrderStatusCustomerState extends State<OrderStatusCustomer> {
   );
 }
 
-
-
   Widget _buildOrderCard({
   required String orderId,
   required String timeAgo,
@@ -405,8 +416,8 @@ class _OrderStatusCustomerState extends State<OrderStatusCustomer> {
                 ),
               ),
               const SizedBox(height: 4),
-              const Text(
-                "Order summary",
+              Text(
+                "order_summary".tr(),
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
@@ -514,8 +525,4 @@ class _OrderStatusCustomerState extends State<OrderStatusCustomer> {
     ),
   );
 }
-
-
-
-
 }

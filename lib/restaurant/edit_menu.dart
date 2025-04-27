@@ -24,6 +24,7 @@ class _EditMenuPageState extends State<EditMenuPage> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController priceController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
 
   String? category;
   String? imageUrl;

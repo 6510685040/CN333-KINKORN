@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:kinkorn/template/curve_app_bar.dart';
-import 'package:kinkorn/template/restaurant_bottom_nav.dart'; 
 
 class LanguageSettingRestaurant extends StatefulWidget {
   const LanguageSettingRestaurant({super.key});
 
   @override
-  State<LanguageSettingRestaurant> createState() => _LanguageSettingRestaurantState();
+  State<LanguageSettingRestaurant> createState() =>
+      _LanguageSettingRestaurantState();
 }
 
 class _LanguageSettingRestaurantState extends State<LanguageSettingRestaurant> {
@@ -30,10 +30,11 @@ class _LanguageSettingRestaurantState extends State<LanguageSettingRestaurant> {
           ),
           // ✅ ปุ่มย้อนกลับ
           Positioned(
-            top: 40, // ✅ ตำแหน่งด้านซ้ายบน
-            left: 16,
+            top: 70, // ✅ ตำแหน่งด้านซ้ายบน
+            left: 20,
             child: IconButton(
-              icon: const Icon(Icons.chevron_left, size: 40, color: Colors.white),
+              icon:
+                  const Icon(Icons.chevron_left, size: 40, color: Colors.white),
               onPressed: () {
                 Navigator.pop(context);
               },
@@ -72,7 +73,7 @@ class _LanguageSettingRestaurantState extends State<LanguageSettingRestaurant> {
                     });
                   },
                 ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 20),
                 // ✅ Dropdown - Menu Language
                 _buildDropdown(
                   label: 'Menu language',
@@ -89,7 +90,7 @@ class _LanguageSettingRestaurantState extends State<LanguageSettingRestaurant> {
           ),
         ],
       ),
-      bottomNavigationBar: const CustomBottomNav(), // เพิ่มแถบเมนูด้านล่าง
+      //bottomNavigationBar: const CustomBottomNav(),
     );
   }
 
@@ -105,42 +106,48 @@ class _LanguageSettingRestaurantState extends State<LanguageSettingRestaurant> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(label,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.red)),
-          const SizedBox(height: 5),
+              style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFFB71C1C))),
+          const SizedBox(height: 16),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey, width: 1.5),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(50),
               color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 8,
-                  offset: Offset(0, 4),
-                ),
-              ],
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
                 value: value,
                 isExpanded: true,
-                icon: const Icon(Icons.arrow_drop_down, color:Color(0xFFAF1F1F)),
+                isDense: true, // ลดขนาดแน่นขึ้น
+                underline: SizedBox(),
+                icon:
+                    const Icon(Icons.arrow_drop_down, color: Color(0xFFAF1F1F)),
                 items: items.map((String item) {
                   return DropdownMenuItem<String>(
                     value: item,
                     child: Text(
                       item,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: Color(0xFFAF1F1F),
+                      ),
                     ),
                   );
                 }).toList(),
                 onChanged: onChanged,
+                menuMaxHeight: 300,
+                borderRadius: BorderRadius.circular(20),
               ),
             ),
           ),
         ],
       ),
     );
+    
   }
+  
 }

@@ -137,11 +137,13 @@ void _removeOptionField(int index) {
           'ADD MENU',
           style: TextStyle(
             color: Color(0xFFB71C1C),
-            fontSize: 24,
+            fontSize: 26,
             fontWeight: FontWeight.bold,
           ),
         ),
+        leadingWidth: 120,
         leading: IconButton(
+          padding: const EdgeInsets.only(right: 40),
           icon: const Icon(Icons.arrow_back, color: Color(0xFFB71C1C)),
           onPressed: () => Navigator.pop(context),
         ),

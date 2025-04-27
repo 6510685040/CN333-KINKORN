@@ -91,28 +91,27 @@ class _SalesReportState extends State<SalesReport> {
         .where('orderStatus', isEqualTo: 'Completed')
         .get();
 
-    print("📦 ${snapshot.docs.length} orders fetched");
-
-    final List<Map<String, dynamic>> newSalesList = [];
+    final Map<String, List<Map<String, dynamic>>> newSalesMap = {};
 
     for (var doc in snapshot.docs) {
       final data = doc.data() as Map<String, dynamic>;
-
       final ts = data['createdAt'] as Timestamp?;
       if (ts == null) continue;
 
       final dateKey = DateFormat('yyyy-MM-dd').format(ts.toDate());
-
-      final items = data['items'] as List<dynamic>? ?? [];
+      final items = data['orders'] as List<dynamic>? ?? [];
 
       for (var item in items) {
         final name = item['name'] as String? ?? 'Unnamed';
         final qty = (item['quantity'] as num?)?.toInt() ?? 0;
         final price = (item['price'] as num?)?.toDouble() ?? 0.0;
         final revenue = qty * price;
-         final addons = item['addons'] as List<dynamic>? ?? [];
+        final addons = (item['addons'] is List)
+            ? List<Map<String, dynamic>>.from(item['addons'])
+            : [];
 
-       newSalesList.add({
+        newSalesMap.putIfAbsent(dateKey, () => []);
+        newSalesMap[dateKey]!.add({
           'createdAt': dateKey,
           'menu': name,
           'quantity': qty.toString(),
@@ -123,32 +122,14 @@ class _SalesReportState extends State<SalesReport> {
             'price': addon['price'] ?? 0.0,
           }).toList(),
         });
-
-
-       
-        for (var addon in addons) {
-          final addonName = addon['name'] as String? ?? 'Unnamed Addon';
-          final addonQty = (addon['quantity'] as num?)?.toInt() ?? 0;
-          final addonPrice = (addon['price'] as num?)?.toDouble() ?? 0.0;
-          final addonRevenue = addonQty * addonPrice;
-
-          if (addonQty == 0) continue;
-
-          newSalesList.add({
-            'createdAt': dateKey,
-            'menu': addonName,
-            'quantity': addonQty.toString(),
-            'revenue': addonRevenue.toStringAsFixed(2),
-          });
-        }
       }
     }
 
     setState(() {
-      salesData = {};  
-      selectedSales = newSalesList;  
-      print("👉 selectedSales = $selectedSales");
+      salesData = newSalesMap;
     });
+
+    _updateSelectedSales();
   } catch (e) {
     print("❌ Error fetching sales: $e");
   }
@@ -161,14 +142,13 @@ DateTime normalizeDate(DateTime date) {
 
 
  void _updateSelectedSales() {
-  if (salesData.isEmpty) return;  
+  if (salesData.isEmpty) return;
+
+  final normalizedStart = startDate != null ? normalizeDate(startDate!) : null;
+  final normalizedEnd = endDate != null ? normalizeDate(endDate!) : null;
 
   setState(() {
     selectedSales = [];
-
-    final normalizedStart = startDate != null ? normalizeDate(startDate!) : null;
-    final normalizedEnd = endDate != null ? normalizeDate(endDate!) : null;
-
 
     salesData.forEach((date, sales) {
       final dateObj = DateFormat('yyyy-MM-dd').parse(date);
@@ -176,24 +156,36 @@ DateTime normalizeDate(DateTime date) {
         if (!dateObj.isBefore(normalizedStart) && !dateObj.isAfter(normalizedEnd)) {
           selectedSales.addAll(sales);
         }
-      } else {
-        selectedSales.addAll(sales);
       }
     });
   });
 }
 
-
  // double calculateTotalSales() =>
      // selectedSales.fold(0, (sum, item) => sum + double.parse(item['price']));
-double calculateTotalSales() =>
-    selectedSales.fold(0.0, (sum, item) {
-      final revenue = double.parse(item['revenue']);
-      return sum + revenue;  
-    });
+double calculateTotalSales() {
+  double total = 0.0;
+  for (var sale in selectedSales) {
+    final double menuRevenue = double.parse(sale['revenue']);
+    total += menuRevenue;
 
-  int calculateTotalQuantity() =>
-      selectedSales.fold(0, (sum, item) => sum + int.parse(item['quantity']));
+    final List<dynamic> addons = sale['addons'] ?? [];
+    for (var addon in addons) {
+      final int addonQuantity = addon['quantity'] ?? 0;
+      final double addonPrice = (addon['price'] ?? 0).toDouble();
+      total += addonQuantity * addonPrice;
+    }
+  }
+  return total;
+}
+int calculateTotalQuantity() {
+  int total = 0;
+  for (var sale in selectedSales) {
+    total += int.tryParse(sale['quantity'] ?? '0') ?? 0;
+  }
+  return total;
+}
+
 
 @override
 Widget build(BuildContext context) {
@@ -208,13 +200,13 @@ Widget build(BuildContext context) {
       children: [
         Container(
           width: double.infinity,
-          height: 100,
+          height: MediaQuery.of(context).size.height * 0.12,
           color: Color(0xFFFCF9CA),
         ),
         Align(
           alignment: Alignment.topCenter,
           child: Padding(
-            padding: EdgeInsets.only(top: 30),
+            padding: EdgeInsets.only(top: 40),
             child: Text(
               "SALES REPORT",
               style: TextStyle(
@@ -226,184 +218,196 @@ Widget build(BuildContext context) {
           ),
         ),
         Padding(
-          padding: EdgeInsets.only(top: 110),
+          padding: EdgeInsets.only(top: 120),
           child: Align(
             alignment: Alignment.topCenter,
-            child: Column(
-              children: [
-                Text(
-                  restaurantName.isNotEmpty ? restaurantName : 'Loading...',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 26,
-                    color: Color(0xFFFCF9CA),
+            child: Container(
+              width: MediaQuery.of(context).size.width * 0.95,
+              child: Column(
+                children: [
+                  Text(
+                    restaurantName.isNotEmpty ? restaurantName : 'Loading...',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 26,
+                      color: Color(0xFFFCF9CA),
+                    ),
                   ),
-                ),
-                SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text('Since ', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFFFCF9CA))),
-                    ElevatedButton(
-                      onPressed: () => _selectDate(context, true),
-                      style: ElevatedButton.styleFrom(
-                        minimumSize: Size(120, 30),
-                        backgroundColor: Color(0xFFECECEC),
-                        foregroundColor: Colors.black,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      ),
-                      child: Text(formattedStart),
-                    ),
-                    SizedBox(width: 10),
-                    Text('Till ', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFFFCF9CA))),
-                    ElevatedButton(
-                      onPressed: () => _selectDate(context, false),
-                      style: ElevatedButton.styleFrom(
-                        minimumSize: Size(120, 30),
-                        backgroundColor: Color(0xFFECECEC),
-                        foregroundColor: Colors.black,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: Text(formattedEnd),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 10),
+                  SizedBox(height: 5),
 
-                // ตารางข้อมูล
-                Expanded(
-                  child: Container(
-                    margin: EdgeInsets.symmetric(horizontal: 20),
-                    padding: EdgeInsets.all(15),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: selectedSales.isEmpty
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text('Since  ', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFFFCF9CA))),
+                      ElevatedButton(
+                        onPressed: () => _selectDate(context, true),
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: Size(120, 30),
+                          backgroundColor: Color(0xFFECECEC),
+                          foregroundColor: Colors.black,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                        child: Text(formattedStart),
+                      ),
+                      SizedBox(width: 10),
+                      Text('Till  ', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFFFCF9CA))),
+                      ElevatedButton(
+                        onPressed: () => _selectDate(context, false),
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: Size(120, 30),
+                          backgroundColor: Color(0xFFECECEC),
+                          foregroundColor: Colors.black,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: Text(formattedEnd),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 10),
+
+                  Expanded(
+                    child: Container(
+                      margin: EdgeInsets.symmetric(horizontal: 20),
+                      padding: EdgeInsets.all(15),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: selectedSales.isEmpty
                         ? Center(child: Text('No sales data'))
                         : SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: DataTable(
-                              columnSpacing: 20,
-                              columns: [
-                                DataColumn(label: Text('Menu', style: TextStyle(fontWeight: FontWeight.bold))),
-                                DataColumn(label: Text('Quantity', style: TextStyle(fontWeight: FontWeight.bold))),
-                                DataColumn(label: Text('Revenue', style: TextStyle(fontWeight: FontWeight.bold))), // เพิ่มคอลัมน์ Revenue
-                              ],
-                              rows: [
-                                ...selectedSales.where((sale) => sale.containsKey('addons')).map((sale) {
-                                  final List<Map<String, dynamic>> addons = (sale['addons'] as List<dynamic>?)?.cast<Map<String, dynamic>>() ?? [];
-
-                                  return DataRow(cells: [
-                                    DataCell(
-                                      Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(sale['menu'], style: TextStyle(fontWeight: FontWeight.bold)),
-                                          ...addons.map((addon) => Padding(
-                                            padding: const EdgeInsets.only(left: 10.0, top: 4.0),
-                                            child: Row(
-                                              children: [
-                                                Text('• '),
-                                                Text('${addon['name']} x${addon['quantity']}'),
-                                              ],
-                                            ),
-                                          )),
-                                        ],
-                                      ),
+                          scrollDirection: Axis.horizontal,
+                          child: DataTable(
+                            columnSpacing: 50,
+                            columns: [
+                              DataColumn(label: Text('Menu', style: TextStyle(fontWeight: FontWeight.bold))),
+                              DataColumn(label: Text('Quantity', style: TextStyle(fontWeight: FontWeight.bold))),
+                              DataColumn(label: Text('Revenue', style: TextStyle(fontWeight: FontWeight.bold))),
+                            ],
+                            rows: selectedSales
+                              .where((sale) => !(sale['isAddon'] ?? false))  
+                              .map((sale) {
+                            final List<Map<String, dynamic>> addons = (sale['addons'] is List)
+                              ? List<Map<String, dynamic>>.from(sale['addons'])
+                              : [];
+                            return DataRow(cells: [
+                             DataCell(
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start, // <-- ขยับตัวหนังสือไปซ้าย
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      sale['menu'],
+                                      style: const TextStyle(fontWeight: FontWeight.bold),
                                     ),
-                                    DataCell(
-                                      Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                    ...addons.map((addon) => Padding(
+                                      padding: const EdgeInsets.only(left: 8.0, top: 2.0),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.start, // <-- ขยับ bullet point ไปทางซ้ายด้วย
                                         children: [
-                                          Text(sale['quantity'], style: TextStyle(fontWeight: FontWeight.bold)),
-                                          ...addons.map((addon) => Padding(
-                                            padding: const EdgeInsets.only(top: 4.0),
-                                            child: Text(addon['quantity'].toString()),
-                                          )),
-                                        ],
-                                      ),
-                                    ),
-                                    DataCell(
-                                      Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            '฿${double.parse(sale['revenue']).toStringAsFixed(2)}',
-                                            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green),
+                                          const Text('• '),
+                                          Expanded(
+                                            child: Text('${addon['name']} x${addon['quantity']}'),
                                           ),
-                                          ...addons.map((addon) => Padding(
-                                            padding: const EdgeInsets.only(top: 4.0),
-                                            child: Text(
-                                              '฿${(addon['quantity'] * addon['price']).toStringAsFixed(2)}',
-                                              style: TextStyle(color: Colors.green),
-                                            ),
-                                          )),
                                         ],
                                       ),
+                                    )),
+                                  ],
+                                ),
+                              ),
+
+                              DataCell(
+                                Align(
+                                  alignment: Alignment.center,
+                                  child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      sale['quantity'],
+                                        style: TextStyle(fontWeight: FontWeight.bold),
                                     ),
-                                  ]);
-                                }).toList(),
-
-
-
-                              ],
-                            ),
+                                  ],
+                                  ),
+                                ),
+                              ),
+                              DataCell(
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      '฿${double.parse(sale['revenue']).toStringAsFixed(2)}',
+                                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green),
+                                    ),
+                                    ...addons.map((addon) => Padding(
+                                      padding: const EdgeInsets.only(left: 8.0, top: 2.0),
+                                      child: Text(
+                                        '฿${(addon['quantity'] * addon['price']).toStringAsFixed(2)}',
+                                        style: TextStyle(color: Colors.green),
+                                      ),
+                                    )),
+                                  ],
+                                ),
+                              ),
+                            ]);
+                            }).toList(),
                           ),
-                  ),
-                ),
-
-                // กรอบ Total อยู่ข้างล่างสุด
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Container(
-                    padding: EdgeInsets.all(15),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Total Quantity',
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                            ),
-                            Text(
-                              calculateTotalQuantity().toString(),
-                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.red),
-                            ),
-                          ],
                         ),
-                        Divider(),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Total Sales',
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                            ),
-                            Text(
-                              '฿${calculateTotalSales().toStringAsFixed(2)}',
-                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.red),
-                            ),
-                          ],
-                        ),
-                      ],
                     ),
                   ),
-                ),
-              ],
+                  // กรอบ Total อยู่ข้างล่างสุด
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Container(
+                      padding: EdgeInsets.all(15),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Total Quantity',
+                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                              ),
+                              Text(
+                                calculateTotalQuantity().toString(),
+                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.red),
+                              ),
+                            ],
+                          ),
+                          Divider(),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Total Sales',
+                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                              ),
+                              Text(
+                                '฿${calculateTotalSales().toStringAsFixed(2)}',
+                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.red),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
       ],
     ),
-    bottomNavigationBar: const CustomBottomNav(),
+    bottomNavigationBar: const CustomBottomNav(initialIndex: 2,),
   );
 }
 }

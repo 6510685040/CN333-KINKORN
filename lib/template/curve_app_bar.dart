@@ -24,7 +24,7 @@ class CurveAppBar extends StatelessWidget implements PreferredSizeWidget {
               color: backgroundColor,
               child: Center(
                 child: Padding(
-                  padding: const EdgeInsets.only(bottom: 40),
+                  padding: const EdgeInsets.only(bottom: 90),
                   child: Text(
                     title,
                     style: TextStyle(

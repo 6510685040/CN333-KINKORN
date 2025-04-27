@@ -16,7 +16,7 @@ class MenuPage extends StatelessWidget {
         children: [
           // Header
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(12),
             color: const Color(0xFFFFFBE6),
             child: SafeArea(
               child: Row(
@@ -25,12 +25,12 @@ class MenuPage extends StatelessWidget {
                     icon: Icon(Icons.arrow_back, color: Colors.red[800]),
                     onPressed: () => Navigator.pop(context),
                   ),
-                  const Spacer(),
+                  const SizedBox(width: 110),
                   Text(
                     'MENU',
                     style: TextStyle(
                       color: Colors.red[800],
-                      fontSize: 22,
+                      fontSize: MediaQuery.of(context).size.width * 0.07,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -42,7 +42,7 @@ class MenuPage extends StatelessWidget {
 
           // Title Section
           const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Align(
               alignment: Alignment.centerLeft,
               child: Column(
@@ -52,7 +52,7 @@ class MenuPage extends StatelessWidget {
                     'All Menus',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 20,
+                      fontSize: 22,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -67,7 +67,7 @@ class MenuPage extends StatelessWidget {
               margin: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: const Color(0xFFFFFBE6),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(20),
               ),
               padding: const EdgeInsets.all(12),
               child: StreamBuilder<QuerySnapshot>(
@@ -114,8 +114,20 @@ class MenuPage extends StatelessWidget {
                                   child: const Icon(Icons.image_not_supported),
                                 ),
                         ),
-                        title: Text(name),
-                        subtitle: Text('฿${price.toStringAsFixed(2)}'),
+                        title: Text(
+                          name,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        subtitle: Text(
+                          '฿${price.toStringAsFixed(2)}',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                         trailing: ElevatedButton(
                         onPressed: () {
                           Navigator.push(
@@ -145,7 +157,7 @@ class MenuPage extends StatelessWidget {
 
           // Add Menu Button
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(50),
             child: SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -171,7 +183,7 @@ class MenuPage extends StatelessWidget {
           ),
 
           // Bottom Navigation
-          const CustomBottomNav(),
+          //const CustomBottomNav(),
         ],
       ),
     );

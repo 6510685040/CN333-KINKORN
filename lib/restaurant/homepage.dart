@@ -126,12 +126,15 @@ class _RestaurantDashboardState extends State<RestaurantDashboard> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Overview',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFFB71C1C),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 20),
+                    child: const Text(
+                      'Overview',
+                      style: TextStyle(
+                        fontSize: 30,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFFB71C1C),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -180,7 +183,7 @@ class _RestaurantDashboardState extends State<RestaurantDashboard> {
               ),
             ),
           ),
-          const CustomBottomNav(),
+          const CustomBottomNav(initialIndex: 0),
         ],
       ),
     );
@@ -190,7 +193,7 @@ class _RestaurantDashboardState extends State<RestaurantDashboard> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 150,
+        width: MediaQuery.of(context).size.width * 0.4,
         padding: const EdgeInsets.all(15),
         decoration: BoxDecoration(
           color: Color(0xFFFDDC5C),
@@ -210,6 +213,7 @@ class _RestaurantDashboardState extends State<RestaurantDashboard> {
               style: const TextStyle(
                 color: Color(0xFFB71C1C),
                 fontWeight: FontWeight.bold,
+                fontSize: 16,
               ),
             ),
             const SizedBox(height: 10),
@@ -225,7 +229,7 @@ class _RestaurantDashboardState extends State<RestaurantDashboard> {
               'Click here',
               style: TextStyle(
                 color: Color(0xFFB71C1C),
-                fontSize: 12,
+                fontSize: 14,
               ),
             ),
           ],
@@ -245,7 +249,7 @@ class _RestaurantDashboardState extends State<RestaurantDashboard> {
         padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
         decoration: BoxDecoration(
           color: const Color(0xFFB71C1C),
-          borderRadius: BorderRadius.circular(25),
+          borderRadius: BorderRadius.circular(20),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

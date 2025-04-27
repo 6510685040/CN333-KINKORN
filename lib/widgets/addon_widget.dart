@@ -16,7 +16,7 @@ class AddOnWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width; // ✅ แก้เพิ่มตัวนี้เข้ามา
+    double screenWidth = MediaQuery.of(context).size.width; 
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
