@@ -166,23 +166,33 @@ class _OrderStatusRestaurantState extends State<OrderStatusRestaurant> {
                     final totalAmount = data['totalAmount'] ?? 0;
                     final status = data['orderStatus'] ?? 'unknown';
                     final customerId = data['customerId'] ?? '';
-     
-                    final items = List<Map<String, dynamic>>.from(data['items'] ?? []);
-                    final menuItems = items.expand((item) {
-                      List<String> combinedItems = [];
+                    final items = List<Map<String, dynamic>>.from(data['orders'] ?? []);
+                    print('📦 Full Items: $items');
+                final menuItems = (items ?? []).expand((item) {
+                  List<String> result = [];
 
-                      combinedItems.add('${item['name']} x${item['quantity']}');
+                  if (item is Map<String, dynamic>) {
+                    final menuName = item['name']?.toString() ?? 'Unnamed Menu';
+                    final menuQty = item['quantity']?.toString() ?? '1';
+                    result.add('$menuName x$menuQty'); // <-- บังคับให้เมนูหลักลง result ทันที
 
-                      if (item['addons'] != null && item['addons'] is List) {
+                    // addons
+                    if (item['addons'] != null) {
+                      if (item['addons'] is List) {
                         for (var addon in item['addons']) {
                           if (addon is Map<String, dynamic>) {
-                            combinedItems.add('  • ${addon['name']} x${addon['quantity']}');
+                            final addonName = addon['name']?.toString() ?? 'Unnamed Addon';
+                            final addonQty = addon['quantity']?.toString() ?? '1';
+                            result.add('  • $addonName x$addonQty');
                           }
                         }
                       }
+                    }
+                  }
 
-                      return combinedItems;
-                    }).toList();
+                    return result;
+                  }).toList();
+
 
                     final timeAgo = _getTimeAgo(createdAt);
                     final statusInfo = _getStatusInfo(status);
@@ -343,21 +353,56 @@ class _OrderStatusRestaurantState extends State<OrderStatusRestaurant> {
   }
 
   Map<String, dynamic> _getStatusInfo(String status) {
-    switch (status) {
-      case "Waiting for restaurant approval":
-        return {"text": "Waiting for order\nconfirmation", "color": const Color(0xFF203976), "icon": Symbols.receipt_long};
-      case "Waiting for payment":
-        return {"text": "Waiting for payment", "color": Colors.yellow, "icon": Symbols.receipt_long};
-      case "Waiting for payment confirmation":
-        return {"text": "Waiting for payment\nconfirmation", "color": Colors.yellow, "icon": Symbols.receipt_long};
-      case "Preparing food":
-        return {"text": "Preparing food", "color": Color.fromARGB(255, 132, 132, 132), "icon": Symbols.skillet};
-      case "Completed":
-        return {"text": "Completed", "color": Colors.green, "icon": Symbols.restaurant};
-      case "Canceled":
-        return {"text": "Canceled", "color": Colors.black, "icon": Icons.cancel};
-      default:
-        return {"text": "Unknown", "color": Colors.grey, "icon": Icons.help_outline};
-    }
+  switch (status) {
+    case "Waiting for restaurant approval":
+      return {
+        "text": "Waiting for order\nconfirmation",
+        "color": const Color(0xFF203976),
+        "icon": Symbols.receipt_long,
+      };
+    case "Waiting for payment":
+      return {
+        "text": "Waiting for payment",
+        "color": Colors.yellow,
+        "icon": Symbols.receipt_long,
+      };
+    case "Waiting for payment confirmation":
+      return {
+        "text": "Waiting for payment\nconfirmation",
+        "color": Colors.yellow,
+        "icon": Symbols.receipt_long,
+      };
+    case "Preparing food":
+      return {
+        "text": "Preparing food",
+        "color": const Color.fromARGB(255, 132, 132, 132),
+        "icon": Symbols.skillet,
+      };
+    case "Waiting for pickup": 
+      return {
+        "text": "Waiting for pickup",
+        "color": Colors.blue, 
+        "icon": Icons.shopping_bag_outlined, 
+      };
+    case "Completed":
+      return {
+        "text": "Completed",
+        "color": Colors.green,
+        "icon": Symbols.restaurant,
+      };
+    case "Canceled":
+      return {
+        "text": "Canceled",
+        "color": Colors.black,
+        "icon": Icons.cancel,
+      };
+    default:
+      return {
+        "text": "Unknown",
+        "color": Colors.grey,
+        "icon": Icons.help_outline,
+      };
   }
+}
+
 }

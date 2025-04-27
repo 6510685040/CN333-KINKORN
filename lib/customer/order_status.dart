@@ -187,16 +187,16 @@ class _OrderStatusCustomerState extends State<OrderStatusCustomer> {
   final startDate = DateTime(_fromDate.year, _fromDate.month, _fromDate.day);
   final endDate = DateTime(_tillDate.year, _tillDate.month, _tillDate.day + 1);
 
-  return FutureBuilder<QuerySnapshot>(
-    future: FirebaseFirestore.instance
-        .collection('users')
-        .doc(userId)
-        .collection('orders')
-        .where('createdAt', isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
-        .where('createdAt', isLessThan: Timestamp.fromDate(endDate))
-        .orderBy('createdAt', descending: true)
-        .get(),
-    builder: (context, snapshot) {
+  return StreamBuilder<QuerySnapshot>(
+  stream: FirebaseFirestore.instance
+      .collection('users')
+      .doc(userId)
+      .collection('orders')
+      .where('createdAt', isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
+      .where('createdAt', isLessThan: Timestamp.fromDate(endDate))
+      .orderBy('createdAt', descending: true)
+      .snapshots(),
+  builder: (context, snapshot) {
       if (snapshot.connectionState == ConnectionState.waiting) {
         return const Center(child: CircularProgressIndicator());
       }
@@ -236,21 +236,29 @@ class _OrderStatusCustomerState extends State<OrderStatusCustomer> {
               ? DateFormat("MMM dd, HH:mm").format(createdAt)
               : '';
           final menuList = List<Map<String, dynamic>>.from(data['orders'] ?? []);
-            final List<Map<String, dynamic>> menuItems = menuList.map((item) {
-              final addons = (item['addons'] as List<dynamic>?)?.map((addon) {
-                return {
-                  'name': addon['name'] ?? '',
-                  'quantity': addon['quantity'] ?? 0,
-                  'price': addon['price'] ?? 0,
-                };
-              }).toList() ?? [];
 
-              return {
-                'name': item['name'] ?? '',
-                'quantity': item['quantity'] ?? 1,
-                'addons': addons,
-              };
-            }).toList();
+          final List<Map<String, dynamic>> menuItems = menuList.map((item) {
+            final List<Map<String, dynamic>> addons = (item['addons'] != null && item['addons'] is List)
+                ? List<Map<String, dynamic>>.from(item['addons'].map((addon) {
+                    if (addon is Map<String, dynamic>) {
+                      return {
+                        'name': addon['name'] ?? '',
+                        'quantity': addon['quantity'] ?? 0,
+                        'price': addon['price'] ?? 0,
+                      };
+                    } else {
+                      return {'name': '', 'quantity': 0, 'price': 0};
+                    }
+                  }))
+                : [];
+
+            return {
+              'name': item['name'] ?? '',
+              'quantity': item['quantity'] ?? 1,
+              'addons': addons,
+            };
+          }).toList();
+
 
 
           final restaurantId = menuList.isNotEmpty ? menuList[0]['restaurantId'] ?? '' : '';
@@ -264,8 +272,11 @@ class _OrderStatusCustomerState extends State<OrderStatusCustomer> {
           } else if (orderStatus == "Waiting for payment confirmation") {
             statusColor = const Color(0xFFFDDC5C);
           } else if (orderStatus == "Preparing food") {
-            statusColor = Color.fromARGB(255, 132, 132, 132);
-          } else if (orderStatus == "Completed") {
+            statusColor = Color.fromARGB(255, 132, 132, 132);           
+          } else if (orderStatus == "Waiting for pickup") {
+            statusColor = Colors.blue;
+          }
+          else if (orderStatus == "Completed") {
             statusColor = Colors.green;
           } else if (orderStatus == "Canceled") {
             statusColor = Colors.black;

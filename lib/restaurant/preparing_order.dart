@@ -170,7 +170,7 @@ class _PreparingOrderRestaurantState extends State<PreparingOrderRestaurant> {
                     final totalAmount = data['totalAmount'] ?? 0;
                     final status = data['orderStatus'] ?? 'unknown';
                     final customerId = data['customerId'] ?? '';
-                    final items = List<Map<String, dynamic>>.from(data['items'] ?? []);
+                    final items = List<Map<String, dynamic>>.from(data['orders'] ?? []);
                     final List<String> menuItems = [];
 
                       for (var item in items) {

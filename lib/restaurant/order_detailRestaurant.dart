@@ -335,21 +335,21 @@ class _OrderdetailRestaurantState extends State<OrderdetailRestaurant> {
   }
 }
 
-  // Get the next status based on current status
   String getNextStatus(String currentStatus) {
-    switch (currentStatus.toLowerCase()) {
-      case 'waiting for restaurant approval':
-        return 'Waiting for payment';
-      case 'waiting for payment':
-        return 'Waiting for payment confirmation';
-      case 'waiting for payment confirmation':
-        return 'Preparing food';
-      case 'preparing food':
-        return 'Completed';
-      default:
-        return currentStatus;
-    }
+  switch (currentStatus.toLowerCase()) {
+    case 'waiting for restaurant approval':
+      return 'Waiting for payment';
+    case 'waiting for payment':
+      return 'Waiting for payment confirmation';
+    case 'waiting for payment confirmation':
+      return 'Preparing food';
+    case 'preparing food':
+      return 'Waiting for pickup'; 
+    default:
+      return currentStatus;
   }
+}
+
 
   // Build different bottom content based on status
   Widget buildStatusContent(Map<String, dynamic> data) {
@@ -558,14 +558,14 @@ class _OrderdetailRestaurantState extends State<OrderdetailRestaurant> {
             const SizedBox(height: 8),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3F51B5),
+                backgroundColor: Colors.blue,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
                 elevation: 5,
                 shadowColor: Colors.black.withOpacity(0.3),
               ),
-              onPressed: _isUpdating ? null : () => updateOrderStatus('Completed'),
+              onPressed: _isUpdating ? null : () => updateOrderStatus('Waiting for pickup'),
               child: const Padding(
                 padding: EdgeInsets.symmetric(vertical: 12),
                 child: Center(
@@ -578,6 +578,23 @@ class _OrderdetailRestaurantState extends State<OrderdetailRestaurant> {
             ),
           ],
         );
+        case 'Waiting for pickup':
+          return Column(
+            children: [
+              const SizedBox(height: 20),
+              const Center(
+                child: Text(
+                  'Waiting for customer to pickup...',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black54,
+                  ),
+                ),
+              ),
+            ],
+          );
+
       
       case 'completed':
         return Column(

@@ -135,7 +135,7 @@ class _CompletedOrderRestaurantState extends State<CompletedOrderRestaurant> {
                     final totalAmount = data['totalAmount'] ?? 0;
                     final status = data['orderStatus'] ?? 'unknown';
                     final customerId = data['customerId'] ?? '';
-                    final items = List<Map<String, dynamic>>.from(data['items'] ?? []);
+                    final items = List<Map<String, dynamic>>.from(data['orders'] ?? []);
 
                     final List<String> menuItems = [];
                     for (var item in items) {
@@ -143,7 +143,8 @@ class _CompletedOrderRestaurantState extends State<CompletedOrderRestaurant> {
                       final quantity = item['quantity'] ?? 0;
                       menuItems.add('$name x$quantity');
 
-                      final addons = item['addons'] as List<dynamic>? ?? [];
+                      final addons = (item['addons'] is List) ? List<Map<String, dynamic>>.from(item['addons']) : [];
+
                       for (var addon in addons) {
                         final addonName = addon['name'] ?? 'Unnamed Addon';
                         final addonQty = addon['quantity'] ?? 0;
