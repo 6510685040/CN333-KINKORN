@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:kinkorn/restaurant/add_payment.dart';
 import 'package:kinkorn/restaurant/edit_payment.dart';
+import 'package:kinkorn/restaurant/restaurant_management.dart';
 import 'package:kinkorn/template/restaurant_bottom_nav.dart';
 
 class BankAccount {
@@ -77,7 +78,7 @@ class _EditPaymentPageState extends State<EditPaymentPage> {
           Container(
             width: double.infinity,
             padding: EdgeInsets.only(
-              top: MediaQuery.of(context).padding.top + 16,
+              top: MediaQuery.of(context).padding.top + 0,
               left: 16,
               right: 16,
               bottom: 16,
@@ -85,28 +86,32 @@ class _EditPaymentPageState extends State<EditPaymentPage> {
             color: Color(0xFFFFFBE6),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 IconButton(
                   icon: const Icon(Icons.chevron_left, size: 30, color: Color(0xFFB71C1C)),
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => RestaurantManagementPage()),
+                    );
+                  },
                 ),
-                const SizedBox(width: 8),
-                Text(
-                  'EDIT PAYMENT',
-                  style: TextStyle(
-                    color: Color(0xFFB71C1C),
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
+                const SizedBox(width: 0),
+                Expanded(
+                  child: Center(
+                    child: Text(
+                      'EDIT PAYMENT',
+                      style: TextStyle(
+                        color: Color(0xFFB71C1C),
+                        fontSize: MediaQuery.of(context).size.width * 0.07,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  )
                 ),
+                const SizedBox(width: 50),
                 SizedBox(height: 16),
-                /*Text(
-                  'List of Your Payment Methods',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                  ),
-                ),*/
               ],
             ),
           ),
@@ -127,7 +132,7 @@ class _EditPaymentPageState extends State<EditPaymentPage> {
                           padding: EdgeInsets.all(16),
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(20),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black.withOpacity(0.1),
@@ -152,9 +157,15 @@ class _EditPaymentPageState extends State<EditPaymentPage> {
                                             style: TextStyle(
                                               color: Colors.red[900],
                                               fontWeight: FontWeight.bold,
+                                              fontSize: 16,
                                             ),
                                           ),
-                                          Text(account.accountName),
+                                          Text(
+                                            account.accountName,
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                            ),
+                                          ),
                                         ],
                                       ),
                                       SizedBox(height: 4),
@@ -165,9 +176,15 @@ class _EditPaymentPageState extends State<EditPaymentPage> {
                                             style: TextStyle(
                                               color: Colors.red[900],
                                               fontWeight: FontWeight.bold,
+                                              fontSize: 16,
                                             ),
                                           ),
-                                          Text(account.bankName),
+                                          Text(
+                                            account.bankName,
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                            ),
+                                          ),
                                         ],
                                       ),
                                       SizedBox(height: 4),
@@ -178,9 +195,15 @@ class _EditPaymentPageState extends State<EditPaymentPage> {
                                             style: TextStyle(
                                               color: Colors.red[900],
                                               fontWeight: FontWeight.bold,
+                                              fontSize: 16,
                                             ),
                                           ),
-                                          Text(account.accountNumber),
+                                          Text(
+                                            account.accountNumber,
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                            ),
+                                          ),
                                         ],
                                       ),
                                     ],
@@ -200,12 +223,22 @@ class _EditPaymentPageState extends State<EditPaymentPage> {
                                         _loadPaymentMethods();
                                       }
                                     },
+                                    style: TextButton.styleFrom(
+                                      backgroundColor: Colors.grey[300],
+                                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                                      textStyle: TextStyle(
+                                        fontSize: 14,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(20),
+                                      )
+                                    ),
                                     child: Text(
                                       'edit',
                                       style: TextStyle(
                                         color: Colors.red[900],
-                                      ),
-                                    ),
+                                        fontWeight: FontWeight.w500,
+                                      ),),
                                   ),
                                 ],
                               ),
@@ -227,7 +260,7 @@ class _EditPaymentPageState extends State<EditPaymentPage> {
                   backgroundColor: Colors.grey[300],
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(20),
                   ),
                 ),
                 onPressed: () async {
@@ -249,8 +282,6 @@ class _EditPaymentPageState extends State<EditPaymentPage> {
               ),
             ),
           )
-
-
           //const CustomBottomNav(),
         ],
       ),

@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:kinkorn/restaurant/homepage.dart';
 import 'package:kinkorn/restaurant/order_detailRestaurant.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -104,7 +105,12 @@ class _NewOrderState extends State<NewOrder> {
             left: 20,
             child: IconButton(
               icon: const Icon(Icons.chevron_left, size: 30, color: Color(0xFFFCF9CA)),
-              onPressed: () => Navigator.pop(context),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => RestaurantDashboard()),
+                );
+              },
             ),
           ),
 
@@ -172,10 +178,26 @@ class _NewOrderState extends State<NewOrder> {
                     final totalAmount = data['totalAmount'] ?? 0;
                     final status = data['orderStatus'] ?? 'unknown';
                     final customerId = data['customerId'] ?? '';
-                    final items = List<Map<String, dynamic>>.from(data['items'] ?? []);
-                    final menuItems = items.map((item) => '${item['name']} x${item['quantity']}').toList();
+                   final items = List<Map<String, dynamic>>.from(data['orders'] ?? []);
+                    final menuItems = items.expand((item) {
+                      List<String> combinedItems = [];
 
-                    final timeAgo = _getTimeAgo(createdAt);
+                      combinedItems.add('${item['name'] ?? 'Unnamed'} x${item['quantity'] ?? 0}');
+
+                
+                      if (item['addons'] != null && item['addons'] is List) {
+                        final List<dynamic> addons = item['addons'];
+                        for (var addon in addons) {
+                          if (addon is Map<String, dynamic>) {
+                            combinedItems.add('  • ${addon['name'] ?? ''} x${addon['quantity'] ?? 0}');
+                          }
+                        }
+                      }
+
+                      return combinedItems;
+                    }).toList();
+
+                                        final timeAgo = _getTimeAgo(createdAt);
                     final statusInfo = _getStatusInfo(status);
 
                     return GestureDetector(
@@ -296,7 +318,7 @@ class _NewOrderState extends State<NewOrder> {
                       ),
                       const SizedBox(height: 8),
                       const Text("Order summary", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFFB71C1C))),
-                      ...menuItems.map((item) => Text("• $item", style: const TextStyle(fontSize: 12, color: Color(0xFFB71C1C)),)),
+                       ...menuItems.map((item) => Text(" $item", style: const TextStyle(fontSize: 12, color: Color(0xFFB71C1C)),)),
                       const SizedBox(height: 8),
                       Text("Pick up time : $pickUpTime", style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFB71C1C))),
                     ],

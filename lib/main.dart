@@ -49,8 +49,8 @@ class MyApp extends StatelessWidget {
         home: const HomeScreen(),
         theme: ThemeData(
           textTheme: GoogleFonts.kanitTextTheme(
-            Theme.of(context).textTheme
-          )
+            Theme.of(context).textTheme,
+          ),
         ),
       ),
     );

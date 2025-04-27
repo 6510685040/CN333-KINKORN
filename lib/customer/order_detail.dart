@@ -75,6 +75,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
     customerName =
         '${userData['firstName'] ?? ''} ${userData['lastName'] ?? ''} ${userData['mobile'] ?? ''}';
   }
+  
 
   // โหลดชื่อร้าน
   String restaurantName = '';
@@ -103,12 +104,29 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
   'canteenName': canteenName,
   'orderTime': formattedOrderTime,
   'pickupTime': formattedPickupTime,
-  'menuItems': orders.map((e) => {
-      'name': e['name'],
-      'quantity': e['quantity'],
-      'price': e['price'],
-      'total': (e['price'] ?? 0) * (e['quantity'] ?? 0),
+  'menuItems': orders.map((e) {
+      final List<Map<String, dynamic>> parsedAddons = [];
+      if (e['addons'] != null && e['addons'] is List) {
+        for (var addon in e['addons']) {
+          if (addon is Map<String, dynamic>) {
+            parsedAddons.add({
+              'name': addon['name'] ?? '',
+              'quantity': addon['quantity'] ?? 0,
+              'price': addon['price'] ?? 0,
+            });
+          }
+        }
+      }
+
+      return {
+        'name': e['name'],
+        'quantity': e['quantity'],
+        'price': e['price'],
+        'total': (e['price'] ?? 0) * (e['quantity'] ?? 0),
+        'addons': parsedAddons,
+      };
     }).toList(),
+
   'totalAmount': orderData['totalAmount'].toString(),
   'statusText': orderData['orderStatus'],
   'statusColor': getStatusColor(orderData['orderStatus']),
@@ -156,254 +174,349 @@ String formatDateTime(DateTime dateTime) {
     if (difference.inDays < 1) return '${difference.inHours} hrs ago';
     return '${difference.inDays} days ago';
   }
+  Future<void> _confirmPickup() async {
+  try {
+    final userOrderSnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(widget.userId)
+        .collection('orders')
+        .doc(widget.orderId)
+        .get();
+    
+    final orderData = userOrderSnapshot.data();
+    final ordersList = List<Map<String, dynamic>>.from(orderData?['orders'] ?? []);
+    final restaurantId = ordersList.isNotEmpty ? ordersList[0]['restaurantId'] ?? '' : '';
 
-  @override
-  Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
+    if (restaurantId.isEmpty) {
+      throw Exception('Restaurant ID not found!');
+    }
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFFCF9CA),
-      body: FutureBuilder<Map<String, dynamic>>(
-        future: _orderData,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          }
+    final batch = FirebaseFirestore.instance.batch();
 
-          final data = snapshot.data!;
-          return Stack(
-            children: [
-              const Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                child: CurveAppBar(title: 'Order Detail'),
+    final userOrderRef = FirebaseFirestore.instance
+        .collection('users')
+        .doc(widget.userId)
+        .collection('orders')
+        .doc(widget.orderId);
+
+    final restaurantOrderRef = FirebaseFirestore.instance
+        .collection('restaurants')
+        .doc(restaurantId)
+        .collection('orders')
+        .doc(widget.orderId);
+
+    final globalOrderRef = FirebaseFirestore.instance
+        .collection('orders')
+        .doc(widget.orderId);
+
+    batch.update(userOrderRef, {'orderStatus': 'Completed'});
+    batch.update(restaurantOrderRef, {'orderStatus': 'Completed'});
+    batch.update(globalOrderRef, {'orderStatus': 'Completed'});
+
+    await batch.commit();
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('ขอบคุณที่ยืนยันการรับอาหาร')),
+    );
+
+    setState(() {
+      _orderData = fetchOrderData(); // reload
+    });
+  } catch (e) {
+    print('Error confirming pickup: $e');
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Error: $e')),
+    );
+  }
+}
+
+
+
+
+ @override
+Widget build(BuildContext context) {
+  final screenWidth = MediaQuery.of(context).size.width;
+  final screenHeight = MediaQuery.of(context).size.height;
+
+  return Scaffold(
+    backgroundColor: const Color(0xFFFCF9CA),
+    body: FutureBuilder<Map<String, dynamic>>(
+      future: _orderData,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        }
+
+        final data = snapshot.data!;
+        return Stack(
+          children: [
+            const Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: CurveAppBar(title: 'Order Detail'),
+            ),
+            Positioned(
+              top: 40,
+              left: 16,
+              child: IconButton(
+                icon: const Icon(Icons.chevron_left, size: 30, color: Colors.black),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
               ),
-              Positioned(
-                top: 70,
-                left: 20,
-                child: IconButton(
-                  icon: Icon(Icons.chevron_left, size: 40, color: Colors.white),
-                  padding: EdgeInsets.zero,
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                ),
-              ),
-              Positioned.fill(
-                top: 250,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFB71C1C),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // แสดงสถานะ + เวลา
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 4, horizontal: 8),
-                                    decoration: BoxDecoration(
-                                      color: data['statusColor'],
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                    child: Text(
-                                      data['statusText'],
-                                      style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.bold),
-                                    ),
+            ),
+            Positioned.fill(
+              top: 250,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFB71C1C),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Status and Time
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                                  decoration: BoxDecoration(
+                                    color: data['statusColor'],
+                                    borderRadius: BorderRadius.circular(20),
                                   ),
-                                  Text(
-                                    data['timeAgo'],
-                                    style: const TextStyle(
-                                        color: Colors.white, fontSize: 14),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Order ID: ${data['orderId']}',
-                                style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold),
-                              ),
-                              const SizedBox(height: 4),
-                              Row(
-                                children: [
-                                  const CircleAvatar(
-                                    backgroundColor: Colors.white,
-                                    radius: 14,
-                                    child:
-                                        Icon(Icons.person, color: Colors.red),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    data['customerName'],
+                                  child: Text(
+                                    data['statusText'],
                                     style: const TextStyle(
                                         color: Colors.white,
-                                        fontSize: 16,
+                                        fontSize: 14,
                                         fontWeight: FontWeight.bold),
                                   ),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                '${data['restaurantName']}\nLocation: ${data['canteenName']}',
-                                style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Order time: ${data['orderTime']}\nPick up time: ${data['pickupTime']}',
-                                style: const TextStyle(
-                                    color: Colors.white, fontSize: 16),
-                              ),
-                              const SizedBox(height: 16),
-                              Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
+                                ),
+                                Text(
+                                  data['timeAgo'],
+                                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Order ID: ${data['orderId']}',
+                              style: const TextStyle(
                                   color: Colors.white,
-                                  borderRadius: BorderRadius.circular(12),
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                const CircleAvatar(
+                                  backgroundColor: Colors.white,
+                                  radius: 14,
+                                  child: Icon(Icons.person, color: Colors.red),
                                 ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      'Menu',
-                                      style: TextStyle(
-                                          color: Color.fromARGB(255, 175, 31, 31),
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                   // const Divider(),
-                                    ...List<Map<String, dynamic>>.from(data['menuItems']).map((item) {
-                                      return Padding(
-                                        padding: const EdgeInsets.symmetric(vertical: 4),
-                                        child: Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Text(
-                                              "${item['name']}",
-                                              style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFB71C1C)),
-                                            ),
-                                            Text(
-                                              "x${item['quantity']}",
-                                              style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFB71C1C)),
-                                            ),
-                                            Text(
-                                              "${item['total']}฿",
-                                              style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFB71C1C)),
-                                            ),
-                                          ],
-                                        ),
-                                      );
-                                    }).toList(),
-
-                                  ],
+                                const SizedBox(width: 8),
+                                Text(
+                                  data['customerName'],
+                                  style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold),
                                 ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              '${data['restaurantName']}\nLocation: ${data['canteenName']}',
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Order time: ${data['orderTime']}\nPick up time: ${data['pickupTime']}',
+                              style: const TextStyle(
+                                  color: Colors.white, fontSize: 16),
+                            ),
+                            const SizedBox(height: 16),
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
                               ),
-                              Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFFDDC5C),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    'Total  ${data['totalAmount']}  baht',
-                                    style: const TextStyle(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Menu',
+                                    style: TextStyle(
                                         color: Color.fromARGB(255, 175, 31, 31),
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold),
                                   ),
+                                  ...List<Map<String, dynamic>>.from(data['menuItems']).expand((item) {
+                                    final List<Map<String, dynamic>> addons = List<Map<String, dynamic>>.from(item['addons'] ?? []);
+                                    return [
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(vertical: 4),
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Text("${item['name']}", style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFB71C1C))),
+                                            Text("x${item['quantity']}", style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFB71C1C))),
+                                            Text("${item['total']}฿", style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFB71C1C))),
+                                          ],
+                                        ),
+                                      ),
+                                      ...addons.map((addon) => Padding(
+                                        padding: const EdgeInsets.only(left: 20, bottom: 2),
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Row(
+                                              children: [
+                                                const Text('• ', style: TextStyle(color: Color(0xFFB71C1C), fontSize: 13)),
+                                                Text(
+                                                  addon['name'],
+                                                  style: const TextStyle(color: Color(0xFFB71C1C), fontSize: 13),
+                                                ),
+                                                const SizedBox(width: 4),
+                                                Text(
+                                                  "x${addon['quantity']}",
+                                                  style: const TextStyle(color: Color(0xFFB71C1C), fontSize: 13),
+                                                ),
+                                              ],
+                                            ),
+                                            Text(
+                                              addon['price'] != null
+                                                  ? "${(addon['price'] * addon['quantity']).toStringAsFixed(1)}฿"
+                                                  : '',
+                                              style: const TextStyle(color: Color(0xFFB71C1C), fontSize: 13),
+                                            ),
+                                          ],
+                                        ),
+                                      ))
+                                    ];
+                                  }).toList(),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFDDC5C),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  'Total  ${data['totalAmount']}  baht',
+                                  style: const TextStyle(
+                                      color: Color.fromARGB(255, 175, 31, 31),
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold),
                                 ),
                               ),
-                              const SizedBox(height: 20),
-                              ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFFB7B7B7),
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8)),
-                                  elevation: 5,
-                                  shadowColor: Colors.black.withOpacity(0.3),
-                                ),
-                                onPressed: () {
-                                  showDialog(
-                                    context: context,
-                                    builder: (BuildContext context) {
-                                      return AlertDialog(
-                                        content: Image.network(
-                                          data['slipUrl'] ?? '',
-                                          fit: BoxFit.contain,
+                            ),
+                            const SizedBox(height: 20),
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFB7B7B7),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8)),
+                                elevation: 5,
+                                shadowColor: Colors.black.withOpacity(0.3),
+                              ),
+                              onPressed: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      content: Image.network(
+                                        data['slipUrl'] ?? '',
+                                        fit: BoxFit.contain,
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.of(context).pop();
+                                          },
+                                          child: const Text('Close'),
                                         ),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () {
-                                              Navigator.of(context).pop();
-                                            },
-                                            child: const Text('Close'),
-                                          ),
-                                        ],
-                                      );
-                                    },
-                                  );
-                                },
-                                child: const Padding(
-                                  padding: EdgeInsets.symmetric(vertical: 12),
-                                  child: Center(
-                                    child: Text(
-                                      'Check payment details',
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 16),
-                                    ),
+                                      ],
+                                    );
+                                  },
+                                );
+                              },
+                              child: const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 12),
+                                child: Center(
+                                  child: Text(
+                                    'Check payment details',
+                                    style: TextStyle(color: Colors.white, fontSize: 16),
                                   ),
                                 ),
                               ),
-                              const SizedBox(height: 10),
-                            ],
-                          ),
+                            ),
+                            if (data['statusText'] == 'Waiting for pickup')
+                              ...[
+                                const SizedBox(height: 10),
+                                ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.green,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    elevation: 5,
+                                    shadowColor: Colors.black.withOpacity(0.3),
+                                  ),
+                                  onPressed: _confirmPickup,
+                                  child: const Padding(
+                                    padding: EdgeInsets.symmetric(vertical: 12),
+                                    child: Center(
+                                      child: Text(
+                                        'รับอาหารแล้ว',
+                                        style: TextStyle(color: Colors.white, fontSize: 16),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-              /*Positioned(
-            bottom: 0, // Adjusted to ensure it's at the bottom
-            left: 0,
-            right: 0,
-            child: BottomBar(
-              screenHeight: screenHeight,
-              screenWidth: screenWidth,
             ),
-          ),*/
-            ],
-          );
-        },
-      ),
-    );
-  }
+            /*Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: BottomBar(
+                screenHeight: screenHeight,
+                screenWidth: screenWidth,
+              ),
+            ),*/
+          ],
+        );
+      },
+    ),
+  );
+}
 }

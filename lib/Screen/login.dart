@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:kinkorn/Screen/email_verification.dart';
 import 'package:kinkorn/customer/choose_canteen.dart';
 import 'register.dart';
 
@@ -29,16 +30,43 @@ class _LoginScreenState extends State<LoginScreen> {
       });
 
       try {
+        UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+        /*
         await FirebaseAuth.instance.signInWithEmailAndPassword(
           email: _emailController.text.trim(),
-          password: _passwordController.text.trim(),
+          password: _passwordController.text.trim(),*/
         );
 
-        // หาก login สำเร็จ
+      User? user = FirebaseAuth.instance.currentUser;
+      await user?.reload(); // refresh latest info from Firebase
+      user = FirebaseAuth.instance.currentUser;
+
+      if (user != null && user.emailVerified) {
+        //Email verified - allow login
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const ChooseCanteen()),
         );
+      } else {
+        //Email not verified
+        await user?.sendEmailVerification();
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => EmailVerificationStep(email: _emailController.text.trim()),
+          ),
+        );
+      }
+
+      /*        
+        // หาก login สำเร็จ
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const ChooseCanteen()),
+        ); */
       } on FirebaseAuthException catch (e) {
         setState(() {
           _errorMessage = e.message ?? "Login failed.";

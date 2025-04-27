@@ -185,12 +185,30 @@ class _OrderdetailRestaurantState extends State<OrderdetailRestaurant> {
       'canteenName': canteenName,
       'orderTime': formattedOrderTime,
       'pickupTime': formattedPickupTime,
-      'menuItems': orders.map((e) => {
-            'name': e['name'],
-            'quantity': e['quantity'],
-            'price': e['price'],
-            'total': (e['price'] ?? 0) * (e['quantity'] ?? 0),
-          }).toList(),
+      'menuItems': orders.map((e) {
+        final List<Map<String, dynamic>> parsedAddons = [];
+        if (e['addons'] != null && e['addons'] is List) {
+          for (var addon in e['addons']) {
+            if (addon is Map<String, dynamic>) {
+              parsedAddons.add({
+                'name': addon['name'] ?? '',
+                'quantity': addon['quantity'] ?? 0,
+                'price': addon['price'] ?? 0,
+              });
+            }
+          }
+        }
+
+        return {
+          'name': e['name'],
+          'quantity': e['quantity'],
+          'price': e['price'],
+          'total': (e['price'] ?? 0) * (e['quantity'] ?? 0),
+          'addons': parsedAddons,
+        };
+      }).toList(),
+
+
       'totalAmount': orderData['totalAmount'].toString(),
       'statusText': orderData['orderStatus'],
       'statusColor': getStatusColor(orderData['orderStatus']),
@@ -317,21 +335,21 @@ class _OrderdetailRestaurantState extends State<OrderdetailRestaurant> {
   }
 }
 
-  // Get the next status based on current status
   String getNextStatus(String currentStatus) {
-    switch (currentStatus.toLowerCase()) {
-      case 'waiting for restaurant approval':
-        return 'Waiting for payment';
-      case 'waiting for payment':
-        return 'Waiting for payment confirmation';
-      case 'waiting for payment confirmation':
-        return 'Preparing food';
-      case 'preparing food':
-        return 'Completed';
-      default:
-        return currentStatus;
-    }
+  switch (currentStatus.toLowerCase()) {
+    case 'waiting for restaurant approval':
+      return 'Waiting for payment';
+    case 'waiting for payment':
+      return 'Waiting for payment confirmation';
+    case 'waiting for payment confirmation':
+      return 'Preparing food';
+    case 'preparing food':
+      return 'Waiting for pickup'; 
+    default:
+      return currentStatus;
   }
+}
+
 
   // Build different bottom content based on status
   Widget buildStatusContent(Map<String, dynamic> data) {
@@ -540,14 +558,14 @@ class _OrderdetailRestaurantState extends State<OrderdetailRestaurant> {
             const SizedBox(height: 8),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3F51B5),
+                backgroundColor: Colors.blue,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
                 elevation: 5,
                 shadowColor: Colors.black.withOpacity(0.3),
               ),
-              onPressed: _isUpdating ? null : () => updateOrderStatus('Completed'),
+              onPressed: _isUpdating ? null : () => updateOrderStatus('Waiting for pickup'),
               child: const Padding(
                 padding: EdgeInsets.symmetric(vertical: 12),
                 child: Center(
@@ -560,6 +578,23 @@ class _OrderdetailRestaurantState extends State<OrderdetailRestaurant> {
             ),
           ],
         );
+        case 'Waiting for pickup':
+          return Column(
+            children: [
+              const SizedBox(height: 20),
+              const Center(
+                child: Text(
+                  'Waiting for customer to pickup...',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black54,
+                  ),
+                ),
+              ),
+            ],
+          );
+
       
       case 'completed':
         return Column(
@@ -670,11 +705,11 @@ class _OrderdetailRestaurantState extends State<OrderdetailRestaurant> {
                 child: CurveAppBar(title: 'Order Detail'),
               ),
               Positioned(
-                top: 40,
-                left: 16,
+                top: 70,
+                left: 20,
                 child: IconButton(
                   icon: const Icon(Icons.chevron_left,
-                      size: 30, color: Colors.black),
+                      size: 40, color: Color(0xFFFCF9CA)),
                   onPressed: () {
                     Navigator.pop(context);
                   },
@@ -787,27 +822,63 @@ class _OrderdetailRestaurantState extends State<OrderdetailRestaurant> {
                                           fontSize: 18,
                                           fontWeight: FontWeight.bold),
                                     ),
-                                    ...List<Map<String, dynamic>>.from(data['menuItems']).map((item) {
-                                      return Padding(
-                                        padding: const EdgeInsets.symmetric(vertical: 4),
-                                        child: Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Text(
-                                              "${item['name']}",
-                                              style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFB71C1C)),
-                                            ),
-                                            Text(
-                                              "x${item['quantity']}",
-                                              style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFB71C1C)),
-                                            ),
-                                            Text(
-                                              "${item['total']}฿",
-                                              style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFB71C1C)),
-                                            ),
-                                          ],
+                                    ...List<Map<String, dynamic>>.from(data['menuItems']).expand((item) {
+                                      final List<Map<String, dynamic>> addons = List<Map<String, dynamic>>.from(item['addons'] ?? []);
+
+                                      return [
+                              
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(vertical: 4),
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text(
+                                                "${item['name']}",
+                                                style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFB71C1C)),
+                                              ),
+                                              Text(
+                                                "x${item['quantity']}",
+                                                style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFB71C1C)),
+                                              ),
+                                              Text(
+                                                "${item['total']}฿",
+                                                style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFB71C1C)),
+                                              ),
+                                            ],
+                                          ),
                                         ),
-                                      );
+                                      
+                                        ...addons.map((addon) => Padding(
+                                          padding: const EdgeInsets.only(left: 20, bottom: 2),
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            children: [
+                                      
+                                              Row(
+                                                children: [
+                                                  const Text('• ', style: TextStyle(color: Color(0xFFB71C1C), fontSize: 13)),
+                                                  Text(
+                                                    addon['name'],
+                                                    style: const TextStyle(color: Color(0xFFB71C1C), fontSize: 13),
+                                                  ),
+                                                  const SizedBox(width: 4),
+                                                  Text(
+                                                    "x${addon['quantity']}",
+                                                    style: const TextStyle(color: Color(0xFFB71C1C), fontSize: 13),
+                                                  ),
+                                                ],
+                                              ),
+                                            
+                                              Text(
+                                                addon['price'] != null
+                                                    ? "${(addon['price'] * addon['quantity']).toStringAsFixed(1)}฿"
+                                                    : '',
+                                                style: const TextStyle(color: Color(0xFFB71C1C), fontSize: 13),
+                                              ),
+                                            ],
+                                          ),
+                                        ))
+                                                                              ];
                                     }).toList(),
                                   ],
                                 ),
@@ -850,7 +921,7 @@ class _OrderdetailRestaurantState extends State<OrderdetailRestaurant> {
           );
         },
       ),
-      bottomNavigationBar: const CustomBottomNav(),
+      //bottomNavigationBar: const CustomBottomNav(),
     );
   }
 }

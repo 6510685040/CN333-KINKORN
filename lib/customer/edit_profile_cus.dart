@@ -101,8 +101,6 @@ class _EditProfileCustomerState extends State<EditProfileCustomer> {
 
   @override
   Widget build(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
-    double screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
       body: Stack(
@@ -188,13 +186,13 @@ class _EditProfileCustomerState extends State<EditProfileCustomer> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       padding: const EdgeInsets.symmetric(
-                          vertical: 6, horizontal: 12), // เล็กลง
+                          vertical: 8, horizontal: 15),
                       minimumSize: const Size(0, 0), // ขนาดเล็กสุด
                     ),
                     child: Text(
                       _image == null ? 'choose your photo' : 'edit your photo',
                       style: const TextStyle(
-                          color: Colors.white, fontSize: 12),
+                          color: Colors.white, fontSize: 14),
                     ),
                   ),
                 // ปุ่มแก้ไขรูปภาพถ้ามีการเลือกรูป
@@ -207,13 +205,13 @@ class _EditProfileCustomerState extends State<EditProfileCustomer> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       padding: const EdgeInsets.symmetric(
-                          vertical: 6, horizontal: 12), // เล็กลง
+                          vertical: 8, horizontal: 15), // เล็กลง
                       minimumSize: const Size(0, 0), // ขนาดเล็กสุด
                     ),
                     child: const Text(
                       'edit your photo',
                       style: TextStyle(
-                          color: Colors.white, fontSize: 12), // เล็กลง
+                          color: Colors.white, fontSize: 14), // เล็กลง
                     ),
                   ),
               ],
@@ -275,21 +273,22 @@ class _EditProfileCustomerState extends State<EditProfileCustomer> {
           Text(
             label,
             style: TextStyle(
-              fontSize: 16,
+              fontSize: 18,
               fontWeight: FontWeight.bold,
               color: Color(0xFFAF1F1F),
             ),
           ),
-          const SizedBox(height: 5),
+          const SizedBox(height: 10),
           SizedBox(
-            width: 300,
+            width: MediaQuery.of(context).size.width * 0.75,
+            height: MediaQuery.of(context).size.height * 0.05,
             child: TextField(
               controller: controller,
               obscureText: obscureText,
               decoration: InputDecoration(
                 contentPadding: const EdgeInsets.symmetric(
-                  vertical: 10,
-                  horizontal: 15),
+                  vertical: 0,
+                  horizontal: 25),
                 filled: true,
                 fillColor: Colors.white,
                 border: OutlineInputBorder(

@@ -234,30 +234,75 @@ class _OrderSummaryState extends State<OrderSummary> {
                       children: [
                         // Order items
                         ..._orderItems.map((item) {
-                          final double totalPrice = 
-                              (item['quantity'] ?? 0) * (item['price'] ?? 0);
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 8.0, horizontal: 16.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            final double menuTotalPrice = 
+                                (item['quantity'] ?? 0) * (item['price'] ?? 0);
+                            final List<dynamic> addons = item['addons'] ?? [];
+
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Flexible(
-                                  child: Text(
-                                    '${item['quantity']}x ${item['name']}',
-                                    style: const TextStyle(
-                                        fontSize: 18, fontWeight: FontWeight.bold),
-                                    overflow: TextOverflow.ellipsis,
+                                // เมนูหลัก
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Flexible(
+                                        child: Text(
+                                          '${item['quantity']}x ${item['name']}',
+                                          style: const TextStyle(
+                                              fontSize: 18, fontWeight: FontWeight.bold),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      Text(
+                                        '฿${menuTotalPrice.toStringAsFixed(2)}',
+                                        style: const TextStyle(fontSize: 18),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                Text(
-                                  '฿${totalPrice.toStringAsFixed(2)}',
-                                  style: const TextStyle(fontSize: 18),
-                                ),
+                                
+                                // ➕ Addons ของเมนูนั้นๆ (ถ้ามี)
+                                if (addons.isNotEmpty)
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 32),
+                                    child: Column(
+                                      children: addons.map<Widget>((addon) {
+                                        final addonName = addon['name'] ?? '';
+                                        final addonQty = addon['quantity'] ?? 0;
+                                        final addonPrice = addon['price'] ?? 0;
+                                        final addonTotal = addonQty * addonPrice;
+                                        
+                                        return Padding(
+                                          padding: const EdgeInsets.symmetric(vertical: 2),
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  const Text('• ', style: TextStyle(fontSize: 14, color: Colors.black54)),
+                                                  Text(
+                                                    '$addonName x$addonQty',
+                                                    style: const TextStyle(fontSize: 14, color: Colors.black54),
+                                                  ),
+                                                ],
+                                              ),
+                                          
+                                              Text(
+                                                '฿${addonTotal.toStringAsFixed(2)}',
+                                                style: const TextStyle(fontSize: 14, color: Colors.black54),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      }).toList(),
+                                    ),
+                                  ),
                               ],
-                            ),
-                          );
-                        }).toList(),
+                            );
+                          }).toList(),
+
                         
                         // Add special note if exists
                         if (_orderData != null && _orderData!['specialNote'] != null && _orderData!['specialNote'].toString().isNotEmpty)

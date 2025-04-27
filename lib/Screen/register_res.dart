@@ -10,8 +10,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
-
-
 class RegisterRes extends StatefulWidget {
   const RegisterRes({super.key});
 
@@ -21,11 +19,10 @@ class RegisterRes extends StatefulWidget {
 
 class RegisterRestaurantScreenState extends State<RegisterRes> {
   final formKey = GlobalKey<FormState>();
-  final TextEditingController restaurantNameController =
-      TextEditingController();
+  final TextEditingController restaurantNameController = TextEditingController();
   final TextEditingController ownerNameController = TextEditingController();
   final TextEditingController openingTimeController = TextEditingController();
-
+  final TextEditingController descriptionController = TextEditingController();
   File? image;
   final ImagePicker picker = ImagePicker();
 
@@ -48,10 +45,21 @@ class RegisterRestaurantScreenState extends State<RegisterRes> {
     "Sunday": false,
   };
 
-  List<Map<String, dynamic>> canteens = [];
-
+  List<String> categories = [];
+  String? selectedCategory;
   String? selectedCanteenId;
 
+  Future<void> fetchCategories() async {
+    try {
+      final snapshot = await FirebaseFirestore.instance.collection('categories').get();
+      final categoriesList = snapshot.docs.first['categories'] as List<dynamic>;
+      setState(() {
+        categories = categoriesList.map((e) => e.toString()).toList();
+      });
+    } catch (e) {
+      print("Error fetching categories: $e");
+    }
+  }
 
   Future<void> pickImage() async {
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
@@ -63,35 +71,37 @@ class RegisterRestaurantScreenState extends State<RegisterRes> {
   }
 
   Future<String?> uploadImageToFirebase(File imageFile) async {
-  try {
-    final storageRef = FirebaseStorage.instance.ref();
-    final fileName = 'restaurant_logos/${DateTime.now().millisecondsSinceEpoch}.png';
-    final imageRef = storageRef.child(fileName);
-
-    await imageRef.putFile(imageFile);
-    final downloadURL = await imageRef.getDownloadURL();
-    return downloadURL;
-  } catch (e) {
-    print('Error uploading image: $e');
-    return null;
+    try {
+      final storageRef = FirebaseStorage.instance.ref();
+      final fileName = 'restaurant_logos/${DateTime.now().millisecondsSinceEpoch}.png';
+      final imageRef = storageRef.child(fileName);
+      await imageRef.putFile(imageFile);
+      return await imageRef.getDownloadURL();
+    } catch (e) {
+      print('Error uploading image: $e');
+      return null;
+    }
   }
-}
 
-Future<List<Map<String, dynamic>>> fetchCanteens() async {
-  final snapshot = await FirebaseFirestore.instance.collection('canteens').get();
-  return snapshot.docs.map((doc) {
-    return {
-      'id': doc.id,
-      'name': doc['name'],
-    };
-  }).toList();
-}
+  Future<List<Map<String, dynamic>>> fetchCanteens() async {
+    try {
+      final snapshot = await FirebaseFirestore.instance.collection('canteens').get();
+      return snapshot.docs.map((doc) {
+        return {
+          'id': doc.id,
+          'name': doc['name'],
+        };
+      }).toList();
+    } catch (e) {
+      print('Error fetching canteens: $e');
+      return [];
+    }
+  }
 
-  
   @override
   void initState() {
     super.initState();
-   
+    fetchCategories();
   }
 
   @override
@@ -100,7 +110,7 @@ Future<List<Map<String, dynamic>>> fetchCanteens() async {
     double screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-        appBar: AppBar(
+      appBar: AppBar(
         backgroundColor: const Color(0xFFAF1F1F),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
@@ -144,7 +154,6 @@ Future<List<Map<String, dynamic>>> fetchCanteens() async {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                    
                       const Text(
                         "Add Your Logo",
                         style: TextStyle(
@@ -156,69 +165,99 @@ Future<List<Map<String, dynamic>>> fetchCanteens() async {
                       const SizedBox(height: 8),
                       Align(
                         alignment: Alignment.center,
-                      child: GestureDetector(
-                      
-                      onTap: pickImage, 
-                      child: image == null
-                          ? Container(
-                               height: MediaQuery.of(context).size.width * 0.3, 
-                               width: MediaQuery.of(context).size.width * 0.3,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: const Color(0xFFD9D9D9)),
-                              ),
-                              child: const Center(
-                                child: Icon(Icons.add_a_photo, size: 40, color: Colors.grey),
-                              ),
-                            )
-                          : Stack(
-                              children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(16),
-                                  child: Image.file(
-                                    image!,
-                                    height: MediaQuery.of(context).size.width * 0.3,
-                                    width: MediaQuery.of(context).size.width * 0.3,
-               
-                                    fit: BoxFit.cover,
+                        child: GestureDetector(
+                          onTap: pickImage,
+                          child: image == null
+                              ? Container(
+                                  height: MediaQuery.of(context).size.width * 0.3,
+                                  width: MediaQuery.of(context).size.width * 0.3,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(color: const Color(0xFFD9D9D9)),
                                   ),
-                                ),
-                                Positioned(
-                                  top: 4,
-                                  right: 4,
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: Colors.black54,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    padding: const EdgeInsets.all(4),
-                                    child: const Icon(
-                                      Icons.edit,
-                                      size: 20,
-                                      color: Colors.white,
-                                    ),
+                                  child: const Center(
+                                    child: Icon(Icons.add_a_photo, size: 40, color: Colors.grey),
                                   ),
+                                )
+                              : Stack(
+                                  children: [
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(16),
+                                      child: Image.file(
+                                        image!,
+                                        height: MediaQuery.of(context).size.width * 0.3,
+                                        width: MediaQuery.of(context).size.width * 0.3,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                    Positioned(
+                                      top: 4,
+                                      right: 4,
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          color: Colors.black54,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        padding: const EdgeInsets.all(4),
+                                        child: const Icon(
+                                          Icons.edit,
+                                          size: 20,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                    ),
+                        ),
                       ),
-                    const SizedBox(height: 8),
-                    Align(
-                      alignment: Alignment.center,
-                      child: Text( 'Tap image to change',
-                      style: TextStyle(color: Colors.grey[600], fontSize: 12),)
-                    ),
-                   
-
-                     const SizedBox(height: 20),
-
-                      buildTextField("Restaurant Name", "Enter restaurant name",
-                          restaurantNameController),
-                      buildTextField("Owner Name", "Enter owner name",
-                          ownerNameController),
-
+                      const SizedBox(height: 8),
+                      Align(
+                        alignment: Alignment.center,
+                        child: Text(
+                          'Tap image to change',
+                          style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      buildTextField("Restaurant Name", "Enter restaurant name", restaurantNameController),
+                      buildTextField("Owner Name", "Enter owner name", ownerNameController),
+                      buildDescriptionField("Description", "Enter description about your restaurant", descriptionController),
+                      
+                      const Text(
+                        "Choose Category",
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                          color: Color(0xFFAF1F1F),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      DropdownButtonFormField<String>(
+                        value: selectedCategory,
+                        hint: const Text("Choose category"),
+                        validator: (value) => value == null || value.isEmpty ? 'Please select a category' : null,
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            selectedCategory = newValue;
+                          });
+                        },
+                        items: categories.map((category) {
+                          return DropdownMenuItem<String>(
+                            value: category,
+                            child: Text(category),
+                          );
+                        }).toList(),
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(24),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
                       const Text(
                         "What time does the restaurant open?",
                         style: TextStyle(
@@ -230,22 +269,20 @@ Future<List<Map<String, dynamic>>> fetchCanteens() async {
                       const SizedBox(height: 8),
                       TextFormField(
                         controller: openingTimeController,
-                         validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return 'Please select opening time';
-                            }
-                            return null;
-                          },
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Please select opening time';
+                          }
+                          return null;
+                        },
                         decoration: InputDecoration(
                           hintText: "Select opening time",
-                          contentPadding:
-                              const EdgeInsets.symmetric(horizontal: 16),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                           filled: true,
                           fillColor: Colors.white,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(24),
-                            borderSide: BorderSide.none,/*const BorderSide(
-                                color: Color(0xFFD9D9D9), width: 5),*/
+                            borderSide: BorderSide.none,
                           ),
                         ),
                         readOnly: true,
@@ -256,8 +293,7 @@ Future<List<Map<String, dynamic>>> fetchCanteens() async {
                           );
                           if (pickedTime != null) {
                             setState(() {
-                              openingTimeController.text =
-                                  pickedTime.format(context);
+                              openingTimeController.text = pickedTime.format(context);
                             });
                           }
                         },
@@ -272,42 +308,41 @@ Future<List<Map<String, dynamic>>> fetchCanteens() async {
                         ),
                       ),
                       FormField<bool>(
-                          validator: (value) {
-                            if (!selectedDays.containsValue(true)) {
-                              return 'Please select at least one opening day';
-                            }
-                            return null;
-                          },
-                          builder: (FormFieldState<bool> field) {
-                            return Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                ...days.map((day) {
-                                  return CheckboxListTile(
-                                    title: Text(day),
-                                    value: selectedDays[day],
-                                    activeColor: const Color(0xFFAF1F1F),
-                                    onChanged: (bool? value) {
-                                      setState(() {
-                                        selectedDays[day] = value ?? false;
-                                        field.didChange(value);
-                                      });
-                                    },
-                                  );
-                                }).toList(),
-                                if (field.hasError)
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 16.0),
-                                    child: Text(
-                                      field.errorText!,
-                                      style: const TextStyle(color: Colors.red),
-                                    ),
+                        validator: (value) {
+                          if (!selectedDays.containsValue(true)) {
+                            return 'Please select at least one opening day';
+                          }
+                          return null;
+                        },
+                        builder: (FormFieldState<bool> field) {
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              ...days.map((day) {
+                                return CheckboxListTile(
+                                  title: Text(day),
+                                  value: selectedDays[day],
+                                  activeColor: const Color(0xFFAF1F1F),
+                                  onChanged: (bool? value) {
+                                    setState(() {
+                                      selectedDays[day] = value ?? false;
+                                      field.didChange(value);
+                                    });
+                                  },
+                                );
+                              }).toList(),
+                              if (field.hasError)
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 16.0),
+                                  child: Text(
+                                    field.errorText!,
+                                    style: const TextStyle(color: Colors.red),
                                   ),
-                              ],
-                            );
-                          },
-                        ),
-
+                                ),
+                            ],
+                          );
+                        },
+                      ),
                       const SizedBox(height: 15),
                       const Text(
                         "Choose Canteen",
@@ -318,47 +353,44 @@ Future<List<Map<String, dynamic>>> fetchCanteens() async {
                         ),
                       ),
                       const SizedBox(height: 10),
-               FutureBuilder<List<Map<String, dynamic>>>(
-                future: fetchCanteens(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else if (snapshot.hasError) {
-                    return const Text('Error loading canteens');
-                  } else {
-                    final canteenItems = snapshot.data ?? [];
-
-                    return DropdownButtonFormField<String>(
-                      value: selectedCanteenId,
-                      hint: const Text("Choose canteen"),
-                      validator: (value) =>
-                          value == null || value.isEmpty ? 'Please select a canteen' : null,
-                      onChanged: (String? newValue) {
-                        setState(() {
-                          selectedCanteenId = newValue;
-                        });
-                      },
-                      items: canteenItems.map((canteen) {
-                        return DropdownMenuItem<String>(
-                          value: canteen['id'],
-                          child: Text(canteen['name']),
-                        );
-                      }).toList(),
-                          decoration: InputDecoration(
-                            filled: true,
-                            fillColor: Colors.white,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(24),
-                              borderSide: BorderSide.none,
-                            ),
-                          ),
-                        );
-                      }
-                    },
-                  ),
-
+                      FutureBuilder<List<Map<String, dynamic>>>(
+                        future: fetchCanteens(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return const Center(child: CircularProgressIndicator());
+                          } else if (snapshot.hasError) {
+                            return const Text('Error loading canteens');
+                          } else {
+                            final canteenItems = snapshot.data ?? [];
+                            return DropdownButtonFormField<String>(
+                              value: selectedCanteenId,
+                              hint: const Text("Choose canteen"),
+                              validator: (value) =>
+                                  value == null || value.isEmpty ? 'Please select a canteen' : null,
+                              onChanged: (String? newValue) {
+                                setState(() {
+                                  selectedCanteenId = newValue;
+                                });
+                              },
+                              items: canteenItems.map((canteen) {
+                                return DropdownMenuItem<String>(
+                                  value: canteen['id'],
+                                  child: Text(canteen['name']),
+                                );
+                              }).toList(),
+                              decoration: InputDecoration(
+                                filled: true,
+                                fillColor: Colors.white,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(24),
+                                  borderSide: BorderSide.none,
+                                ),
+                              ),
+                            );
+                          }
+                        },
+                      ),
                       const SizedBox(height: 20),
-
                       Center(
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
@@ -419,12 +451,19 @@ Future<List<Map<String, dynamic>>> fetchCanteens() async {
                                       'logoUrl': imageLogoURL,
                                       'openingDays': selectedDays,
                                       'openingTime': openingTimeController.text,
-                                      'openStatus': 'open',
-                                      'category': '',
-                                      'description': '',
+                                      'openStatus': 'closed',
+                                      'category': selectedCategory,
+                                      'description': descriptionController.text,
                                       'created_at': FieldValue.serverTimestamp(),
                                       'isApproved': false,
                                     });
+                                    print('Restaurant Name: ${restaurantNameController.text}');
+                                    print('Owner Name: ${ownerNameController.text}');
+                                    print('Opening Time: ${openingTimeController.text}');
+                                    print('Category: $selectedCategory');
+                                    print('Description: ${descriptionController.text}');
+                                    print('Canteen ID: $selectedCanteenId');
+
 
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(content: Text('Restaurant registered successfully!')),
@@ -465,42 +504,90 @@ Future<List<Map<String, dynamic>>> fetchCanteens() async {
     );
   }
 
-  Widget buildTextField(
-      String label, String hint, TextEditingController controller) {
+  Widget buildTextField(String label, String hint, TextEditingController controller) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label,
-            style: const TextStyle(
-                fontWeight: FontWeight.w600, 
-                fontSize: 16,
-                color: Color(0xFFAF1F1F))),
-        const SizedBox(height: 8),
-        Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(24),
-                          ),
-        child: TextFormField(
-          controller: controller,
-          validator: (value) {
-          if (value == null || value.trim().isEmpty) {
-            return 'Please enter $label';
-          }
-          return null;
-        },
-          decoration: InputDecoration(
-            hintText: hint,
-            filled: true,
-            fillColor: Colors.white,
-            border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(24),
-            borderSide: BorderSide.none,
-            )
+        Text(
+          label,
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 16,
+            color: Color(0xFFAF1F1F),
           ),
         ),
+        const SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: TextFormField(
+            controller: controller,
+            validator: (value) {
+              if (value == null || value.trim().isEmpty) {
+                return 'Please enter $label';
+              }
+              return null;
+            },
+            decoration: InputDecoration(
+              hintText: hint,
+              filled: true,
+              fillColor: Colors.white,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(24),
+                borderSide: BorderSide.none,
+              ),
+            ),
+          ),
         ),
-        const SizedBox(height: 20),      
+        const SizedBox(height: 20),
+      ],
+    );
+  }
+
+  Widget buildDescriptionField(String label, String hint, TextEditingController controller) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 16,
+            color: Color(0xFFAF1F1F),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: TextFormField(
+            controller: controller,
+            validator: (value) {
+              if (value == null || value.trim().isEmpty) {
+                return 'Please enter $label';
+              }
+              return null;
+            },
+
+            maxLines: 5,
+            textAlignVertical: TextAlignVertical.top,
+            decoration: InputDecoration(
+              hintText: hint,
+              filled: true,
+              fillColor: Colors.white,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(24),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            ),
+          ),
+        ),
+        const SizedBox(height: 20),
       ],
     );
   }

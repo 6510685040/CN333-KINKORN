@@ -185,15 +185,19 @@ class _OrderStatusCustomerState extends State<OrderStatusCustomer> {
 
   Widget _buildOrderList() {
   final userId = FirebaseAuth.instance.currentUser?.uid;
+  final startDate = DateTime(_fromDate.year, _fromDate.month, _fromDate.day);
+  final endDate = DateTime(_tillDate.year, _tillDate.month, _tillDate.day + 1);
 
-  return FutureBuilder<QuerySnapshot>(
-    future: FirebaseFirestore.instance
-        .collection('users')
-        .doc(userId)
-        .collection('orders')
-        .orderBy('createdAt', descending: true)
-        .get(),
-    builder: (context, snapshot) {
+  return StreamBuilder<QuerySnapshot>(
+  stream: FirebaseFirestore.instance
+      .collection('users')
+      .doc(userId)
+      .collection('orders')
+      .where('createdAt', isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
+      .where('createdAt', isLessThan: Timestamp.fromDate(endDate))
+      .orderBy('createdAt', descending: true)
+      .snapshots(),
+  builder: (context, snapshot) {
       if (snapshot.connectionState == ConnectionState.waiting) {
         return const Center(child: CircularProgressIndicator());
       }
@@ -203,7 +207,16 @@ class _OrderStatusCustomerState extends State<OrderStatusCustomer> {
       }
 
       final ordersSnapshot = snapshot.data;
+      if (ordersSnapshot == null || ordersSnapshot.docs.isEmpty) {
+        return const Center(
+          child: Text(
+            "ไม่พบออเดอร์ในช่วงเวลาที่เลือก",
+            style: TextStyle(fontSize: 16, color: Colors.black54),
+          ),
+        );
+      }
 
+      /*
       //no orders
       if (ordersSnapshot == null || ordersSnapshot.docs.isEmpty) {
         return const Center(
@@ -212,7 +225,7 @@ class _OrderStatusCustomerState extends State<OrderStatusCustomer> {
             style: TextStyle(fontSize: 16, color: Colors.black54),
           ),
         );
-      }
+      }*/
 
       //have orders
       return Column(
@@ -224,12 +237,30 @@ class _OrderStatusCustomerState extends State<OrderStatusCustomer> {
               ? DateFormat("MMM dd, HH:mm").format(createdAt)
               : '';
           final menuList = List<Map<String, dynamic>>.from(data['orders'] ?? []);
+
           final List<Map<String, dynamic>> menuItems = menuList.map((item) {
+            final List<Map<String, dynamic>> addons = (item['addons'] != null && item['addons'] is List)
+                ? List<Map<String, dynamic>>.from(item['addons'].map((addon) {
+                    if (addon is Map<String, dynamic>) {
+                      return {
+                        'name': addon['name'] ?? '',
+                        'quantity': addon['quantity'] ?? 0,
+                        'price': addon['price'] ?? 0,
+                      };
+                    } else {
+                      return {'name': '', 'quantity': 0, 'price': 0};
+                    }
+                  }))
+                : [];
+
             return {
               'name': item['name'] ?? '',
               'quantity': item['quantity'] ?? 1,
+              'addons': addons,
             };
           }).toList();
+
+
 
           final restaurantId = menuList.isNotEmpty ? menuList[0]['restaurantId'] ?? '' : '';
 
@@ -242,9 +273,14 @@ class _OrderStatusCustomerState extends State<OrderStatusCustomer> {
           } else if (orderStatus == "Waiting for payment confirmation") {
             statusColor = const Color(0xFFFDDC5C);
           } else if (orderStatus == "Preparing food") {
-            statusColor = Color.fromARGB(255, 132, 132, 132);
-          } else if (orderStatus == "Completed") {
+            statusColor = Color.fromARGB(255, 132, 132, 132);           
+          } else if (orderStatus == "Waiting for pickup") {
+            statusColor = Colors.blue;
+          }
+          else if (orderStatus == "Completed") {
             statusColor = Colors.green;
+          } else if (orderStatus == "Canceled") {
+            statusColor = Colors.black;
           }
 
           return FutureBuilder<DocumentSnapshot>(
@@ -354,40 +390,60 @@ class _OrderStatusCustomerState extends State<OrderStatusCustomer> {
                 ),
               ),
               const SizedBox(height: 4),
-              ...menuItems.map((item) {
-                final name = item['name'] ?? '';
-                final quantity = item['quantity'] ?? 1;
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 2),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        margin: const EdgeInsets.only(right: 6),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          '${quantity}x',
-                          style: const TextStyle(
-                            color: Colors.black87,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: Text(
-                          name,
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              }).toList(),
-            ],
+              ...menuItems.expand((item) {
+  final List<Map<String, dynamic>> addons = List<Map<String, dynamic>>.from(item['addons'] ?? []);
+  
+  return [
+    Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+          margin: const EdgeInsets.only(right: 6),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Text(
+            '${item['quantity']}x',
+            style: const TextStyle(
+              color: Colors.black87,
+              fontWeight: FontWeight.bold,
+              fontSize: 12,
+            ),
+          ),
+        ),
+        Expanded(
+          child: Text(
+            item['name'],
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ],
+    ),
+          ...addons.map((addon) => Padding(
+            padding: const EdgeInsets.only(left: 30, bottom: 2),
+            child: Row(
+               children: [
+                const Text('• ', style: TextStyle(color: Colors.white, fontSize: 12)),
+                Text(
+                  addon['name'],
+                  style: const TextStyle(color: Colors.white, fontSize: 12),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  "x${addon['quantity']}",
+                  style: const TextStyle(color: Colors.white, fontSize: 12),
+                ),
+              ],
+            ),
+          )),
+        ];
+      }).toList(),
+
+                  ],
           ),
         ),
         // ขวา: เวลา + สถานะ

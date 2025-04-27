@@ -31,7 +31,7 @@ class _LanguageSettingRestaurantState extends State<LanguageSettingCustomer> {
           ),
           // ✅ ปุ่มย้อนกลับ
           Positioned(
-            top: 70, // ✅ ตำแหน่งด้านซ้ายบน
+            top: 70,
             left: 20,
             child: IconButton(
               icon:
@@ -107,29 +107,22 @@ class _LanguageSettingRestaurantState extends State<LanguageSettingCustomer> {
         children: [
           Text(label,
               style: const TextStyle(
-                  fontSize: 16,
+                  fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFFB71C1C))),
-          const SizedBox(height: 5), // ระยะห่างเล็กน้อยจากข้อความ label
+          const SizedBox(height: 16),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey, width: 1.5),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(50),
               color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 6,
-                  offset: Offset(0, 3),
-                ),
-              ],
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
                 value: value,
                 isExpanded: true,
                 isDense: true, // ลดขนาดแน่นขึ้น
+                underline: SizedBox(),
                 icon:
                     const Icon(Icons.arrow_drop_down, color: Color(0xFFAF1F1F)),
                 items: items.map((String item) {
@@ -138,14 +131,16 @@ class _LanguageSettingRestaurantState extends State<LanguageSettingCustomer> {
                     child: Text(
                       item,
                       style: const TextStyle(
-                        fontSize: 14,
+                        fontSize: 16,
                         fontWeight: FontWeight.w500,
-                        color: Color(0xFFAF1F1F), // เปลี่ยนสีตัวอักษร
+                        color: Color(0xFFAF1F1F),
                       ),
                     ),
                   );
                 }).toList(),
                 onChanged: onChanged,
+                menuMaxHeight: 300,
+                borderRadius: BorderRadius.circular(20),
               ),
             ),
           ),

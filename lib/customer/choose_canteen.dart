@@ -10,8 +10,16 @@ class ChooseCanteen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
-    double screenHeight = MediaQuery.of(context).size.height;
+    final Size screenSize = MediaQuery.of(context).size;
+    final double screenWidth = screenSize.width;
+    final double screenHeight = screenSize.height;
+
+    // ตั้งค่าขนาดแบบ responsive
+    final double horizontalPadding = screenWidth * 0.07;
+    final double titleTopPadding = screenHeight * 0.09;
+    final double titleFontSize = screenWidth * 0.087;
+    final double listTopPadding = screenHeight * 0.3;
+    final double bottomPadding = screenHeight * 0.08;
 
     return Scaffold(
       body: Stack(
@@ -28,40 +36,20 @@ class ChooseCanteen extends StatelessWidget {
             child: CurveAppBar(title: ""),
           ),
           Positioned(
-            left: 0.07 * screenWidth,
-            top: 0.09 * screenHeight,
+            left: horizontalPadding,
+            top: titleTopPadding,
             child: Text(
               "Where to eat?",
               style: TextStyle(
-                //fontFamily: 'GeistFont',
                 fontWeight: FontWeight.bold,
-                fontSize: 0.087 * screenWidth,
+                fontSize: titleFontSize,
                 color: const Color(0xFFFCF9CA),
               ),
             ),
           ),
-          Positioned(
-            left: 36,
-            top: 210,
-            child: Container(
-              width: 340,
-              height: 32,
-              decoration: BoxDecoration(
-                color: const Color(0xFFFDFDFD),
-                borderRadius: BorderRadius.circular(110),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.25),
-                    offset: const Offset(0, 4),
-                    blurRadius: 4,
-                  ),
-                ],
-              ),
-            ),
-          ),
           Positioned.fill(
-            top: 260,
-            bottom: 70,
+            top: listTopPadding,
+            bottom: bottomPadding,
             child: StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance.collection('canteens').snapshots(),
               builder: (context, snapshot) {
@@ -76,19 +64,19 @@ class ChooseCanteen extends StatelessWidget {
                 }
 
                 return ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 30),
+                  padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.08),
                   itemCount: docs.length,
                   itemBuilder: (context, index) {
                     final doc = docs[index];
                     final data = doc.data() as Map<String, dynamic>;
-                    final canteenId = doc.id; 
+                    final canteenId = doc.id;
 
                     final name = data['name'] ?? '';
                     final location = data['location'] ?? '';
                     final imageUrl = data['imageUrl'] ?? '';
 
                     return Padding(
-                      padding: const EdgeInsets.only(bottom: 20),
+                      padding: EdgeInsets.only(bottom: screenHeight * 0.025),
                       child: canteenBox(
                         context,
                         canteenId: canteenId,
@@ -128,18 +116,24 @@ class ChooseCanteen extends StatelessWidget {
     required double screenWidth,
     required double screenHeight,
   }) {
+    final double containerWidth = screenWidth * 0.82;
+    final double containerHeight = screenHeight * 0.16;
+    final double imageWidth = screenWidth * 0.27;
+    final double imageHeight = screenHeight * 0.13;
+    final double imageMargin = screenWidth * 0.025;
+
     return GestureDetector(
       onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => ChooseRestaurantScreen(canteenId: canteenId,),
+            builder: (context) => ChooseRestaurantScreen(canteenId: canteenId),
           ),
         );
       },
       child: Container(
-        width: 0.82 * screenWidth,
-        height: 0.16 * screenHeight,
+        width: containerWidth,
+        height: containerHeight,
         decoration: BoxDecoration(
           color: const Color(0xFFAF1F1F),
           borderRadius: BorderRadius.circular(20),
@@ -147,9 +141,9 @@ class ChooseCanteen extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: 0.27 * screenWidth,
-              height: 0.13 * screenHeight,
-              margin: const EdgeInsets.all(10),
+              width: imageWidth,
+              height: imageHeight,
+              margin: EdgeInsets.all(imageMargin),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
               ),
@@ -158,38 +152,36 @@ class ChooseCanteen extends StatelessWidget {
                   ? CachedNetworkImage(
                       imageUrl: imageUrl,
                       fit: BoxFit.cover,
-                      placeholder: (context, url) => const Center(
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
+                      placeholder: (context, url) =>
+                          const Center(child: CircularProgressIndicator(strokeWidth: 2)),
                       errorWidget: (context, url, error) =>
                           const Icon(Icons.broken_image, size: 40),
                     )
-                  : const Icon(Icons.image_not_supported,
-                      size: 40, color: Colors.grey),
+                  : const Icon(Icons.image_not_supported, size: 40, color: Colors.grey),
             ),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.only(top: 20, bottom: 20, right: 10),
+                padding: EdgeInsets.only(top: screenHeight * 0.025, bottom: screenHeight * 0.025, right: screenWidth * 0.03),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       name,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.w600,
-                        fontSize: 20,
-                        color: Color(0xFFFCF9CA),
+                        fontSize: screenWidth * 0.05,
+                        color: const Color(0xFFFCF9CA),
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 5),
+                    SizedBox(height: screenHeight * 0.005),
                     Expanded(
                       child: Text(
                         location,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.w400,
-                          fontSize: 12,
+                          fontSize: screenWidth * 0.03,
                           color: Colors.white,
                         ),
                         softWrap: true,
