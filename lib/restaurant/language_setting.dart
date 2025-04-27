@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:kinkorn/template/curve_app_bar.dart';
-import 'package:kinkorn/template/restaurant_bottom_nav.dart'; 
 
 class LanguageSettingRestaurant extends StatefulWidget {
   const LanguageSettingRestaurant({super.key});
@@ -10,9 +10,6 @@ class LanguageSettingRestaurant extends StatefulWidget {
 }
 
 class _LanguageSettingRestaurantState extends State<LanguageSettingRestaurant> {
-  String appLanguage = 'American English'; // ✅ ค่าเริ่มต้นของแอป
-  String menuLanguage = 'Thai'; // ✅ ค่าเริ่มต้นของเมนู
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -21,17 +18,15 @@ class _LanguageSettingRestaurantState extends State<LanguageSettingRestaurant> {
           Positioned.fill(
             child: Container(color: const Color(0xFFFCF9CA)),
           ),
-          // 🔹 App Bar โค้ง
           const Positioned(
             top: 0,
             left: 0,
             right: 0,
             child: CurveAppBar(title: ''),
           ),
-          // ✅ ปุ่มย้อนกลับ
           Positioned(
-            top: 40, // ✅ ตำแหน่งด้านซ้ายบน
-            left: 16,
+            top: 70,
+            left: 20,
             child: IconButton(
               icon: const Icon(Icons.chevron_left, size: 40, color: Colors.white),
               onPressed: () {
@@ -39,14 +34,14 @@ class _LanguageSettingRestaurantState extends State<LanguageSettingRestaurant> {
               },
             ),
           ),
-          const Positioned(
+          Positioned(
             top: 80,
             left: 0,
             right: 0,
             child: Center(
               child: Text(
-                'Language',
-                style: TextStyle(
+                'language_title'.tr(), 
+                style: const TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
@@ -56,32 +51,19 @@ class _LanguageSettingRestaurantState extends State<LanguageSettingRestaurant> {
           ),
           Positioned.fill(
             top: 200,
-            left: 0,
-            right: 0,
             child: Column(
               children: [
                 const SizedBox(height: 50),
-                // ✅ Dropdown - Application Language
                 _buildDropdown(
-                  label: 'Application language',
-                  value: appLanguage,
-                  items: ['American English', 'British English', 'Thai'],
+                  label: 'app_language'.tr(),
+                  value: context.locale.languageCode, 
+                  items: ['en', 'th'], 
                   onChanged: (value) {
-                    setState(() {
-                      appLanguage = value!;
-                    });
-                  },
-                ),
-                const SizedBox(height: 40),
-                // ✅ Dropdown - Menu Language
-                _buildDropdown(
-                  label: 'Menu language',
-                  value: menuLanguage,
-                  items: ['Thai', 'English'],
-                  onChanged: (value) {
-                    setState(() {
-                      menuLanguage = value!;
-                    });
+                    if (value == 'th') {
+                      context.setLocale(const Locale('th'));
+                    } else {
+                      context.setLocale(const Locale('en'));
+                    }
                   },
                 ),
               ],
@@ -89,7 +71,6 @@ class _LanguageSettingRestaurantState extends State<LanguageSettingRestaurant> {
           ),
         ],
       ),
-      bottomNavigationBar: const CustomBottomNav(), // เพิ่มแถบเมนูด้านล่าง
     );
   }
 
@@ -104,20 +85,25 @@ class _LanguageSettingRestaurantState extends State<LanguageSettingRestaurant> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.red)),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFFB71C1C),
+            ),
+          ),
           const SizedBox(height: 5),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey, width: 1.5),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(50),
               color: Colors.white,
-              boxShadow: [
+              boxShadow: const [
                 BoxShadow(
                   color: Colors.black12,
-                  blurRadius: 8,
-                  offset: Offset(0, 4),
+                  blurRadius: 6,
+                  offset: Offset(0, 3),
                 ),
               ],
             ),
@@ -125,17 +111,24 @@ class _LanguageSettingRestaurantState extends State<LanguageSettingRestaurant> {
               child: DropdownButton<String>(
                 value: value,
                 isExpanded: true,
-                icon: const Icon(Icons.arrow_drop_down, color:Color(0xFFAF1F1F)),
+                isDense: true,
+                icon: const Icon(Icons.arrow_drop_down, color: Color(0xFFAF1F1F)),
                 items: items.map((String item) {
                   return DropdownMenuItem<String>(
                     value: item,
                     child: Text(
-                      item,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                      item.tr(),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: Color(0xFFAF1F1F),
+                      ),
                     ),
                   );
                 }).toList(),
                 onChanged: onChanged,
+                menuMaxHeight: 300,
+                borderRadius: BorderRadius.circular(20),
               ),
             ),
           ),

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -24,16 +25,36 @@ class _EditMenuPageState extends State<EditMenuPage> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController priceController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
 
   String? category;
   String? imageUrl;
   File? imageFile;
   final picker = ImagePicker();
+  List<String> categoriesList = [];
+  List<Map<String, dynamic>> options = [];
+
 
   @override
   void initState() {
     super.initState();
     _loadMenuData();
+    fetchCategories();
+  }
+  Future<void> fetchCategories() async {
+    try {
+      final snapshot = await FirebaseFirestore.instance.collection('categories').get();
+      List<String> categoriesListTemp = [];
+      snapshot.docs.forEach((doc) {
+        var categories = List.from(doc['categories']);
+        categoriesListTemp.addAll(categories.map((category) => category.toString()).toList());
+      });
+      setState(() {
+        categoriesList = categoriesListTemp;
+      });
+    } catch (e) {
+      print("Error fetching categories: $e");
+    }
   }
 
   Future<void> _loadMenuData() async {
@@ -51,6 +72,8 @@ class _EditMenuPageState extends State<EditMenuPage> {
       descriptionController.text = data['description'] ?? '';
       category = data['category'];
       imageUrl = data['imageUrl'];
+      options = List<Map<String, dynamic>>.from(data['options'] ?? []);
+
       setState(() {});
     }
   }
@@ -91,6 +114,8 @@ class _EditMenuPageState extends State<EditMenuPage> {
       'description': description,
       'category': category,
       'imageUrl': imageUrlToSave,
+      'options': options,
+
     });
 
     await FirebaseFirestore.instance
@@ -102,12 +127,14 @@ class _EditMenuPageState extends State<EditMenuPage> {
       'description': description,
       'category': category,
       'imageUrl': imageUrlToSave,
+      'options': options,
+
     });
 
     
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Menu updated successfully')),
+      SnackBar(content: Text('menu_update_success'.tr())),
     );
     Navigator.pop(context);
   }
@@ -127,8 +154,8 @@ class _EditMenuPageState extends State<EditMenuPage> {
       appBar: AppBar(
         backgroundColor: const Color(0xFFFFF8E1),
         elevation: 0,
-        title: const Text(
-          'EDIT MENU',
+        title: Text(
+          'edit_menu'.tr(),
           style: TextStyle(
             color: Color(0xFFB71C1C),
             fontSize: 24,
@@ -161,8 +188,8 @@ class _EditMenuPageState extends State<EditMenuPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Edit your menu details',
+                      Text(
+                        'edit_menu_detail'.tr(),
                         style: TextStyle(
                           color: Color(0xFFB71C1C),
                           fontSize: 18,
@@ -179,7 +206,7 @@ class _EditMenuPageState extends State<EditMenuPage> {
                               children: [
                                 ListTile(
                                   leading: const Icon(Icons.camera_alt),
-                                  title: const Text('Take a photo'),
+                                  title: Text('take_photo'.tr()),
                                   onTap: () {
                                     Navigator.pop(context);
                                     pickImage(ImageSource.camera);
@@ -187,7 +214,7 @@ class _EditMenuPageState extends State<EditMenuPage> {
                                 ),
                                 ListTile(
                                   leading: const Icon(Icons.photo),
-                                  title: const Text('Choose from gallery'),
+                                  title: Text('choose_your_photo'.tr()),
                                   onTap: () {
                                     Navigator.pop(context);
                                     pickImage(ImageSource.gallery);
@@ -223,12 +250,12 @@ class _EditMenuPageState extends State<EditMenuPage> {
                                       : null),
                             ),
                             child: imageFile == null && imageUrl == null
-                                ? const Center(
+                                ? Center(
                                     child: Column(
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
                                         Text(
-                                          'Edit\nyour\nPicture',
+                                          'edit_your_picture'.tr(),
                                           textAlign: TextAlign.center,
                                           style: TextStyle(
                                             color: Color(0xFFB71C1C),
@@ -250,14 +277,19 @@ class _EditMenuPageState extends State<EditMenuPage> {
                         ),
                       ),
                       const SizedBox(height: 20),
-                      _buildTextField('Name of menu', controller: nameController),
+                      _buildTextField('name_of_menu'.tr(), controller: nameController),
                       const SizedBox(height: 10),
-                      _buildTextField('Price', controller: priceController, keyboardType: TextInputType.number),
+                      _buildTextField('price'.tr(), controller: priceController, keyboardType: TextInputType.number),
                       const SizedBox(height: 10),
-                      _buildTextField('About', controller: descriptionController, maxLines: 3),
+                      _buildTextField('about_manu'.tr(), controller: descriptionController, maxLines: 3),
                       const SizedBox(height: 10),
-                      _buildDropdownField('Category'),
+                      _buildDropdownField('category'.tr()),
                       const SizedBox(height: 20),
+                      _buildOptionFields(),
+                       const SizedBox(height: 20),
+                      
+                    
+
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
@@ -269,8 +301,8 @@ class _EditMenuPageState extends State<EditMenuPage> {
                               borderRadius: BorderRadius.circular(10),
                             ),
                           ),
-                          child: const Text(
-                            'Save Changes',
+                          child: Text(
+                            'save_changes'.tr(),
                             style: TextStyle(color: Colors.white),
                           ),
                         ),
@@ -307,8 +339,7 @@ class _EditMenuPageState extends State<EditMenuPage> {
       ),
     );
   }
-
-  Widget _buildDropdownField(String hint) {
+Widget _buildDropdownField(String hint) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
@@ -323,35 +354,37 @@ class _EditMenuPageState extends State<EditMenuPage> {
           ),
           value: category,
           isExpanded: true,
-          items: const [
-            DropdownMenuItem(value: 'drink', child: Text('Drink')),
-            DropdownMenuItem(value: 'food', child: Text('Food')),
-            DropdownMenuItem(value: 'dessert', child: Text('Dessert')),
-          ],
+          items: categoriesList.isEmpty
+              ? []
+              : categoriesList.map((category) {
+                  return DropdownMenuItem<String>(
+                    value: category,
+                    child: Text(category),
+                  );
+                }).toList(),
           onChanged: (value) {
             setState(() {
-              category = value;
+              category = value; 
             });
           },
         ),
       ),
     );
   }
-
   void _confirmDelete(BuildContext context) {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Delete Menu'),
-        content: const Text('Are you sure you want to delete this menu?'),
+        title: const Text('delete_menu').tr(),
+        content: const Text('delete_confirmation').tr(),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text('cancel'.tr())),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
               _deleteMenu();
             },
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            child: Text('delete'.tr(), style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -372,9 +405,134 @@ class _EditMenuPageState extends State<EditMenuPage> {
         .delete();
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Menu deleted successfully')),
+      SnackBar(content: Text('menu_delete_success'.tr())),
     );
 
     Navigator.pop(context);
   }
+  Widget _buildOptionFields() {
+  final screenWidth = MediaQuery.of(context).size.width;
+
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        'addons'.tr(),
+        style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFB71C1C)),
+      ),
+      const SizedBox(height: 10),
+      ...options.asMap().entries.map((entry) {
+        int index = entry.key;
+        var option = entry.value;
+        bool isSmallScreen = screenWidth < 400;
+
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: isSmallScreen
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildNameField(index),
+                    const SizedBox(height: 8),
+                  ],
+                )
+              : Row(
+                  children: [
+                    Expanded(flex: 2, child: _buildNameField(index)),
+                    const SizedBox(width: 8),
+                    Expanded(flex: 1, child: _buildPriceField(index)),
+                    IconButton(
+                      icon: const Icon(Icons.remove_circle, color: Colors.red),
+                      onPressed: () {
+                        setState(() {
+                          options.removeAt(index);
+                        });
+                      },
+                    ),
+                  ],
+                ),
+        );
+      }).toList(),
+      const SizedBox(height: 10),
+      GestureDetector(
+        onTap: () {
+          setState(() {
+            options.add({'name'.tr(): '', 'price'.tr(): 0.0});
+          });
+        },
+        child: Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFFECECEC),
+            borderRadius: BorderRadius.circular(24),
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.add, size: 16),
+              SizedBox(width: 5),
+              Text('add_options'.tr(), style: TextStyle(fontSize: 11, color: Color(0xFF848484))),
+            ],
+          ),
+        ),
+      ),
+    ],
+  );
 }
+
+Widget _buildNameField(int index) {
+  return TextFormField(
+    initialValue: options[index]['name'],
+    onChanged: (val) => options[index]['name'] = val,
+    keyboardType: TextInputType.text,
+    decoration: InputDecoration(
+      hintText: 'Option name',
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(24),
+        borderSide: const BorderSide(color: Colors.white),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(24),
+        borderSide: const BorderSide(color: Colors.white),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(24),
+        borderSide: const BorderSide(color: Colors.white),
+      ),
+    ),
+  );
+}
+
+Widget _buildPriceField(int index) {
+  return TextFormField(
+    initialValue: options[index]['price'].toString(),
+    onChanged: (val) => options[index]['price'] = double.tryParse(val) ?? 0.0,
+    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+    decoration: InputDecoration(
+      hintText: '0.00',
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(24),
+        borderSide: const BorderSide(color: Colors.white),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(24),
+        borderSide: const BorderSide(color: Colors.white),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(24),
+        borderSide: const BorderSide(color: Colors.white),
+      ),
+    ),
+  );
+}
+
+
+
+}
+

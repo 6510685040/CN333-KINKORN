@@ -1,5 +1,5 @@
 import 'dart:async';
-
+import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:kinkorn/Screen/pendingApproval.dart';
@@ -113,7 +113,7 @@ class _RestaurantDashboardState extends State<RestaurantDashboard> {
 
   @override
   Widget build(BuildContext context) {
-    String title = 'Welcome $restaurantName !';
+    String title = '${'welcome_res'.tr()} $restaurantName !';
 
     return Scaffold(
       appBar: CurveAppBar(title: title),
@@ -126,12 +126,15 @@ class _RestaurantDashboardState extends State<RestaurantDashboard> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Overview',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFFB71C1C),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 20),
+                    child: Text(
+                      'over_view'.tr(),
+                      style: TextStyle(
+                        fontSize: 30,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFFB71C1C),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -139,10 +142,10 @@ class _RestaurantDashboardState extends State<RestaurantDashboard> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      _buildStatusCard('New order', '$newOrderCount', onTap: () {
+                      _buildStatusCard('new_order'.tr(), '$newOrderCount', onTap: () {
                         Navigator.push(context, MaterialPageRoute(builder: (context) => NewOrder()));
                       }),
-                      _buildStatusCard('Preparing order', '$preparingOrderCount', onTap: () {
+                      _buildStatusCard('status_preparing_food'.tr(), '$preparingOrderCount', onTap: () {
                         Navigator.push(context, MaterialPageRoute(builder: (context) => PreparingOrderRestaurant()));
                       }),
                     ],
@@ -151,7 +154,7 @@ class _RestaurantDashboardState extends State<RestaurantDashboard> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      _buildStatusCard('Completed', '$completedOrderCount', onTap: () {
+                      _buildStatusCard('status_completed'.tr(), '$completedOrderCount', onTap: () {
                         Navigator.push(context, MaterialPageRoute(builder: (context) => CompletedOrderRestaurant()));
                       }),
                     ],
@@ -160,27 +163,36 @@ class _RestaurantDashboardState extends State<RestaurantDashboard> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      _buildManagementButton(
-                        icon: Icons.restaurant_menu,
-                        label: 'Manage your\nrestuarant',
-                        onTap: () {
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => RestaurantManagementPage()));
-                        },
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width * 0.45,
+                        height: MediaQuery.of(context).size.width * 0.2,
+                        child: _buildManagementButton(
+                          icon: Icons.restaurant_menu,
+                          label: 'manage_res'.tr(),
+                          onTap: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => RestaurantManagementPage()));
+                          },
+                        ),
                       ),
-                      _buildManagementButton(
-                        icon: Icons.bar_chart,
-                        label: 'Sales report',
-                        onTap: () {
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => SalesReport()));
-                        },
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width * 0.45,
+                        height: MediaQuery.of(context).size.width * 0.2,
+                        child: _buildManagementButton(
+                          icon: Icons.bar_chart,
+                          label: 'sales_report'.tr(),
+                          onTap: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => SalesReport()));
+                          },
+                        ),
                       ),
                     ],
                   ),
+
                 ],
               ),
             ),
           ),
-          const CustomBottomNav(),
+          const CustomBottomNav(initialIndex: 0),
         ],
       ),
     );
@@ -190,7 +202,7 @@ class _RestaurantDashboardState extends State<RestaurantDashboard> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 150,
+        width: MediaQuery.of(context).size.width * 0.42,
         padding: const EdgeInsets.all(15),
         decoration: BoxDecoration(
           color: Color(0xFFFDDC5C),
@@ -210,6 +222,7 @@ class _RestaurantDashboardState extends State<RestaurantDashboard> {
               style: const TextStyle(
                 color: Color(0xFFB71C1C),
                 fontWeight: FontWeight.bold,
+                fontSize: 16,
               ),
             ),
             const SizedBox(height: 10),
@@ -221,11 +234,11 @@ class _RestaurantDashboardState extends State<RestaurantDashboard> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const Text(
-              'Click here',
+            Text(
+              'click_here'.tr(),
               style: TextStyle(
                 color: Color(0xFFB71C1C),
-                fontSize: 12,
+                fontSize: 14,
               ),
             ),
           ],
@@ -245,7 +258,7 @@ class _RestaurantDashboardState extends State<RestaurantDashboard> {
         padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
         decoration: BoxDecoration(
           color: const Color(0xFFB71C1C),
-          borderRadius: BorderRadius.circular(25),
+          borderRadius: BorderRadius.circular(20),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -259,6 +272,9 @@ class _RestaurantDashboardState extends State<RestaurantDashboard> {
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
+              softWrap: true,
+              overflow: TextOverflow.visible,
+              maxLines: 2,
             ),
           ],
         ),

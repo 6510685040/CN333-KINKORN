@@ -1,14 +1,40 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:kinkorn/customer/choose_canteen.dart';
 import 'package:kinkorn/customer/choose_menu.dart';
 import 'package:kinkorn/template/bottom_bar.dart';
 import 'package:kinkorn/template/curve_app_bar.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:easy_localization/easy_localization.dart';
 
-class ChooseRestaurantScreen extends StatelessWidget {
+class ChooseRestaurantScreen extends StatefulWidget {
   final String canteenId;
 
   const ChooseRestaurantScreen({super.key, required this.canteenId});
+
+  @override
+  State<ChooseRestaurantScreen> createState() => _ChooseRestaurantScreenState();
+}
+
+class _ChooseRestaurantScreenState extends State<ChooseRestaurantScreen> {
+  final TextEditingController searchController = TextEditingController();
+  String searchQuery = '';
+
+  @override
+  void initState() {
+    super.initState();
+    searchController.addListener(() {
+      setState(() {
+        searchQuery = searchController.text.toLowerCase();
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,8 +42,12 @@ class ChooseRestaurantScreen extends StatelessWidget {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFCF9CA),
-      body: Stack(
+  backgroundColor: const Color(0xFFFCF9CA),
+  resizeToAvoidBottomInset: true,
+  body: SingleChildScrollView(
+    child: SizedBox(
+      height: MediaQuery.of(context).size.height,
+      child: Stack(
         children: [
           const Positioned(
             top: 0,
@@ -26,41 +56,66 @@ class ChooseRestaurantScreen extends StatelessWidget {
             child: CurveAppBar(title: ""),
           ),
           Positioned(
-            left: screenWidth * 0.07,
+            left: screenWidth * 0.02,
             top: screenHeight * 0.09,
-            child: Text(
-              "Choose Restaurant....",
-              style: TextStyle(
-                fontWeight: FontWeight.w700,
-                fontSize: screenWidth * 0.08,
-                color: const Color(0xFFFCF9CA),
-              ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.chevron_left, size: 40, color: Colors.white),
+                  padding: EdgeInsets.zero,
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => ChooseCanteen()),
+                    );
+                  },
+                ),
+                Text(
+                  'choose_restaurant'.tr(),
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: screenWidth * 0.08,
+                    color: const Color(0xFFFCF9CA),
+                  ),
+                )
+              ],
             ),
           ),
           Positioned(
+            top: screenHeight * 0.20,
             left: screenWidth * 0.1,
-            top: screenHeight * 0.26,
+            right: screenWidth * 0.1,
             child: Container(
-              width: screenWidth * 0.8,
-              height: screenHeight * 0.04,
+              padding: EdgeInsets.symmetric(
+                horizontal: screenWidth * 0.04,
+                vertical: screenHeight * 0.005,
+              ),
               decoration: BoxDecoration(
-                color: const Color(0xFFFDFDFD),
-                borderRadius: BorderRadius.circular(110),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.25),
-                    offset: const Offset(0, 4),
-                    blurRadius: 4,
+                color: Colors.white.withOpacity(1.0),
+                borderRadius: BorderRadius.circular(screenWidth * 0.1),
+              ),
+              child: TextField(
+                controller: searchController,
+                decoration: InputDecoration(
+                  hintText: "search_restaurant".tr(),
+                  prefixIcon: Icon(Icons.search, color: Colors.grey, size: screenWidth * 0.06),
+                  border: InputBorder.none,
+                  filled: false,
+                  hintStyle: TextStyle(
+                    color: Colors.grey.shade600,
+                    fontSize: screenWidth * 0.04,
                   ),
-                ],
+                ),
+                style: TextStyle(color: Colors.black, fontSize: screenWidth * 0.045),
               ),
             ),
           ),
           Positioned.fill(
-            top: screenHeight * 0.32,
+            top: screenHeight * 0.28,
             bottom: screenHeight * 0.09,
             child: FutureBuilder<DocumentSnapshot>(
-              future: FirebaseFirestore.instance.collection('canteens').doc(canteenId).get(),
+              future: FirebaseFirestore.instance.collection('canteens').doc(widget.canteenId).get(),
               builder: (context, canteenSnapshot) {
                 if (!canteenSnapshot.hasData) {
                   return const Center(child: CircularProgressIndicator());
@@ -72,31 +127,40 @@ class ChooseRestaurantScreen extends StatelessWidget {
                 return StreamBuilder<QuerySnapshot>(
                   stream: FirebaseFirestore.instance
                       .collection('restaurants')
-                      .where('canteenId', isEqualTo: canteenId)
+                      .where('canteenId', isEqualTo: widget.canteenId)
                       .where('isApproved', isEqualTo: true)
                       .snapshots(),
-
                   builder: (context, snapshot) {
                     if (!snapshot.hasData) {
                       return const Center(child: CircularProgressIndicator());
                     }
 
                     final docs = snapshot.data!.docs;
+                    final filteredDocs = docs.where((doc) {
+                      final data = doc.data() as Map<String, dynamic>;
+                      final name = data['restaurantName'] ?? '';
+                      return name.toLowerCase().contains(searchQuery);
+                    }).toList();
 
-                    if (docs.isEmpty) {
-                      return const Center(child: Text("No restaurants found."));
+                    if (filteredDocs.isEmpty) {
+                      return Center(
+                        child: Text(
+                          'no_restaurants_found'.tr(),
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                      );
                     }
 
                     return ListView.builder(
                       padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.08),
-                      itemCount: docs.length,
+                      itemCount: filteredDocs.length,
                       itemBuilder: (context, index) {
-                        final data = docs[index].data() as Map<String, dynamic>;
+                        final data = filteredDocs[index].data() as Map<String, dynamic>;
 
                         final name = data['restaurantName'] ?? '';
                         final status = data['openStatus'] ?? '';
                         final logoUrl = data['logoUrl'] ?? '';
-                        final restaurantId = docs[index].id;
+                        final restaurantId = filteredDocs[index].id;
 
                         return Padding(
                           padding: EdgeInsets.only(bottom: screenHeight * 0.025),
@@ -121,24 +185,23 @@ class ChooseRestaurantScreen extends StatelessWidget {
                               ),
                               child: Row(
                                 children: [
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(20),
-                                    child: Container(
-                                      width: 0.27 * screenWidth,
-                                      height: 0.13 * screenHeight,
-                                      margin: EdgeInsets.all(screenWidth * 0.025),
+                                  Container(
+                                    width: 0.27 * screenWidth,
+                                    height: 0.13 * screenHeight,
+                                    margin: EdgeInsets.all(screenWidth * 0.025),
+                                    decoration: BoxDecoration(
                                       color: Colors.white,
-                                      child: logoUrl.isNotEmpty
-                                          ? CachedNetworkImage(
-                                              imageUrl: logoUrl,
-                                              fit: BoxFit.cover,
-                                              placeholder: (context, url) =>
-                                                  const Center(child: CircularProgressIndicator()),
-                                              errorWidget: (context, url, error) =>
-                                                  const Icon(Icons.broken_image),
-                                            )
-                                          : const Center(child: Icon(Icons.restaurant)),
+                                      borderRadius: BorderRadius.circular(20),
                                     ),
+                                    clipBehavior: Clip.antiAlias,
+                                    child: logoUrl.isNotEmpty
+                                        ? CachedNetworkImage(
+                                            imageUrl: logoUrl,
+                                            fit: BoxFit.cover,
+                                            placeholder: (context, url) => const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                                            errorWidget: (context, url, error) => const Icon(Icons.broken_image, size: 40),
+                                          )
+                                        : const Center(child: Icon(Icons.restaurant, size: 40)),
                                   ),
                                   Expanded(
                                     child: Padding(
@@ -172,7 +235,7 @@ class ChooseRestaurantScreen extends StatelessWidget {
                                               borderRadius: BorderRadius.circular(21),
                                             ),
                                             child: Text(
-                                              status == 'open' ? "open to order" : "closed",
+                                              status == 'open' ? 'open_to_order'.tr() : 'closed'.tr(),
                                               style: TextStyle(
                                                 fontWeight: FontWeight.w600,
                                                 fontSize: screenWidth * 0.03,
@@ -182,7 +245,7 @@ class ChooseRestaurantScreen extends StatelessWidget {
                                           ),
                                           Flexible(
                                             child: Text(
-                                              "Location: $canteenLocation",
+                                              canteenLocation,
                                               style: TextStyle(
                                                 fontWeight: FontWeight.w600,
                                                 fontSize: screenWidth * 0.03,
@@ -217,6 +280,8 @@ class ChooseRestaurantScreen extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    ),
       ),
     );
   }

@@ -117,7 +117,7 @@ class _EditPaymentState extends State<EditPayment> {
           // พื้นหลัง Title
           Container(
             width: MediaQuery.of(context).size.width,
-            height: 100,
+            height: 110,
             color: Color(0xFFFCF9CA),
           ),
 
@@ -125,7 +125,7 @@ class _EditPaymentState extends State<EditPayment> {
           Align(
             alignment: Alignment.topCenter,
             child: Padding(
-              padding: EdgeInsets.only(top: 30),
+              padding: EdgeInsets.only(top: 40),
               child: Text(
                 "EDIT YOUR PAYMENT",
                 style: TextStyle(
@@ -142,7 +142,7 @@ class _EditPaymentState extends State<EditPayment> {
           Align(
             alignment: Alignment.topCenter,
             child: Padding(
-              padding: EdgeInsets.only(top: 110),
+              padding: EdgeInsets.only(top: 120),
               child: Text(
                 "Edit Payment Method",
                 style: TextStyle(
@@ -157,12 +157,12 @@ class _EditPaymentState extends State<EditPayment> {
 
           // Edit Payment Method Section
           Padding(
-            padding: EdgeInsets.only(top: 155),
+            padding: EdgeInsets.only(top: 165),
             child: Align(
               alignment: Alignment.topCenter,
               child: Container(
                 width: MediaQuery.of(context).size.width * 0.9,
-                height: MediaQuery.of(context).size.height * 0.74,
+                height: MediaQuery.of(context).size.height * 0.72,
                 decoration: BoxDecoration(
                   color: Color(0xFFFFFFFF),
                   borderRadius: BorderRadius.circular(20),
@@ -213,14 +213,13 @@ class _EditPaymentState extends State<EditPayment> {
                         ),
                         SizedBox(height: 10),
                         _buildTextField('Account number', controller: accountNumberController),
-                        const SizedBox(height: 15),
+                        const SizedBox(height: 20),
 
                         //Edit QR code
                         // แสดงรูปที่เลือก
-                        SizedBox(height: 0),
                         Container(
-                            width: 200,
-                            height: 200,
+                            width: MediaQuery.of(context).size.width * 0.5,
+                            height: MediaQuery.of(context).size.height * 0.25,
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(20),
@@ -269,6 +268,7 @@ class _EditPaymentState extends State<EditPayment> {
                                   )
                                 : null,
                           ),
+                          SizedBox(height: 10,),
                         //ปุ่มให้แก้รูป เลือกรูปใหม่
                         ElevatedButton(
                           onPressed: () => showModalBottomSheet(
@@ -304,7 +304,7 @@ class _EditPaymentState extends State<EditPayment> {
 
                         // ปุ่ม Delete Account
                         SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.4,
+                          width: MediaQuery.of(context).size.width * 0.5,
                           height: 40,
                           child: ElevatedButton(
                             onPressed: () {
@@ -339,7 +339,7 @@ class _EditPaymentState extends State<EditPayment> {
               Positioned(
                 left: 0,
                 right: 0,
-                bottom: 20, // ตำแหน่งห่างจากขอบล่าง
+                bottom: 10, // ตำแหน่งห่างจากขอบล่าง
                 child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: 20),
                   child: Row(
@@ -350,16 +350,16 @@ class _EditPaymentState extends State<EditPayment> {
                         child: ElevatedButton(
                           onPressed: () {
                             Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => EditPaymentPage()),
-                                  );
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => EditPaymentPage()),
+                            );
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Color(0xFFFCF9CA),
                             padding: EdgeInsets.symmetric(vertical: 0),
                             shadowColor: Colors.black, // สีเงา
-                            elevation: 8, // ความสูงของเงา (ค่ามาก = เงาเข้ม)
+                            elevation: 3, // ความสูงของเงา (ค่ามาก = เงาเข้ม)
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(20),
                             ),
@@ -383,7 +383,7 @@ class _EditPaymentState extends State<EditPayment> {
                             backgroundColor: Color(0xFFFCF9CA),
                             padding: EdgeInsets.symmetric(vertical: 0),
                             shadowColor: Colors.black, // สีเงา
-                            elevation: 8, // ความสูงของเงา (ค่ามาก = เงาเข้ม)
+                            elevation: 8, 
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(20),
                             ),
@@ -407,22 +407,25 @@ class _EditPaymentState extends State<EditPayment> {
   }
 
   Widget _buildTextField(String hint, {TextEditingController? controller, TextInputType? keyboardType, int maxLines = 1}) {
-    return TextField(
-      controller: controller,
-      keyboardType: keyboardType,
-      maxLines: maxLines,
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: const TextStyle(color: Color(0xFFB71C1C)),
-        filled: true,
-        fillColor: Colors.white,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide.none,
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 12,
+    return Container(
+      width: MediaQuery.of(context).size.width * 0.8,
+      child: TextField(
+        controller: controller,
+        keyboardType: keyboardType,
+        maxLines: maxLines,
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: const TextStyle(color: Color(0xFFB71C1C)),
+          filled: true,
+          fillColor: Color(0xFFEEEEEC),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(50),
+            borderSide: BorderSide.none,
+          ),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 25,
+            vertical: 12,
+          ),
         ),
       ),
     );
@@ -430,10 +433,11 @@ class _EditPaymentState extends State<EditPayment> {
 
   Widget _buildDropdownField(String hint) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 25),
+      width: MediaQuery.of(context).size.width * 0.8,
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
+        color: Color(0xFFEEEEEC),
+        borderRadius: BorderRadius.circular(50),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
@@ -457,6 +461,8 @@ class _EditPaymentState extends State<EditPayment> {
               selectedBank = value;
             });
           },
+          menuMaxHeight:MediaQuery.of(context).size.height * 0.7,
+          borderRadius: BorderRadius.circular(20),
         ),
       ),
     );

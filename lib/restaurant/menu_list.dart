@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:kinkorn/restaurant/add_menu.dart';
 import 'package:kinkorn/restaurant/edit_menu.dart';
@@ -16,7 +17,7 @@ class MenuPage extends StatelessWidget {
         children: [
           // Header
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(12),
             color: const Color(0xFFFFFBE6),
             child: SafeArea(
               child: Row(
@@ -25,12 +26,12 @@ class MenuPage extends StatelessWidget {
                     icon: Icon(Icons.arrow_back, color: Colors.red[800]),
                     onPressed: () => Navigator.pop(context),
                   ),
-                  const Spacer(),
+                  const SizedBox(width: 110),
                   Text(
-                    'MENU',
+                    'menu_page_title'.tr(),
                     style: TextStyle(
                       color: Colors.red[800],
-                      fontSize: 22,
+                      fontSize: MediaQuery.of(context).size.width * 0.07,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -41,18 +42,18 @@ class MenuPage extends StatelessWidget {
           ),
 
           // Title Section
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Align(
               alignment: Alignment.centerLeft,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'All Menus',
+                    'all_menu'.tr(),
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 20,
+                      fontSize: 22,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -67,7 +68,7 @@ class MenuPage extends StatelessWidget {
               margin: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: const Color(0xFFFFFBE6),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(20),
               ),
               padding: const EdgeInsets.all(12),
               child: StreamBuilder<QuerySnapshot>(
@@ -83,9 +84,9 @@ class MenuPage extends StatelessWidget {
                   }
 
                   if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                    return const Center(
+                    return Center(
                       child: Text(
-                        'No menu items found.',
+                        'no_menu_found'.tr(),
                         style: TextStyle(color: Colors.black54),
                       ),
                     );
@@ -114,8 +115,20 @@ class MenuPage extends StatelessWidget {
                                   child: const Icon(Icons.image_not_supported),
                                 ),
                         ),
-                        title: Text(name),
-                        subtitle: Text('฿${price.toStringAsFixed(2)}'),
+                        title: Text(
+                          name,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        subtitle: Text(
+                          '฿${price.toStringAsFixed(2)}',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                         trailing: ElevatedButton(
                         onPressed: () {
                           Navigator.push(
@@ -132,7 +145,7 @@ class MenuPage extends StatelessWidget {
                           backgroundColor: const Color(0xFFB71C1C),
                           foregroundColor: Colors.white,
                         ),
-                        child: const Text('Edit'),
+                        child: const Text('edit').tr(),
                       ),
 
                       );
@@ -145,7 +158,7 @@ class MenuPage extends StatelessWidget {
 
           // Add Menu Button
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(50),
             child: SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -162,8 +175,8 @@ class MenuPage extends StatelessWidget {
                     MaterialPageRoute(builder: (context) => const AddMenuPage()),
                   );
                 },
-                child: const Text(
-                  'ADD MENU',
+                child: Text(
+                  'add_menu'.tr(),
                   style: TextStyle(color: Colors.black, fontSize: 16),
                 ),
               ),
@@ -171,7 +184,7 @@ class MenuPage extends StatelessWidget {
           ),
 
           // Bottom Navigation
-          const CustomBottomNav(),
+          //const CustomBottomNav(),
         ],
       ),
     );

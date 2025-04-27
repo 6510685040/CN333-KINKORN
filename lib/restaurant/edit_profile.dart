@@ -1,12 +1,109 @@
+import 'package:easy_localization/easy_localization.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:kinkorn/template/curve_app_bar.dart';
-import 'package:kinkorn/template/restaurant_bottom_nav.dart'; 
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-class EditProfileRestaurant extends StatelessWidget {
+class EditProfileRestaurant extends StatefulWidget {
   const EditProfileRestaurant({super.key});
 
   @override
+  State<EditProfileRestaurant> createState() => _EditProfileRestaurantState();
+}
+
+class _EditProfileRestaurantState extends State<EditProfileRestaurant> {
+  File? _image;
+  String? imageProfileUrl;
+
+  final TextEditingController firstNameController = TextEditingController();
+  final TextEditingController lastNameController = TextEditingController();
+  final TextEditingController mobileController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserProfile();
+  }
+
+  Future<void> _loadUserProfile() async {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    final userDoc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+
+    if (userDoc.exists) {
+      final data = userDoc.data();
+      setState(() {
+        firstNameController.text =  data?['firstName'] ?? '';
+        lastNameController.text =  data?['lastName'] ?? '';
+        mobileController.text =  data?['mobile'] ?? '';
+        imageProfileUrl = data?['imageProfileUrl'];
+      });
+    }
+  }
+
+  Future<void> _saveProfile() async {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    final firstName = firstNameController.text.trim();
+    final lastName = lastNameController.text.trim();
+    final mobile = mobileController.text.trim();
+    if (firstName.isEmpty || lastName.isEmpty || mobile.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('fill_all_fields'.tr())),
+      );
+      return;
+    }
+
+    await FirebaseFirestore.instance
+      .collection("users")
+      .doc(uid)
+      .update({
+      'firstName': firstNameController.text,
+      'lastName': lastNameController.text,
+      'mobile': mobileController.text,
+
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('profile_update_success'.tr())),
+    );
+    Navigator.pop(context);
+  }
+
+  // ฟังก์ชันเลือกภาพจากแกลอรี่หรือกล้อง
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      final uid = FirebaseAuth.instance.currentUser!.uid;
+      final file = File(pickedFile.path);
+
+      // โหลดเข้า storage
+      final ref = FirebaseStorage.instance
+          .ref()
+          .child('user_images')
+          .child('$uid.jpg');
+      await ref.putFile(file);
+      final url = await ref.getDownloadURL();
+
+      // เซฟ URL ลง Firestore
+      await FirebaseFirestore.instance.collection('users').doc(uid).set({
+        'imageProfileUrl': url,
+      }, SetOptions(merge: true));
+
+      setState(() {
+        _image = file;
+        imageProfileUrl = url;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    double screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       body: Stack(
         children: [
@@ -21,122 +118,196 @@ class EditProfileRestaurant extends StatelessWidget {
             right: 0,
             child: CurveAppBar(title: ''),
           ),
-           Positioned(
-            top: 40, 
-            left: 16,
+          Positioned(
+            top: 70,
+            left: 20,
             child: IconButton(
-              icon: const Icon(Icons.chevron_left, size: 40, color: Colors.white),
+              icon:
+              const Icon(Icons.chevron_left, size: 40, color: Colors.white),
               onPressed: () {
-                Navigator.pop(context); //รอแก้
+                Navigator.pop(context);
               },
             ),
           ),
           // 🔹 หัวข้อ "Profile" และ กล่องรูปภาพ
           Positioned(
-            top: 50, 
+            top: 80,
             left: 0,
             right: 0,
             child: Column(
               children: [
-                const Text(
-                  'Profile',
+                Text(
+                  'profile'.tr(),
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
                 ),
-                const SizedBox(height: 20), 
-                Container(
-                  width: 120,
-                  height: 120,
-                  decoration: BoxDecoration(
-                    color: Colors.white, // 🔹 พื้นหลังสีขาว
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: const Icon(
-                    Icons.image, // 
-                    color: Colors.grey,
-                    size: 40,
+                const SizedBox(height: 20),
+                GestureDetector(
+                  onTap: _pickImage, // คลิกที่กรอบเพื่อเลือกหรือถ่ายภาพ
+                  child: Container(
+                    width: 120,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: _image != null
+                      ? ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.file(_image!, fit: BoxFit.cover),
+                      )
+                      : imageProfileUrl != null
+                        ? ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.network(
+                            imageProfileUrl!, fit: BoxFit.cover,
+                            errorBuilder: (context, error, StackTrace) => const Icon(Icons.error),
+                          ),
+                        )
+                      : const Icon(Icons.image, size: 40, color: Colors.grey),
                   ),
                 ),
+                const SizedBox(height: 10),
+                // ปุ่ม "เลือกภาพ" เมื่อยังไม่มีการเลือกภาพ
+                if (_image == null)
+                  ElevatedButton(
+                    onPressed: _pickImage,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFAF1F1F),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 6, horizontal: 12), // เล็กลง
+                      minimumSize: const Size(0, 0), // ขนาดเล็กสุด
+                    ),
+                    child: Text(
+                      (_image == null ? 'choose_photo' : 'edit_photo').tr(),
+                      style: TextStyle(
+                        color: Colors.white, 
+                        fontSize: screenWidth * 0.035
+                      ),
+                    ),
+                  ),
+                // ปุ่มแก้ไขรูปภาพถ้ามีการเลือกรูป
+                if (_image != null) // ถ้ามีรูปจะแสดงปุ่มนี้
+                  ElevatedButton(
+                    onPressed: _pickImage,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFAF1F1F),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 6, horizontal: 12), // เล็กลง
+                      minimumSize: const Size(0, 0), // ขนาดเล็กสุด
+                    ),
+                    child: Text(
+                      'edit_photo'.tr(),
+                      style: TextStyle(
+                          color: Colors.white, fontSize: screenWidth * 0.035), // เล็กลง
+                    ),
+                  ),
               ],
             ),
           ),
           // 🔹 TextField ส่วนกรอกข้อมูล
           Positioned.fill(
-            top: 250, 
-            bottom: 80, 
+            top: 330, // ขยับลงมาจากกรอบรูป
+            bottom: 80,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
               child: SingleChildScrollView(
-                padding: const EdgeInsets.only(bottom: 80), // ✅ เผื่อให้เลื่อนแล้วไม่ทับปุ่ม
+                padding: const EdgeInsets.only(bottom: 20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    _buildTextField(label: 'Username'),
-                    _buildTextField(label: 'Password', obscureText: true),
-                    _buildTextField(label: 'Confirm Password', obscureText: true),
-                    _buildTextField(label: 'First Name'),
-                    _buildTextField(label: 'Last Name'),
-                    _buildTextField(label: 'Restaurant Name'),
-                    _buildTextField(label: 'Email'),
-                    _buildTextField(label: 'Mobile Number'),
+                    _buildTextField(label: 'first_name'.tr(), controller: firstNameController),
                     const SizedBox(height: 15),
+                    _buildTextField(label: 'last_name'.tr(), controller: lastNameController),
+                    const SizedBox(height: 15),
+                    _buildTextField(label: 'mobile_number'.tr(), controller: mobileController),
+                    const SizedBox(height: 30),
+                    // ✅ ปุ่ม Save
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFAF1F1F),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(50),
+                        ),
+                      ),
+                      onPressed: _saveProfile,
+                      child: Padding(
+                        padding:
+                            EdgeInsets.symmetric(vertical: 12, horizontal: 40),
+                        child:
+                            Text('save'.tr(), style: TextStyle(color: Colors.white)),
+                      ),
+                    ),
                   ],
-                ),
-              ),
-            ),
-          ),
-          // ✅ ปุ่ม Save ให้อยู่ติดล่างตลอด
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 40, // ✅ ขยับขึ้นให้ไม่ทับ BottomNav
-            child: Center(
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFAF1F1F),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                onPressed: () {
-                  Navigator.pop(context); // กลับไปหน้า Profile รอแก้ไปหน้า setting
-                },
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 12, horizontal: 40),
-                  child: Text('Save', style: TextStyle(color: Colors.white)),
                 ),
               ),
             ),
           ),
         ],
       ),
-      bottomNavigationBar: const CustomBottomNav(), // เพิ่มแถบเมนูด้านล่าง
     );
   }
 
-  Widget _buildTextField({required String label, bool obscureText = false}) {
+  Widget _buildTextField({
+    required String label, 
+    required TextEditingController controller,
+    bool obscureText = false
+  }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: SizedBox(
-        width: 300, // ✅ กำหนดความกว้างให้ TextField
-        child: TextField(
-          obscureText: obscureText,
-          decoration: InputDecoration(
-            labelText: label,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+      padding: const EdgeInsets.symmetric(vertical: 5.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFFAF1F1F),
+            ),
           ),
-        ),
+          const SizedBox(height: 5),
+          SizedBox(
+            width: 300,
+            child: TextField(
+              controller: controller,
+              obscureText: obscureText,
+              decoration: InputDecoration(
+                contentPadding: const EdgeInsets.symmetric(
+                  vertical: 10,
+                  horizontal: 15),
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(50),
+                  borderSide: BorderSide.none,
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(50),
+                  borderSide: BorderSide(color: Color(0xFFAF1F1F), width: 2),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 }
+

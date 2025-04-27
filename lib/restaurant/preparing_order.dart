@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:kinkorn/restaurant/homepage.dart';
 import 'package:kinkorn/restaurant/order_detailRestaurant.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -100,11 +101,16 @@ class _PreparingOrderRestaurantState extends State<PreparingOrderRestaurant> {
           const Positioned(top: 0, left: 0, right: 0, child: CurveAppBar(title: '')),
 
           Positioned(
-            top: 40,
-            left: 16,
+            top: 80,
+            left: 20,
             child: IconButton(
               icon: const Icon(Icons.chevron_left, size: 30, color: Color(0xFFFCF9CA)),
-              onPressed: () => Navigator.pop(context),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => RestaurantDashboard()),
+                );
+              },
             ),
           ),
 
@@ -170,8 +176,22 @@ class _PreparingOrderRestaurantState extends State<PreparingOrderRestaurant> {
                     final totalAmount = data['totalAmount'] ?? 0;
                     final status = data['orderStatus'] ?? 'unknown';
                     final customerId = data['customerId'] ?? '';
-                    final items = List<Map<String, dynamic>>.from(data['items'] ?? []);
-                    final menuItems = items.map((item) => '${item['name']} x${item['quantity']}').toList();
+                    final items = List<Map<String, dynamic>>.from(data['orders'] ?? []);
+                    final List<String> menuItems = [];
+
+                      for (var item in items) {
+                        final name = item['name'] ?? 'Unnamed';
+                        final quantity = item['quantity'] ?? 0;
+                        menuItems.add('$name x$quantity');
+
+                        final addons = item['addons'] as List<dynamic>? ?? [];
+                        for (var addon in addons) {
+                          final addonName = addon['name'] ?? 'Unnamed Addon';
+                          final addonQuantity = addon['quantity'] ?? 0;
+                          menuItems.add('• $addonName x$addonQuantity');
+                        }
+                      }
+
 
                     final timeAgo = _getTimeAgo(createdAt);
                     final statusInfo = _getStatusInfo(status);
@@ -214,7 +234,7 @@ class _PreparingOrderRestaurantState extends State<PreparingOrderRestaurant> {
           ),
         ],
       ),
-      bottomNavigationBar: const CustomBottomNav(),
+      //bottomNavigationBar: const CustomBottomNav(),
     );
   }
 
@@ -294,7 +314,7 @@ class _PreparingOrderRestaurantState extends State<PreparingOrderRestaurant> {
                       ),
                       const SizedBox(height: 8),
                       const Text("Order summary", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFFB71C1C))),
-                      ...menuItems.map((item) => Text("• $item", style: const TextStyle(fontSize: 12, color: Color(0xFFB71C1C)),)),
+                      ...menuItems.map((item) => Text(" $item", style: const TextStyle(fontSize: 12, color: Color(0xFFB71C1C)),)),
                       const SizedBox(height: 8),
                       Text("Pick up time : $pickUpTime", style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFB71C1C))),
                     ],

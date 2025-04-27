@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:kinkorn/customer/notification_cus.dart';
 import 'package:kinkorn/template/curve_app_bar.dart';
 import 'package:kinkorn/template/bottom_bar.dart';
 import 'package:kinkorn/template/restaurant_bottom_nav.dart';
@@ -22,12 +24,128 @@ class OrderdetailRestaurant extends StatefulWidget {
 class _OrderdetailRestaurantState extends State<OrderdetailRestaurant> {
   late Future<Map<String, dynamic>> _orderData;
   bool _isUpdating = false;
+  StreamSubscription<DocumentSnapshot>? _orderSubscription;
+
+  /*
+  // Noti
+  final NotificationCus _notificationCus = NotificationCus();
+  Set<String> _notifiedOrderIds = {};
+
+  final Map<String, String> latestOrderStatus = {};
+  */
 
   @override
   void initState() {
     super.initState();
     _orderData = fetchOrderData();
+    _listenToOrderChanges();
+    _listenToSpecificOrderChange();
   }
+
+  @override
+  void dispose() {
+    _orderSubscription?.cancel();
+    super.dispose();
+  }
+
+  void _listenToSpecificOrderChange() {
+    // Listen to changes in the user's specific order document
+    _orderSubscription = FirebaseFirestore.instance
+        .collection('users')
+        .doc(widget.customerId)
+        .collection('orders')
+        .doc(widget.orderId)
+        .snapshots()
+        .listen((snapshot) {
+      if (snapshot.exists) {
+        // When the order document changes, refresh the order data
+        setState(() {
+          _orderData = fetchOrderData();
+        });
+      }
+    });
+  }
+
+  void _listenToOrderChanges() async {
+    final userID = FirebaseAuth.instance.currentUser?.uid;
+    if (userID == null) return;
+
+    final restaurantDoc = await FirebaseFirestore.instance
+      .collection('restaurants')
+      .doc(userID)
+      .get();
+
+    if (!restaurantDoc.exists) return;
+
+    final restaurantId = restaurantDoc.id;
+
+    FirebaseFirestore.instance
+      .collection('restaurants')
+      .doc(restaurantId)
+      .collection('orders')
+      .snapshots()
+      .listen((snapshot) {
+        for (var change in snapshot.docChanges) {
+          final data = change.doc.data();
+          if (data == null) continue;
+
+          final orderId = change.doc.id;
+          final orderStatus = data['orderStatus'] ?? '';
+
+          // If this is the current order being viewed, refresh the UI
+          if (orderId == widget.orderId && change.type == DocumentChangeType.modified) {
+            setState(() {
+              _orderData = fetchOrderData();
+            });
+          }
+
+          /*
+
+          if (change.type == DocumentChangeType.added) {
+            // new order
+            if (!NotificationCus.notifiedOrderIds.contains(orderId)) {
+              _notificationCus.showNotification('ออเดอร์ใหม่', 'You have a new order');
+              NotificationCus.notifiedOrderIds.add(orderId);
+            }
+            latestOrderStatus[orderId] = orderStatus;
+          }
+          // payment
+          else if (change.type == DocumentChangeType.modified) {
+            final orders = change.doc.data();
+            final orderId = change.doc.id;
+
+            if (orders != null) {
+              final orderStatus = orders['orderStatus'];
+              final slipUrl = orders['slipUrl']; // รับข้อมูล slipUrl
+              final oldStatus = latestOrderStatus[orderId];
+
+              print('🔁 Order: $orderId | Old: $oldStatus ➜ New: $orderStatus');
+
+              if (oldStatus == 'Waiting for payment' && slipUrl != null && slipUrl.isNotEmpty) {
+                if (orderStatus != 'Waiting for payment confirmation') {
+                  FirebaseFirestore.instance
+                      .collection('restaurants')
+                      .doc(restaurantId)
+                      .collection('orders')
+                      .doc(orderId)
+                      .update({
+                        'orderStatus': 'Waiting for payment confirmation',
+                      });
+
+                  // ส่งการแจ้งเตือน
+                  _notificationCus.showNotification('ลูกค้าชำระเงินแล้ว', 'Waiting for your confirmation');
+                  NotificationCus.notifiedOrderIds.add('$orderId|paid');
+                }
+              }
+              NotificationCus.notifiedOrderIds.add('$orderId|paid');
+            }
+            
+            // อัปเดตสถานะเก่าภายในแคช
+            latestOrderStatus[orderId] = orderStatus;
+          }*/
+        }
+      });
+    }
 
   Future<Map<String, dynamic>> fetchOrderData() async {
     final orderDoc = await FirebaseFirestore.instance
@@ -106,12 +224,30 @@ class _OrderdetailRestaurantState extends State<OrderdetailRestaurant> {
       'canteenName': canteenName,
       'orderTime': formattedOrderTime,
       'pickupTime': formattedPickupTime,
-      'menuItems': orders.map((e) => {
-            'name': e['name'],
-            'quantity': e['quantity'],
-            'price': e['price'],
-            'total': (e['price'] ?? 0) * (e['quantity'] ?? 0),
-          }).toList(),
+      'menuItems': orders.map((e) {
+        final List<Map<String, dynamic>> parsedAddons = [];
+        if (e['addons'] != null && e['addons'] is List) {
+          for (var addon in e['addons']) {
+            if (addon is Map<String, dynamic>) {
+              parsedAddons.add({
+                'name': addon['name'] ?? '',
+                'quantity': addon['quantity'] ?? 0,
+                'price': addon['price'] ?? 0,
+              });
+            }
+          }
+        }
+
+        return {
+          'name': e['name'],
+          'quantity': e['quantity'],
+          'price': e['price'],
+          'total': (e['price'] ?? 0) * (e['quantity'] ?? 0),
+          'addons': parsedAddons,
+        };
+      }).toList(),
+
+
       'totalAmount': orderData['totalAmount'].toString(),
       'statusText': orderData['orderStatus'],
       'statusColor': getStatusColor(orderData['orderStatus']),
@@ -238,21 +374,21 @@ class _OrderdetailRestaurantState extends State<OrderdetailRestaurant> {
   }
 }
 
-  // Get the next status based on current status
   String getNextStatus(String currentStatus) {
-    switch (currentStatus.toLowerCase()) {
-      case 'waiting for restaurant approval':
-        return 'Waiting for payment';
-      case 'waiting for payment':
-        return 'Waiting for payment confirmation';
-      case 'waiting for payment confirmation':
-        return 'Preparing food';
-      case 'preparing food':
-        return 'Completed';
-      default:
-        return currentStatus;
-    }
+  switch (currentStatus.toLowerCase()) {
+    case 'waiting for restaurant approval':
+      return 'Waiting for payment';
+    case 'waiting for payment':
+      return 'Waiting for payment confirmation';
+    case 'waiting for payment confirmation':
+      return 'Preparing food';
+    case 'preparing food':
+      return 'Waiting for pickup'; 
+    default:
+      return currentStatus;
   }
+}
+
 
   // Build different bottom content based on status
   Widget buildStatusContent(Map<String, dynamic> data) {
@@ -272,7 +408,10 @@ class _OrderdetailRestaurantState extends State<OrderdetailRestaurant> {
                 elevation: 5,
                 shadowColor: Colors.black.withOpacity(0.3),
               ),
-              onPressed: _isUpdating ? null : () => updateOrderStatus('Waiting for payment'),
+              onPressed: _isUpdating ? null : () async {
+                await updateOrderStatus('Waiting for payment');
+              },
+              
               child: const Padding(
                 padding: EdgeInsets.symmetric(vertical: 12),
                 child: Center(
@@ -307,103 +446,130 @@ class _OrderdetailRestaurantState extends State<OrderdetailRestaurant> {
           ],
         );
       
-      case 'waiting for payment confirmation':
-  return Column(
-    children: [
-      const SizedBox(height: 10),
-      Container(
-        width: double.infinity,
-        height: 200, // Increased height for better image display
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: data['slipUrl'] != null && data['slipUrl'].isNotEmpty
-          ? ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                data['slipUrl'],
-                fit: BoxFit.contain,
-                loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return Center(
-                    child: CircularProgressIndicator(
-                      value: loadingProgress.expectedTotalBytes != null
-                          ? loadingProgress.cumulativeBytesLoaded / 
-                            loadingProgress.expectedTotalBytes!
-                          : null,
-                    ),
-                  );
-                },
-                errorBuilder: (context, error, stackTrace) {
-                  return const Center(
-                    child: Text(
-                      'Unable to load payment slip',
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                  );
-                },
-              ),
-            )
-          : const Center(
-              child: Text(
-                'No payment slip available',
-                style: TextStyle(color: Colors.grey),
-              ),
-            ),
-      ),
-      const SizedBox(height: 10),
-      Row(
-        children: [
-          Expanded(
-            child: ElevatedButton(
+      case 'waiting for payment':
+        return Column(
+          children: [
+            const SizedBox(height: 10),
+            ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
+                backgroundColor: Colors.grey,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
                 elevation: 5,
                 shadowColor: Colors.black.withOpacity(0.3),
               ),
-              onPressed: _isUpdating ? null : () => updateOrderStatus('Canceled'),
+              onPressed: null,
               child: const Padding(
                 padding: EdgeInsets.symmetric(vertical: 12),
                 child: Center(
                   child: Text(
-                    'Cancel',
-                    style: TextStyle(color: Color(0xFFAF1F1F), fontSize: 16),
-                  ),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF4c9534),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                elevation: 5,
-                shadowColor: Colors.black.withOpacity(0.3),
-              ),
-              onPressed: _isUpdating ? null : () => updateOrderStatus('Preparing food'),
-              child: const Padding(
-                padding: EdgeInsets.symmetric(vertical: 12),
-                child: Center(
-                  child: Text(
-                    'Confirm',
+                    'waiting for customer to upload a payment slip',
                     style: TextStyle(color: Colors.white, fontSize: 16),
                   ),
                 ),
               ),
             ),
-          ),
-        ],
-      ),
-    ],
-  );
+          ],
+        );
+      
+      case 'waiting for payment confirmation':
+        return Column(
+          children: [
+            const SizedBox(height: 10),
+            Container(
+              width: double.infinity,
+              height: 200, // Increased height for better image display
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: data['slipUrl'] != null && data['slipUrl'].isNotEmpty
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.network(
+                      data['slipUrl'],
+                      fit: BoxFit.contain,
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Center(
+                          child: CircularProgressIndicator(
+                            value: loadingProgress.expectedTotalBytes != null
+                                ? loadingProgress.cumulativeBytesLoaded / 
+                                  loadingProgress.expectedTotalBytes!
+                                : null,
+                          ),
+                        );
+                      },
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Center(
+                          child: Text(
+                            'Unable to load payment slip',
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                        );
+                      },
+                    ),
+                  )
+                : const Center(
+                    child: Text(
+                      'No payment slip available',
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ),
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      elevation: 5,
+                      shadowColor: Colors.black.withOpacity(0.3),
+                    ),
+                    onPressed: _isUpdating ? null : () => updateOrderStatus('Canceled'),
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 12),
+                      child: Center(
+                        child: Text(
+                          'Cancel',
+                          style: TextStyle(color: Color(0xFFAF1F1F), fontSize: 16),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF4c9534),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      elevation: 5,
+                      shadowColor: Colors.black.withOpacity(0.3),
+                    ),
+                    onPressed: _isUpdating ? null : () => updateOrderStatus('Preparing food'),
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 12),
+                      child: Center(
+                        child: Text(
+                          'Confirm',
+                          style: TextStyle(color: Colors.white, fontSize: 16),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
       
       case 'preparing food':
         return Column(
@@ -458,14 +624,14 @@ class _OrderdetailRestaurantState extends State<OrderdetailRestaurant> {
             const SizedBox(height: 8),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3F51B5),
+                backgroundColor: Colors.blue,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
                 elevation: 5,
                 shadowColor: Colors.black.withOpacity(0.3),
               ),
-              onPressed: _isUpdating ? null : () => updateOrderStatus('Completed'),
+              onPressed: _isUpdating ? null : () => updateOrderStatus('Waiting for pickup'),
               child: const Padding(
                 padding: EdgeInsets.symmetric(vertical: 12),
                 child: Center(
@@ -478,6 +644,23 @@ class _OrderdetailRestaurantState extends State<OrderdetailRestaurant> {
             ),
           ],
         );
+        case 'Waiting for pickup':
+          return Column(
+            children: [
+              const SizedBox(height: 20),
+              const Center(
+                child: Text(
+                  'Waiting for customer to pickup...',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black54,
+                  ),
+                ),
+              ),
+            ],
+          );
+
       
       case 'completed':
         return Column(
@@ -588,11 +771,11 @@ class _OrderdetailRestaurantState extends State<OrderdetailRestaurant> {
                 child: CurveAppBar(title: 'Order Detail'),
               ),
               Positioned(
-                top: 40,
-                left: 16,
+                top: 70,
+                left: 20,
                 child: IconButton(
                   icon: const Icon(Icons.chevron_left,
-                      size: 30, color: Colors.black),
+                      size: 40, color: Color(0xFFFCF9CA)),
                   onPressed: () {
                     Navigator.pop(context);
                   },
@@ -705,27 +888,62 @@ class _OrderdetailRestaurantState extends State<OrderdetailRestaurant> {
                                           fontSize: 18,
                                           fontWeight: FontWeight.bold),
                                     ),
-                                    ...List<Map<String, dynamic>>.from(data['menuItems']).map((item) {
-                                      return Padding(
-                                        padding: const EdgeInsets.symmetric(vertical: 4),
-                                        child: Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Text(
-                                              "${item['name']}",
-                                              style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFB71C1C)),
-                                            ),
-                                            Text(
-                                              "x${item['quantity']}",
-                                              style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFB71C1C)),
-                                            ),
-                                            Text(
-                                              "${item['total']}฿",
-                                              style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFB71C1C)),
-                                            ),
-                                          ],
+                                    ...List<Map<String, dynamic>>.from(data['menuItems']).expand((item) {
+                                      final List<Map<String, dynamic>> addons = List<Map<String, dynamic>>.from(item['addons'] ?? []);
+
+                                      return [
+                              
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(vertical: 4),
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text(
+                                                "${item['name']}",
+                                                style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFB71C1C)),
+                                              ),
+                                              Text(
+                                                "x${item['quantity']}",
+                                                style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFB71C1C)),
+                                              ),
+                                              Text(
+                                                "${item['total']}฿",
+                                                style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFB71C1C)),
+                                              ),
+                                            ],
+                                          ),
                                         ),
-                                      );
+                                      
+                                        ...addons.map((addon) => Padding(
+                                          padding: const EdgeInsets.only(left: 20, bottom: 2),
+                                          child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            children: [
+                                      
+                                              Row(
+                                                children: [
+                                                  const Text('• ', style: TextStyle(color: Color(0xFFB71C1C), fontSize: 13)),
+                                                  Text(
+                                                    addon['name'],
+                                                    style: const TextStyle(color: Color(0xFFB71C1C), fontSize: 13),
+                                                  ),
+                                                  const SizedBox(width: 4),
+                                                  Text(
+                                                    "x${addon['quantity']}",
+                                                    style: const TextStyle(color: Color(0xFFB71C1C), fontSize: 13),
+                                                  ),
+                                                ],
+                                              ),
+                                            
+                                              Text(
+                                                addon['price'] != null
+                                                    ? "${(addon['price'] * addon['quantity']).toStringAsFixed(1)}฿"
+                                                    : '',
+                                                style: const TextStyle(color: Color(0xFFB71C1C), fontSize: 13),
+                                              ),
+                                            ],
+                                          ),
+                                        ))
+                                      ];
                                     }).toList(),
                                   ],
                                 ),
@@ -768,7 +986,7 @@ class _OrderdetailRestaurantState extends State<OrderdetailRestaurant> {
           );
         },
       ),
-      bottomNavigationBar: const CustomBottomNav(),
+      //bottomNavigationBar: const CustomBottomNav(),
     );
   }
 }

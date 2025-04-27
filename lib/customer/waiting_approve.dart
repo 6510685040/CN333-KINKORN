@@ -1,11 +1,12 @@
 import 'dart:async';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:kinkorn/customer/order_status.dart';
 import 'package:kinkorn/template/curve_app_bar.dart';
 import 'package:kinkorn/template/bottom_bar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:kinkorn/customer/order_sum.dart'; // Make sure to import OrderSummary
+import 'package:kinkorn/customer/order_sum.dart';
+import 'package:easy_localization/easy_localization.dart'; 
 
 class WaitingApprove extends StatefulWidget {
   final String orderId;
@@ -23,7 +24,7 @@ class WaitingApprove extends StatefulWidget {
 
 class _WaitingApproveState extends State<WaitingApprove> {
   StreamSubscription<DocumentSnapshot>? _orderSubscription;
-  String restaurantName = "Loading...";
+  String restaurantName = "loading".tr();
   String getRestaurantId = "";
 
   @override
@@ -41,7 +42,6 @@ class _WaitingApproveState extends State<WaitingApprove> {
 
   Future<void> _loadRestaurantName() async {
     try {
-      // Get the order document
       DocumentSnapshot orderDoc = await FirebaseFirestore.instance
           .collection('users')
           .doc(widget.userId)
@@ -55,7 +55,6 @@ class _WaitingApproveState extends State<WaitingApprove> {
         final restaurantId = menuList.isNotEmpty ? menuList[0]['restaurantId'] ?? '' : '';
         
         if (restaurantId.isNotEmpty) {
-          // Get the restaurant document
           DocumentSnapshot restaurantDoc = await FirebaseFirestore.instance
               .collection('restaurants')
               .doc(restaurantId)
@@ -64,7 +63,7 @@ class _WaitingApproveState extends State<WaitingApprove> {
           if (restaurantDoc.exists) {
             setState(() {
               getRestaurantId = restaurantId;
-              restaurantName = restaurantDoc.get('restaurantName') ?? 'Restaurant';
+              restaurantName = restaurantDoc.get('restaurantName') ?? 'restaurant'.tr();
             });
           }
         }
@@ -86,12 +85,8 @@ class _WaitingApproveState extends State<WaitingApprove> {
             final orderData = docSnapshot.data() as Map<String, dynamic>;
             final orderStatus = orderData['orderStatus'] ?? '';
             
-            // Check if status has changed to "Waiting for payment"
             if (orderStatus == "Waiting for payment") {
-              // Cancel subscription before navigating
               _orderSubscription?.cancel();
-              
-              // Navigate to OrderSummary
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
@@ -101,6 +96,15 @@ class _WaitingApproveState extends State<WaitingApprove> {
                   ),
                 ),
               );
+            } else if (orderStatus == "Canceled") {
+              _orderSubscription?.cancel();
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => OrderStatusCustomer(),
+                ),
+              );
+
             }
           }
         }, onError: (error) {
@@ -121,30 +125,30 @@ class _WaitingApproveState extends State<WaitingApprove> {
             height: screenHeight,
             color: Colors.yellow[100],
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center, // จัดให้อยู่กึ่งกลางแนวตั้ง
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                CircularProgressIndicator(), // เพิ่มไอคอนโหลด
-                SizedBox(height: 20), // เพิ่มระยะห่าง
-                Text("Waiting for",
+                const CircularProgressIndicator(),
+                const SizedBox(height: 20),
+                Text('waiting_for'.tr(),
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 0.087 * screenWidth,
-                    color: Color(0xFFB71C1C),
-                  )
+                    color: const Color(0xFFB71C1C),
+                  ),
                 ),
-                Text("restaurant to",
+                Text('restaurant_to'.tr(),
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 0.087 * screenWidth,
-                    color: Color(0xFFB71C1C),
-                  )
+                    color: const Color(0xFFB71C1C),
+                  ),
                 ),
-                Text("approve your order",
+                Text('approve_order'.tr(),
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 0.087 * screenWidth,
-                    color: Color(0xFFB71C1C),
-                  )
+                    color: const Color(0xFFB71C1C),
+                  ),
                 ),
               ],
             ),
@@ -153,13 +157,25 @@ class _WaitingApproveState extends State<WaitingApprove> {
             top: 0,
             left: 0,
             right: 0,
-            child: CurveAppBar(
-              title: "",
+            child: CurveAppBar(title: ""),
+          ),
+          Positioned(
+            top: 80,
+            left: 20,
+            child: IconButton(
+              icon: Icon(Icons.chevron_left, size: 40, color: Colors.white),
+              padding: EdgeInsets.zero,
+              onPressed: () {
+                Navigator.push(
+                  context,
+                    MaterialPageRoute(builder: (context) => OrderStatusCustomer()),
+                );
+              },
             ),
           ),
           //ชื่อร้านอาหาร
           Positioned(
-            top: 0.09 * screenHeight,
+            top: 0.085 * screenHeight,
             left: 0,
             right: 0,
             child: Center(
@@ -168,19 +184,9 @@ class _WaitingApproveState extends State<WaitingApprove> {
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 0.087 * screenWidth,
-                  color: Color(0xFFFCF9CA),
+                  color: const Color(0xFFFCF9CA),
                 ),
               ),
-            ),
-          ),
-          //footer bar
-          Positioned(
-            bottom: 0, // Adjusted to ensure it's at the bottom
-            left: 0,
-            right: 0,
-            child: BottomBar(
-              screenHeight: screenHeight,
-              screenWidth: screenWidth,
             ),
           ),
         ],

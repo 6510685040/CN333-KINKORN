@@ -1,5 +1,7 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:kinkorn/customer/order_detail.dart';
+import 'package:kinkorn/customer/order_status.dart';
 import 'package:kinkorn/template/curve_app_bar.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
@@ -77,8 +79,9 @@ class _OrderSummaryState extends State<OrderSummary> {
           .get();
       
       if (restaurantDoc.exists) {
+        print('>>>>>>>>>>>>>restaurantDoc data = ${restaurantDoc.data()}');
         setState(() {
-          _restaurantName = restaurantDoc.data()?['name'] ?? "Restaurant";
+          _restaurantName = restaurantDoc.data()?['restaurantName'] ?? "Restaurant";
         });
       }
 
@@ -163,6 +166,26 @@ class _OrderSummaryState extends State<OrderSummary> {
         'updatedAt': FieldValue.serverTimestamp(),
       });
 
+      await FirebaseFirestore.instance
+          .collection('restaurants')
+          .doc(widget.restaurantId)
+          .collection('orders')
+          .doc(widget.orderId)
+          .update({
+        'orderStatus': 'Waiting for payment confirmation',
+        'slipUrl': downloadUrl,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
+      await FirebaseFirestore.instance
+          .collection('orders')
+          .doc(widget.orderId)
+          .update({
+            'orderStatus': 'Waiting for payment confirmation',
+            'slipUrl': downloadUrl,
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
+
       // Navigate to OrderDetailPage
       if (!mounted) return;
       Navigator.pushReplacement(
@@ -201,11 +224,29 @@ class _OrderSummaryState extends State<OrderSummary> {
             height: screenHeight,
             color: Colors.yellow[100],
           ),
-          
-          CurveAppBar(title: _restaurantName),
+
+          if (_isLoading)
+            const Center(child: CircularProgressIndicator())
+          else
+            CurveAppBar(title: _restaurantName),
 
           Positioned(
-            top: 190,
+            top: screenHeight * 0.092,
+            left: screenWidth * 0.05,
+            child: IconButton(
+              icon: const Icon(Icons.chevron_left, size: 40, color: Colors.white),
+              padding: EdgeInsets.zero,
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => OrderStatusCustomer()),
+                );
+              },
+            ),
+          ),
+
+          Positioned(
+            top: screenHeight * 0.22,
             left: 0,
             right: 0,
             child: Center(
@@ -213,7 +254,7 @@ class _OrderSummaryState extends State<OrderSummary> {
                 "Order summary",
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: 0.087 * screenWidth,
+                  fontSize: 0.06 * screenWidth,
                   color: Color(0xFFB71C1C),
                 ),
               ),
@@ -234,30 +275,75 @@ class _OrderSummaryState extends State<OrderSummary> {
                       children: [
                         // Order items
                         ..._orderItems.map((item) {
-                          final double totalPrice = 
-                              (item['quantity'] ?? 0) * (item['price'] ?? 0);
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 8.0, horizontal: 16.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            final double menuTotalPrice = 
+                                (item['quantity'] ?? 0) * (item['price'] ?? 0);
+                            final List<dynamic> addons = item['addons'] ?? [];
+
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Flexible(
-                                  child: Text(
-                                    '${item['quantity']}x ${item['name']}',
-                                    style: const TextStyle(
-                                        fontSize: 18, fontWeight: FontWeight.bold),
-                                    overflow: TextOverflow.ellipsis,
+                                // เมนูหลัก
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Flexible(
+                                        child: Text(
+                                          '${item['quantity']}x ${item['name']}',
+                                          style: const TextStyle(
+                                              fontSize: 18, fontWeight: FontWeight.bold),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      Text(
+                                        '฿${menuTotalPrice.toStringAsFixed(2)}',
+                                        style: const TextStyle(fontSize: 18),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                Text(
-                                  '฿${totalPrice.toStringAsFixed(2)}',
-                                  style: const TextStyle(fontSize: 18),
-                                ),
+                                
+                                // ➕ Addons ของเมนูนั้นๆ (ถ้ามี)
+                                if (addons.isNotEmpty)
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 32),
+                                    child: Column(
+                                      children: addons.map<Widget>((addon) {
+                                        final addonName = addon['name'] ?? '';
+                                        final addonQty = addon['quantity'] ?? 0;
+                                        final addonPrice = addon['price'] ?? 0;
+                                        final addonTotal = addonQty * addonPrice;
+                                        
+                                        return Padding(
+                                          padding: const EdgeInsets.symmetric(vertical: 2),
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  const Text('• ', style: TextStyle(fontSize: 14, color: Colors.black54)),
+                                                  Text(
+                                                    '$addonName x$addonQty',
+                                                    style: const TextStyle(fontSize: 14, color: Colors.black54),
+                                                  ),
+                                                ],
+                                              ),
+                                          
+                                              Text(
+                                                '฿${addonTotal.toStringAsFixed(2)}',
+                                                style: const TextStyle(fontSize: 14, color: Colors.black54),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      }).toList(),
+                                    ),
+                                  ),
                               ],
-                            ),
-                          );
-                        }).toList(),
+                            );
+                          }).toList(),
+
                         
                         // Add special note if exists
                         if (_orderData != null && _orderData!['specialNote'] != null && _orderData!['specialNote'].toString().isNotEmpty)

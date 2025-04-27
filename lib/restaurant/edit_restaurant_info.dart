@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -15,6 +16,7 @@ class EditRestaurantPage extends StatefulWidget {
 class _EditRestaurantPageState extends State<EditRestaurantPage> {
   final _nameController = TextEditingController();
   final _timeController = TextEditingController();
+  final _descriptionController = TextEditingController();
   String? _selectedCategory;
   String? _selectedCanteenId;
   File? _imageFile;
@@ -23,16 +25,16 @@ class _EditRestaurantPageState extends State<EditRestaurantPage> {
   List<Map<String, dynamic>> _canteens = [];
 
 
-  final List<String> _categories = ['อาหารตามสั่ง', 'เครื่องดื่ม', 'อาหารว่าง', 'ของหวาน'];
+  List<String> _categories = [];
 
   Map<String, bool> _openingDays = {
-  'Monday': false,
-  'Tuesday': false,
-  'Wednesday': false,
-  'Thursday': false,
-  'Friday': false,
-  'Saturday': false,
-  'Sunday': false,
+  'monday'.tr(): false,
+  'tuesday'.tr(): false,
+  'wednesday'.tr(): false,
+  'thursday'.tr(): false,
+  'friday'.tr(): false,
+  'saturday'.tr(): false,
+  'sunday'.tr(): false,
 };
 
 
@@ -41,7 +43,21 @@ class _EditRestaurantPageState extends State<EditRestaurantPage> {
     super.initState();
     _loadRestaurantData();
     _loadCanteens();
+    _loadCategories();
   }
+  Future<void> _loadCategories() async {
+  final snapshot = await FirebaseFirestore.instance.collection('categories').get();
+
+  List<String> categoriesList = [];
+  snapshot.docs.forEach((doc) {
+    var categories = List.from(doc['categories']);
+    categoriesList.addAll(categories.map((category) => category.toString()).toList());
+  });
+
+  setState(() {
+    _categories = categoriesList; 
+  });
+}
 
   Future<void> _loadRestaurantData() async {
     final userId = FirebaseAuth.instance.currentUser?.uid;
@@ -61,6 +77,7 @@ class _EditRestaurantPageState extends State<EditRestaurantPage> {
         _selectedCategory = data['category'];
         _timeController.text = data['openingTime'] ?? '';
         _logoUrl = data['logoUrl'];
+        _descriptionController.text = data['description'] ?? '';
       });
     }
   }
@@ -104,6 +121,7 @@ class _EditRestaurantPageState extends State<EditRestaurantPage> {
       'canteenId': _selectedCanteenId,
       'logoUrl': imageUrl,
       'openingDays': _openingDays,
+      'description': _descriptionController.text.trim(),
     }, SetOptions(merge: true));
 
     setState(() {
@@ -111,7 +129,7 @@ class _EditRestaurantPageState extends State<EditRestaurantPage> {
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Saved successfully')),
+      SnackBar(content: Text('save_success'.tr())),
     );
   }
 
@@ -137,6 +155,7 @@ class _EditRestaurantPageState extends State<EditRestaurantPage> {
   void dispose() {
     _nameController.dispose();
     _timeController.dispose();
+    _descriptionController.dispose();
     super.dispose();
   }
 
@@ -147,8 +166,8 @@ class _EditRestaurantPageState extends State<EditRestaurantPage> {
       appBar: AppBar(
         backgroundColor: const Color(0xFFFFF8E1),
         elevation: 0,
-        title: const Text(
-          'EDIT RESTAURANT',
+        title: Text(
+          'edit_res'.tr(),
           style: TextStyle(color: Color(0xFFB71C1C), fontSize: 24, fontWeight: FontWeight.bold),
         ),
         leading: IconButton(
@@ -173,8 +192,8 @@ class _EditRestaurantPageState extends State<EditRestaurantPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Please edit your restaurant',
+                          Text(
+                            'please_edit_res'.tr(),
                             style: TextStyle(color: Color(0xFFB71C1C), fontSize: 18, fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 20),
@@ -202,9 +221,9 @@ class _EditRestaurantPageState extends State<EditRestaurantPage> {
                                     ],
                                   ),
                                   child: _imageFile == null && _logoUrl == null
-                                      ? const Center(
+                                      ? Center(
                                           child: Text(
-                                            'Add\nyour\nPicture',
+                                            'add_your_picture'.tr(),
                                             textAlign: TextAlign.center,
                                             style: TextStyle(color: Color(0xFFB71C1C), fontSize: 16),
                                           ),
@@ -220,8 +239,8 @@ class _EditRestaurantPageState extends State<EditRestaurantPage> {
                                       color: Colors.grey[300],
                                       borderRadius: BorderRadius.circular(20),
                                     ),
-                                    child: const Text(
-                                      'edit logo',
+                                    child: Text(
+                                      'edit_photo'.tr(),
                                       style: TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
                                     ),
                                   ),
@@ -230,11 +249,13 @@ class _EditRestaurantPageState extends State<EditRestaurantPage> {
                             ),
                           ),
                           const SizedBox(height: 20),
-                          _buildLabeledTextField('Restaurant Name', _nameController),
+                          _buildLabeledTextField('res_name'.tr(), _nameController),
                           const SizedBox(height: 15),
-                          _buildLabeledDropdownField('Category'),
+                          _buildLabeledTextField('description'.tr(), _descriptionController, maxLines: 5),
+                          const SizedBox(height: 15),
+                          _buildLabeledDropdownField('category'.tr()),
                           const SizedBox(height: 20),
-                          _buildTimePickerField('Time', _timeController),
+                          _buildTimePickerField('time'.tr(), _timeController),
                           const SizedBox(height: 15),
                           _buildCanteenDropdown(),
                           const SizedBox(height: 15),
@@ -251,7 +272,7 @@ class _EditRestaurantPageState extends State<EditRestaurantPage> {
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                               ),
-                              child: const Text('save',style: TextStyle(color: Color.fromARGB(255, 255, 255, 255)),),
+                              child: Text('save'.tr(),style: TextStyle(color: Color.fromARGB(255, 255, 255, 255)),),
                             ),
                           ),
                         ],
@@ -274,15 +295,23 @@ class _EditRestaurantPageState extends State<EditRestaurantPage> {
     );
   }
 
-  Widget _buildLabeledTextField(String label, TextEditingController controller) {
+  Widget _buildLabeledTextField(String label, TextEditingController controller, {int maxLines = 1}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: Color(0xFFB71C1C), fontSize: 16, fontWeight: FontWeight.bold)),
+        Text(
+          label,
+          style: const TextStyle(
+            color: Color(0xFFB71C1C),
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         const SizedBox(height: 8),
         TextField(
           controller: controller,
-          readOnly: label == 'Canteen',
+          readOnly: label == 'canteen'.tr(),
+          maxLines: maxLines,
           decoration: InputDecoration(
             hintText: label,
             hintStyle: const TextStyle(color: Color(0xFFB71C1C)),
@@ -297,13 +326,14 @@ class _EditRestaurantPageState extends State<EditRestaurantPage> {
         ),
       ],
     );
-  }
+}
+
 
   Widget _buildCanteenDropdown() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Canteen', style: TextStyle(color: Color(0xFFB71C1C), fontSize: 16, fontWeight: FontWeight.bold)),
+        Text('canteen'.tr(), style: TextStyle(color: Color(0xFFB71C1C), fontSize: 16, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -333,43 +363,46 @@ class _EditRestaurantPageState extends State<EditRestaurantPage> {
   }
 
   Widget _buildLabeledDropdownField(String label) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: const TextStyle(color: Color(0xFFB71C1C), fontSize: 16, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 8),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10)),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              value: _selectedCategory,
-              hint: const Text('เลือกหมวดหมู่', style: TextStyle(color: Color(0xFFB71C1C))),
-              isExpanded: true,
-              items: _categories.map((category) {
-                return DropdownMenuItem<String>(
-                  value: category,
-                  child: Text(category),
-                );
-              }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  _selectedCategory = value;
-                });
-              },
-            ),
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(label, style: const TextStyle(color: Color(0xFFB71C1C), fontSize: 16, fontWeight: FontWeight.bold)),
+      const SizedBox(height: 8),
+      Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10)),
+        child: DropdownButtonHideUnderline(
+          child: DropdownButton<String>(
+            value: _selectedCategory,
+            hint: const Text('เลือกหมวดหมู่', style: TextStyle(color: Color(0xFFB71C1C))),
+            isExpanded: true,
+            items: _categories.isEmpty
+                ? [] 
+                : _categories.map((category) {
+                    return DropdownMenuItem<String>(
+                      value: category,
+                      child: Text(category),
+                    );
+                  }).toList(),
+            onChanged: (value) {
+              setState(() {
+                _selectedCategory = value; 
+              });
+            },
           ),
         ),
-      ],
-    );
-  }
+      ),
+    ],
+  );
+}
+
 
   Widget _buildOpeningDaysCheckboxes() {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      const Text(
-        'Days Open',
+      Text(
+        'days_open'.tr(),
         style: TextStyle(color: Color(0xFFB71C1C), fontSize: 16, fontWeight: FontWeight.bold),
       ),
       const SizedBox(height: 8),

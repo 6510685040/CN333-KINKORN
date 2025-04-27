@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -88,6 +89,7 @@ class _OrderStatusRestaurantState extends State<OrderStatusRestaurant> {
     }
     return customerName;
   }
+  
 
   @override
   Widget build(BuildContext context) {
@@ -99,22 +101,22 @@ class _OrderStatusRestaurantState extends State<OrderStatusRestaurant> {
         children: [
           const Positioned(top: 0, left: 0, right: 0, child: CurveAppBar(title: '')),
 
-          Positioned(
-            top: 40,
+          /*Positioned(
+            top: 70,
             left: 16,
             child: IconButton(
               icon: const Icon(Icons.chevron_left, size: 30, color: Color(0xFFFCF9CA)),
               onPressed: () => Navigator.pop(context),
             ),
-          ),
+          ),*/
 
-          const Positioned(
+          Positioned(
             top: 80,
             left: 0,
             right: 0,
             child: Center(
               child: Text(
-                'Order Status',
+                'order_status'.tr(),
                 style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFFFCF9CA)),
               ),
             ),
@@ -127,11 +129,11 @@ class _OrderStatusRestaurantState extends State<OrderStatusRestaurant> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text("From", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.red)),
+                Text("from".tr(), style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.red)),
                 const SizedBox(width: 8),
                 _buildDatePickerBox(context, _fromDate, true),
                 const SizedBox(width: 16),
-                const Text("Till", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.red)),
+                Text("till".tr(), style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.red)),
                 const SizedBox(width: 8),
                 _buildDatePickerBox(context, _tillDate, false),
               ],
@@ -154,7 +156,7 @@ class _OrderStatusRestaurantState extends State<OrderStatusRestaurant> {
                   return const Center(child: CircularProgressIndicator());
                 }
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return const Center(child: Text("No orders found"));
+                  return Center(child: Text("no_orders_found".tr()));
                 }
 
                 return ListView(
@@ -166,8 +168,33 @@ class _OrderStatusRestaurantState extends State<OrderStatusRestaurant> {
                     final totalAmount = data['totalAmount'] ?? 0;
                     final status = data['orderStatus'] ?? 'unknown';
                     final customerId = data['customerId'] ?? '';
-                    final items = List<Map<String, dynamic>>.from(data['items'] ?? []);
-                    final menuItems = items.map((item) => '${item['name']} x${item['quantity']}').toList();
+                    final items = List<Map<String, dynamic>>.from(data['orders'] ?? []);
+                    print('📦 Full Items: $items');
+                final menuItems = (items ?? []).expand((item) {
+                  List<String> result = [];
+
+                  if (item is Map<String, dynamic>) {
+                    final menuName = item['name']?.toString() ?? 'Unnamed Menu';
+                    final menuQty = item['quantity']?.toString() ?? '1';
+                    result.add('$menuName x$menuQty'); // <-- บังคับให้เมนูหลักลง result ทันที
+
+                    // addons
+                    if (item['addons'] != null) {
+                      if (item['addons'] is List) {
+                        for (var addon in item['addons']) {
+                          if (addon is Map<String, dynamic>) {
+                            final addonName = addon['name']?.toString() ?? 'Unnamed Addon';
+                            final addonQty = addon['quantity']?.toString() ?? '1';
+                            result.add('  • $addonName x$addonQty');
+                          }
+                        }
+                      }
+                    }
+                  }
+
+                    return result;
+                  }).toList();
+
 
                     final timeAgo = _getTimeAgo(createdAt);
                     final statusInfo = _getStatusInfo(status);
@@ -210,7 +237,7 @@ class _OrderStatusRestaurantState extends State<OrderStatusRestaurant> {
           ),
         ],
       ),
-      bottomNavigationBar: const CustomBottomNav(),
+      bottomNavigationBar: const CustomBottomNav(initialIndex: 1,),
     );
   }
 
@@ -260,7 +287,7 @@ class _OrderStatusRestaurantState extends State<OrderStatusRestaurant> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text("Order ID : $orderId", style: const TextStyle(color: Color(0xFFFCF9CA), fontSize: 14, fontWeight: FontWeight.bold)),
+                Text('${"order_id_label".tr()} $orderId', style: const TextStyle(color: Color(0xFFFCF9CA), fontSize: 14, fontWeight: FontWeight.bold)),
                 Text(timeAgo, style: const TextStyle(color: Color(0xFFFCF9CA), fontSize: 12)),
               ],
             ),
@@ -289,10 +316,10 @@ class _OrderStatusRestaurantState extends State<OrderStatusRestaurant> {
                         ],
                       ),
                       const SizedBox(height: 8),
-                      const Text("Order summary", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFFB71C1C))),
-                      ...menuItems.map((item) => Text("• $item", style: const TextStyle(fontSize: 12, color: Color(0xFFB71C1C)),)),
+                      Text('${"order_id_label".tr()} $orderId', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFFB71C1C))),
+                      ...menuItems.map((item) => Text(" $item", style: const TextStyle(fontSize: 12, color: Color(0xFFB71C1C)),)),
                       const SizedBox(height: 8),
-                      Text("Pick up time : $pickUpTime", style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFB71C1C))),
+                      Text('${"pickup_time".tr()} $pickUpTime', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFB71C1C))),
                     ],
                   ),
                 ),
@@ -301,7 +328,7 @@ class _OrderStatusRestaurantState extends State<OrderStatusRestaurant> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Icon(statusIcon, color: Color(0xFFFCF9CA), size: 40),
-                  Text("Total: $totalPrice", style: const TextStyle(color: Color(0xFFFCF9CA), fontSize: 14, fontWeight: FontWeight.bold)),
+                  Text("total".tr() + " $totalPrice", style: const TextStyle(color: Color(0xFFFCF9CA), fontSize: 14, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 4),
                   Container(
                     padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
@@ -321,28 +348,63 @@ class _OrderStatusRestaurantState extends State<OrderStatusRestaurant> {
 
   String _getTimeAgo(DateTime dateTime) {
     final difference = DateTime.now().difference(dateTime);
-    if (difference.inMinutes < 1) return "just now";
-    if (difference.inMinutes < 60) return "${difference.inMinutes} mins ago";
-    if (difference.inHours < 24) return "${difference.inHours} hours ago";
+    if (difference.inMinutes < 1) return "just_now".tr();
+    if (difference.inMinutes < 60) return "minutes_ago_label".tr(args: [difference.inMinutes.toString()]);
+    if (difference.inHours < 24) return "hours_ago".tr(args: [difference.inHours.toString()]);
     return DateFormat("dd MMM").format(dateTime);
   }
 
   Map<String, dynamic> _getStatusInfo(String status) {
-    switch (status) {
-      case "Waiting for restaurant approval":
-        return {"text": "Waiting for order\nconfirmation", "color": const Color(0xFF203976), "icon": Symbols.receipt_long};
-      case "Waiting for payment":
-        return {"text": "Waiting for payment", "color": Colors.yellow, "icon": Symbols.receipt_long};
-      case "Waiting for payment confirmation":
-        return {"text": "Waiting for payment\nconfirmation", "color": Colors.yellow, "icon": Symbols.receipt_long};
-      case "Preparing food":
-        return {"text": "Preparing food", "color": Color.fromARGB(255, 132, 132, 132), "icon": Symbols.skillet};
-      case "Completed":
-        return {"text": "Completed", "color": Colors.green, "icon": Symbols.restaurant};
-      case "Canceled":
-        return {"text": "Canceled", "color": Colors.black, "icon": Icons.cancel};
-      default:
-        return {"text": "Unknown", "color": Colors.grey, "icon": Icons.help_outline};
-    }
+  switch (status) {
+    case "Waiting for restaurant approval":
+      return {
+        "text": "status_waiting_for_order_confirm".tr(),
+        "color": const Color(0xFF203976),
+        "icon": Symbols.receipt_long,
+      };
+    case "Waiting for payment":
+      return {
+        "text": "status_waiting_for_payment".tr(),
+        "color": Colors.yellow,
+        "icon": Symbols.receipt_long,
+      };
+    case "Waiting for payment confirmation":
+      return {
+        "text": "status_waiting_for_confirmation".tr(),
+        "color": Colors.yellow,
+        "icon": Symbols.receipt_long,
+      };
+    case "Preparing food":
+      return {
+        "text": "status_preparing_food".tr(),
+        "color": const Color.fromARGB(255, 132, 132, 132),
+        "icon": Symbols.skillet,
+      };
+    case "Waiting for pickup": 
+      return {
+        "text": "status_waiting_for_pickup".tr(),
+        "color": Colors.blue, 
+        "icon": Icons.shopping_bag_outlined, 
+      };
+    case "Completed":
+      return {
+        "text": "status_completed".tr(),
+        "color": Colors.green,
+        "icon": Symbols.restaurant,
+      };
+    case "Canceled":
+      return {
+        "text": "status_canceled".tr(),
+        "color": Colors.black,
+        "icon": Icons.cancel,
+      };
+    default:
+      return {
+        "text": "unknown".tr(),
+        "color": Colors.grey,
+        "icon": Icons.help_outline,
+      };
   }
+}
+
 }
