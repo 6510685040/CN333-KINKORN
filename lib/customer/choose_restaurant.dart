@@ -49,25 +49,7 @@ class ChooseRestaurantScreen extends StatelessWidget {
               ],
             )
           ),
-          Positioned(
-            left: screenWidth * 0.1,
-            top: screenHeight * 0.26,
-            child: Container(
-              width: screenWidth * 0.8,
-              height: screenHeight * 0.04,
-              decoration: BoxDecoration(
-                color: const Color(0xFFFDFDFD),
-                borderRadius: BorderRadius.circular(110),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.25),
-                    offset: const Offset(0, 4),
-                    blurRadius: 4,
-                  ),
-                ],
-              ),
-            ),
-          ),
+          
           Positioned.fill(
             top: screenHeight * 0.32,
             bottom: screenHeight * 0.09,
@@ -133,25 +115,25 @@ class ChooseRestaurantScreen extends StatelessWidget {
                               ),
                               child: Row(
                                 children: [
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(20),
-                                    child: Container(
-                                      width: 0.27 * screenWidth,
-                                      height: 0.13 * screenHeight,
-                                      margin: EdgeInsets.all(screenWidth * 0.025),
+                                  Container(
+                                    width: 0.27 * screenWidth,
+                                    height: 0.13 * screenHeight,
+                                    margin: EdgeInsets.all(screenWidth * 0.025),
+                                    decoration: BoxDecoration(
                                       color: Colors.white,
-                                      child: logoUrl.isNotEmpty
-                                          ? CachedNetworkImage(
-                                              imageUrl: logoUrl,
-                                              fit: BoxFit.cover,
-                                              placeholder: (context, url) =>
-                                                  const Center(child: CircularProgressIndicator()),
-                                              errorWidget: (context, url, error) =>
-                                                  const Icon(Icons.broken_image),
-                                            )
-                                          : const Center(child: Icon(Icons.restaurant)),
+                                      borderRadius: BorderRadius.circular(20),
                                     ),
+                                    clipBehavior: Clip.antiAlias,
+                                    child: logoUrl.isNotEmpty
+                                        ? CachedNetworkImage(
+                                            imageUrl: logoUrl,
+                                            fit: BoxFit.cover,
+                                            placeholder: (context, url) => const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                                            errorWidget: (context, url, error) => const Icon(Icons.broken_image, size: 40),
+                                          )
+                                        : const Center(child: Icon(Icons.restaurant, size: 40)),
                                   ),
+
                                   Expanded(
                                     child: Padding(
                                       padding: EdgeInsets.symmetric(
