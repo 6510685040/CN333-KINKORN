@@ -42,7 +42,7 @@ class MenuPage extends StatelessWidget {
 
           // Title Section
           const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Align(
               alignment: Alignment.centerLeft,
               child: Column(

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:kinkorn/customer/order_status.dart';
 import 'package:kinkorn/template/curve_app_bar.dart';
 import 'package:kinkorn/template/bottom_bar.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class OrderDetailPage extends StatefulWidget {
   final String userId;
@@ -253,20 +255,23 @@ Widget build(BuildContext context) {
         final data = snapshot.data!;
         return Stack(
           children: [
-            const Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              child: CurveAppBar(title: 'Order Detail'),
-            ),
             Positioned(
-              top: 40,
-              left: 16,
+                top: 0,
+                left: 0,
+                right: 0,
+                child: CurveAppBar(title: 'order_detail'.tr()), 
+              ),
+            Positioned(
+              top: screenHeight * 0.088,
+              left: screenWidth * 0.05,
               child: IconButton(
-                icon: const Icon(Icons.chevron_left, size: 30, color: Colors.black),
+                icon: const Icon(Icons.chevron_left, size: 40, color: Colors.white),
                 onPressed: () {
-                  Navigator.pop(context);
-                },
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => OrderStatusCustomer()),
+                    );
+                  },
               ),
             ),
             Positioned.fill(
@@ -312,11 +317,8 @@ Widget build(BuildContext context) {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'Order ID: ${data['orderId']}',
-                              style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold),
+                              'order_id'.tr(args: [data['orderId']]), 
+                              style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
                             ),
                             const SizedBox(height: 4),
                             Row(
@@ -337,19 +339,26 @@ Widget build(BuildContext context) {
                               ],
                             ),
                             const SizedBox(height: 8),
-                            Text(
-                              '${data['restaurantName']}\nLocation: ${data['canteenName']}',
-                              style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  data['restaurantName'] ?? '',
+                                  style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'canteen_location'.tr(args: [data['canteenName'] ?? '']),
+                                  style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                                ),
+                              ],
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'Order time: ${data['orderTime']}\nPick up time: ${data['pickupTime']}',
-                              style: const TextStyle(
-                                  color: Colors.white, fontSize: 16),
-                            ),
+                                '${'order_time'.tr()} ${data['orderTime']}\n${'pickup_time'.tr()} ${data['pickupTime']}',
+                                style: const TextStyle(color: Colors.white, fontSize: 16),
+                              ),
+
                             const SizedBox(height: 16),
                             Container(
                               width: double.infinity,
@@ -361,12 +370,9 @@ Widget build(BuildContext context) {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text(
-                                    'Menu',
-                                    style: TextStyle(
-                                        color: Color.fromARGB(255, 175, 31, 31),
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold),
+                                  Text(
+                                    'menu'.tr(), 
+                                    style: TextStyle(color: Color.fromARGB(255, 175, 31, 31), fontSize: 18, fontWeight: FontWeight.bold),
                                   ),
                                   ...List<Map<String, dynamic>>.from(data['menuItems']).expand((item) {
                                     final List<Map<String, dynamic>> addons = List<Map<String, dynamic>>.from(item['addons'] ?? []);
@@ -424,11 +430,8 @@ Widget build(BuildContext context) {
                               ),
                               child: Center(
                                 child: Text(
-                                  'Total  ${data['totalAmount']}  baht',
-                                  style: const TextStyle(
-                                      color: Color.fromARGB(255, 175, 31, 31),
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold),
+                                  '${'total'.tr()} ${data['totalAmount']} ${'baht'.tr()}', // เปลี่ยน Total
+                                  style: const TextStyle(color: Color.fromARGB(255, 175, 31, 31), fontSize: 18, fontWeight: FontWeight.bold),
                                 ),
                               ),
                             ),
@@ -462,40 +465,30 @@ Widget build(BuildContext context) {
                                   },
                                 );
                               },
-                              child: const Padding(
+                              child:  Padding(
                                 padding: EdgeInsets.symmetric(vertical: 12),
                                 child: Center(
                                   child: Text(
-                                    'Check payment details',
-                                    style: TextStyle(color: Colors.white, fontSize: 16),
-                                  ),
+                                      'check_payment_details'.tr(), // แปล Check payment details
+                                      style: TextStyle(color: Colors.white, fontSize: 16),
+                                    ),
                                 ),
                               ),
                             ),
-                            if (data['statusText'] == 'Waiting for pickup')
-                              ...[
-                                const SizedBox(height: 10),
-                                ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.green,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    elevation: 5,
-                                    shadowColor: Colors.black.withOpacity(0.3),
-                                  ),
-                                  onPressed: _confirmPickup,
-                                  child: const Padding(
-                                    padding: EdgeInsets.symmetric(vertical: 12),
-                                    child: Center(
-                                      child: Text(
-                                        'รับอาหารแล้ว',
-                                        style: TextStyle(color: Colors.white, fontSize: 16),
-                                      ),
+                            if (data['statusText'] == 'Waiting for pickup') ...[
+                              ElevatedButton(
+                                onPressed: _confirmPickup,
+                                child: Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 12),
+                                  child: Center(
+                                    child: Text(
+                                      'confirm_received'.tr(), // เปลี่ยนเป็น รับอาหารแล้ว
+                                      style: TextStyle(color: Colors.white, fontSize: 16),
                                     ),
                                   ),
                                 ),
-                              ],
+                              ),
+                            ],
                           ],
                         ),
                       ),

@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:kinkorn/customer/your_cart.dart';
 import 'package:kinkorn/provider/cartprovider.dart';
 import 'package:kinkorn/template/curve_app_bar.dart';
-import 'package:kinkorn/template/bottom_bar.dart';
 import 'package:kinkorn/widgets/addon_widget.dart' as widgets;
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class AddOn extends StatefulWidget {
   final Map<String, dynamic> menuData;
@@ -20,7 +20,6 @@ class AddOnState extends State<AddOn> {
   Map<String, int> addonCounts = {};
   TextEditingController requestController = TextEditingController();
   int quantity = 1;
-  
 
   @override
   void initState() {
@@ -30,7 +29,6 @@ class AddOnState extends State<AddOn> {
       final addonName = addon['name'] as String? ?? '';
       addonCounts[addonName] = 0;
     }
-
   }
 
   void incrementAddon(String addon) {
@@ -59,45 +57,44 @@ class AddOnState extends State<AddOn> {
     });
   }
 
- void addToCart() {
-  final cartProvider = Provider.of<CartProvider>(context, listen: false);
-  final addons = widget.menuData['options'] as List<dynamic>? ?? [];
+  void addToCart() {
+    final cartProvider = Provider.of<CartProvider>(context, listen: false);
+    final addons = widget.menuData['options'] as List<dynamic>? ?? [];
 
-  List<Map<String, dynamic>> selectedAddons = [];
-  for (var addon in addons) {
-    final addonName = addon['name'] as String? ?? '';
-    final addonPrice = addon['price'] ?? 0;
-    final quantity = addonCounts[addonName] ?? 0;
-    if (quantity > 0) {
-      selectedAddons.add({
-        'name': addonName,
-        'price': addonPrice,
-        'quantity': quantity,
-      });
+    List<Map<String, dynamic>> selectedAddons = [];
+    for (var addon in addons) {
+      final addonName = addon['name'] as String? ?? '';
+      final addonPrice = addon['price'] ?? 0;
+      final quantity = addonCounts[addonName] ?? 0;
+      if (quantity > 0) {
+        selectedAddons.add({
+          'name': addonName,
+          'price': addonPrice,
+          'quantity': quantity,
+        });
+      }
     }
+
+    final orderData = {
+      'name': widget.menuData['name'],
+      'price': widget.menuData['price'],
+      'addons': selectedAddons,
+      'quantity': quantity,
+      'request': requestController.text,
+      'imageUrl': widget.menuData['imageUrl'] ?? '',
+      'restaurantId': cartProvider.restaurantId,
+      'customerId': cartProvider.customerId,
+    };
+
+    cartProvider.addToCart(orderData);
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const YourCart(),
+      ),
+    );
   }
-
-  final orderData = {
-    'name': widget.menuData['name'],
-    'price': widget.menuData['price'],
-    'addons': selectedAddons,
-    'quantity': quantity,
-    'request': requestController.text,
-    'imageUrl': widget.menuData['imageUrl'] ?? '',
-    'restaurantId': cartProvider.restaurantId,
-    'customerId': cartProvider.customerId,
-  };
-
-  cartProvider.addToCart(orderData);
-
-  Navigator.pushReplacement(
-    context,
-    MaterialPageRoute(
-      builder: (context) => const YourCart(),
-    ),
-  );
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -120,10 +117,10 @@ class AddOnState extends State<AddOn> {
             child: CurveAppBar(title: ""),
           ),
           Positioned(
-            top: 70,
-            left: 20,
+            top: screenHeight * 0.092,
+            left: screenWidth * 0.05,
             child: IconButton(
-              icon: Icon(Icons.chevron_left, size: 40, color: Colors.white),
+              icon: const Icon(Icons.chevron_left, size: 40, color: Colors.white),
               padding: EdgeInsets.zero,
               onPressed: () {
                 Navigator.pop(context);
@@ -176,10 +173,9 @@ class AddOnState extends State<AddOn> {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  widget.menuData['name'] ?? 'ชื่อเมนู',
+                  widget.menuData['name'] ?? 'menu_name'.tr(),
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    //fontFamily: 'GeistFont',
                     fontWeight: FontWeight.bold,
                     fontSize: screenWidth * 0.06,
                     color: const Color(0xFFAF1F1F),
@@ -189,7 +185,6 @@ class AddOnState extends State<AddOn> {
                   '฿${widget.menuData['price'] ?? '0'}',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    //fontFamily: 'GeistFont',
                     fontWeight: FontWeight.w600,
                     fontSize: screenWidth * 0.06,
                     color: const Color(0xFFAF1F1F),
@@ -197,7 +192,7 @@ class AddOnState extends State<AddOn> {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  'Quantity',
+                  'quantity'.tr(),
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: screenWidth * 0.05,
@@ -229,7 +224,7 @@ class AddOnState extends State<AddOn> {
                   Padding(
                     padding: EdgeInsets.only(left: screenWidth * 0.01),
                     child: Text(
-                      'Add-ons',
+                      'addons'.tr(),
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: screenWidth * 0.05,
@@ -258,9 +253,8 @@ class AddOnState extends State<AddOn> {
                 Padding(
                   padding: EdgeInsets.only(left: screenWidth * 0.01),
                   child: Text(
-                    'Special Request',
+                    'special_request'.tr(),
                     style: TextStyle(
-                      //fontFamily: 'GeistFont',
                       fontWeight: FontWeight.bold,
                       fontSize: screenWidth * 0.05,
                       color: const Color(0xFFAF1F1F),
@@ -284,8 +278,8 @@ class AddOnState extends State<AddOn> {
                   ),
                   child: TextField(
                     controller: requestController,
-                    decoration: const InputDecoration(
-                      hintText: 'Enter your request...',
+                    decoration: InputDecoration(
+                      hintText: 'enter_request'.tr(),
                       border: InputBorder.none,
                     ),
                   ),
@@ -314,9 +308,8 @@ class AddOnState extends State<AddOn> {
                     ],
                   ),
                   child: Text(
-                    'Add to Cart',
+                    'add_to_cart'.tr(),
                     style: TextStyle(
-                      //fontFamily: 'GeistFont',
                       fontWeight: FontWeight.bold,
                       fontSize: screenWidth * 0.045,
                       color: Colors.white,
@@ -326,17 +319,8 @@ class AddOnState extends State<AddOn> {
               ),
             ),
           ),
-          /*Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: BottomBar(
-              screenHeight: screenHeight,
-              screenWidth: screenWidth,
-            ),
-          ),*/
         ],
       ),
     );
   }
-} 
+}

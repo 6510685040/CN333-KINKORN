@@ -1,19 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:kinkorn/template/curve_app_bar.dart';
-import 'package:kinkorn/template/bottom_bar.dart';
 
 class LanguageSettingCustomer extends StatefulWidget {
   const LanguageSettingCustomer({super.key});
 
   @override
-  State<LanguageSettingCustomer> createState() =>
-      _LanguageSettingRestaurantState();
+  State<LanguageSettingCustomer> createState() => _LanguageSettingCustomerState();
 }
 
-class _LanguageSettingRestaurantState extends State<LanguageSettingCustomer> {
-  String appLanguage = 'American English'; // ✅ ค่าเริ่มต้นของแอป
-  String menuLanguage = 'Thai'; // ✅ ค่าเริ่มต้นของเมนู
-
+class _LanguageSettingCustomerState extends State<LanguageSettingCustomer> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -22,33 +18,30 @@ class _LanguageSettingRestaurantState extends State<LanguageSettingCustomer> {
           Positioned.fill(
             child: Container(color: const Color(0xFFFCF9CA)),
           ),
-          // 🔹 App Bar โค้ง
           const Positioned(
             top: 0,
             left: 0,
             right: 0,
             child: CurveAppBar(title: ''),
           ),
-          // ✅ ปุ่มย้อนกลับ
           Positioned(
             top: 70,
             left: 20,
             child: IconButton(
-              icon:
-                  const Icon(Icons.chevron_left, size: 40, color: Colors.white),
+              icon: const Icon(Icons.chevron_left, size: 40, color: Colors.white),
               onPressed: () {
                 Navigator.pop(context);
               },
             ),
           ),
-          const Positioned(
+          Positioned(
             top: 80,
             left: 0,
             right: 0,
             child: Center(
               child: Text(
-                'Language',
-                style: TextStyle(
+                'language_title'.tr(), 
+                style: const TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
@@ -58,39 +51,26 @@ class _LanguageSettingRestaurantState extends State<LanguageSettingCustomer> {
           ),
           Positioned.fill(
             top: 200,
-            left: 0,
-            right: 0,
             child: Column(
               children: [
                 const SizedBox(height: 50),
-                // ✅ Dropdown - Application Language
                 _buildDropdown(
-                  label: 'Application language',
-                  value: appLanguage,
-                  items: ['American English', 'British English', 'Thai'],
+                  label: 'app_language'.tr(),
+                  value: context.locale.languageCode, 
+                  items: ['en', 'th'], 
                   onChanged: (value) {
-                    setState(() {
-                      appLanguage = value!;
-                    });
-                  },
-                ),
-                const SizedBox(height: 20),
-                // ✅ Dropdown - Menu Language
-                _buildDropdown(
-                  label: 'Menu language',
-                  value: menuLanguage,
-                  items: ['Thai', 'English'],
-                  onChanged: (value) {
-                    setState(() {
-                      menuLanguage = value!;
-                    });
+                    if (value == 'th') {
+                      context.setLocale(const Locale('th'));
+                    } else {
+                      context.setLocale(const Locale('en'));
+                    }
                   },
                 ),
               ],
             ),
           ),
         ],
-      ),  
+      ),
     );
   }
 
@@ -105,31 +85,39 @@ class _LanguageSettingRestaurantState extends State<LanguageSettingCustomer> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label,
-              style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFFB71C1C))),
-          const SizedBox(height: 16),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFFB71C1C),
+            ),
+          ),
+          const SizedBox(height: 5),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(50),
               color: Colors.white,
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 6,
+                  offset: Offset(0, 3),
+                ),
+              ],
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
                 value: value,
                 isExpanded: true,
-                isDense: true, // ลดขนาดแน่นขึ้น
-                underline: SizedBox(),
-                icon:
-                    const Icon(Icons.arrow_drop_down, color: Color(0xFFAF1F1F)),
+                isDense: true,
+                icon: const Icon(Icons.arrow_drop_down, color: Color(0xFFAF1F1F)),
                 items: items.map((String item) {
                   return DropdownMenuItem<String>(
                     value: item,
                     child: Text(
-                      item,
+                      item.tr(),
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
@@ -147,7 +135,5 @@ class _LanguageSettingRestaurantState extends State<LanguageSettingCustomer> {
         ],
       ),
     );
-    
   }
-  
 }

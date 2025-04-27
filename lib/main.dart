@@ -9,10 +9,14 @@ import 'package:kinkorn/provider/cartprovider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:kinkorn/customer/language_setting.dart'; 
+import 'package:easy_localization/easy_localization.dart';
+
 
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await EasyLocalization.ensureInitialized(); 
 
   await Firebase.initializeApp();
 
@@ -31,7 +35,13 @@ Future<void> main() async {
   await flutterLocalNotificationsPlugin.initialize(initializationSettings);
   
   runApp(
-    const MyApp(), 
+     EasyLocalization(
+      supportedLocales: [Locale('en'), Locale('th')],
+      path: 'assets/lang',
+      fallbackLocale: Locale('en'), 
+      
+      child: const MyApp(),
+    ),
   );
 }
 
@@ -46,13 +56,18 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
+        locale: context.locale, 
+        supportedLocales: context.supportedLocales, 
+        localizationsDelegates: context.localizationDelegates, 
         home: const HomeScreen(),
         theme: ThemeData(
           textTheme: GoogleFonts.kanitTextTheme(
             Theme.of(context).textTheme,
           ),
         ),
-      ),
+      )
+
+
     );
   }
 }

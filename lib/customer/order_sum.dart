@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kinkorn/customer/order_detail.dart';
+import 'package:kinkorn/customer/order_status.dart';
 import 'package:kinkorn/template/curve_app_bar.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
@@ -77,8 +78,9 @@ class _OrderSummaryState extends State<OrderSummary> {
           .get();
       
       if (restaurantDoc.exists) {
+        print('>>>>>>>>>>>>>restaurantDoc data = ${restaurantDoc.data()}');
         setState(() {
-          _restaurantName = restaurantDoc.data()?['name'] ?? "Restaurant";
+          _restaurantName = restaurantDoc.data()?['restaurantName'] ?? "Restaurant";
         });
       }
 
@@ -201,11 +203,29 @@ class _OrderSummaryState extends State<OrderSummary> {
             height: screenHeight,
             color: Colors.yellow[100],
           ),
-          
-          CurveAppBar(title: _restaurantName),
+
+          if (_isLoading)
+            const Center(child: CircularProgressIndicator())
+          else
+            CurveAppBar(title: _restaurantName),
 
           Positioned(
-            top: 190,
+            top: screenHeight * 0.092,
+            left: screenWidth * 0.05,
+            child: IconButton(
+              icon: const Icon(Icons.chevron_left, size: 40, color: Colors.white),
+              padding: EdgeInsets.zero,
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => OrderStatusCustomer()),
+                );
+              },
+            ),
+          ),
+
+          Positioned(
+            top: screenHeight * 0.22,
             left: 0,
             right: 0,
             child: Center(
@@ -213,7 +233,7 @@ class _OrderSummaryState extends State<OrderSummary> {
                 "Order summary",
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: 0.087 * screenWidth,
+                  fontSize: 0.06 * screenWidth,
                   color: Color(0xFFB71C1C),
                 ),
               ),

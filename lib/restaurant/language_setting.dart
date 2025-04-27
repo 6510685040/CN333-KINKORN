@@ -30,7 +30,7 @@ class _LanguageSettingRestaurantState extends State<LanguageSettingRestaurant> {
           ),
           // ✅ ปุ่มย้อนกลับ
           Positioned(
-            top: 70,
+            top: 70, // ✅ ตำแหน่งด้านซ้ายบน
             left: 20,
             child: IconButton(
               icon:
@@ -89,7 +89,8 @@ class _LanguageSettingRestaurantState extends State<LanguageSettingRestaurant> {
             ),
           ),
         ],
-      ),  
+      ),
+      //bottomNavigationBar: const CustomBottomNav(),
     );
   }
 

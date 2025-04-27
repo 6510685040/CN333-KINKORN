@@ -92,14 +92,6 @@ class _RestaurantManagementPageState extends State<RestaurantManagementPage> {
                     ),
                   ),
                 ),
-                /*Text(
-                  'MANAGE\nRESTAURANT',
-                  style: TextStyle(
-                    color: Color(0xFFB71C1C),
-                    fontSize: MediaQuery.of(context).size.width * 0.087,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),*/
               ],
             )
           ),
