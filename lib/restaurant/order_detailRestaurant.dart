@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -23,18 +24,46 @@ class OrderdetailRestaurant extends StatefulWidget {
 class _OrderdetailRestaurantState extends State<OrderdetailRestaurant> {
   late Future<Map<String, dynamic>> _orderData;
   bool _isUpdating = false;
+  StreamSubscription<DocumentSnapshot>? _orderSubscription;
 
+  /*
   // Noti
   final NotificationCus _notificationCus = NotificationCus();
   Set<String> _notifiedOrderIds = {};
 
   final Map<String, String> latestOrderStatus = {};
+  */
 
   @override
   void initState() {
     super.initState();
     _orderData = fetchOrderData();
     _listenToOrderChanges();
+    _listenToSpecificOrderChange();
+  }
+
+  @override
+  void dispose() {
+    _orderSubscription?.cancel();
+    super.dispose();
+  }
+
+  void _listenToSpecificOrderChange() {
+    // Listen to changes in the user's specific order document
+    _orderSubscription = FirebaseFirestore.instance
+        .collection('users')
+        .doc(widget.customerId)
+        .collection('orders')
+        .doc(widget.orderId)
+        .snapshots()
+        .listen((snapshot) {
+      if (snapshot.exists) {
+        // When the order document changes, refresh the order data
+        setState(() {
+          _orderData = fetchOrderData();
+        });
+      }
+    });
   }
 
   void _listenToOrderChanges() async {
@@ -62,6 +91,15 @@ class _OrderdetailRestaurantState extends State<OrderdetailRestaurant> {
 
           final orderId = change.doc.id;
           final orderStatus = data['orderStatus'] ?? '';
+
+          // If this is the current order being viewed, refresh the UI
+          if (orderId == widget.orderId && change.type == DocumentChangeType.modified) {
+            setState(() {
+              _orderData = fetchOrderData();
+            });
+          }
+
+          /*
 
           if (change.type == DocumentChangeType.added) {
             // new order
@@ -101,9 +139,10 @@ class _OrderdetailRestaurantState extends State<OrderdetailRestaurant> {
               }
               NotificationCus.notifiedOrderIds.add('$orderId|paid');
             }
+            
             // อัปเดตสถานะเก่าภายในแคช
             latestOrderStatus[orderId] = orderStatus;
-          }
+          }*/
         }
       });
     }
@@ -400,6 +439,33 @@ class _OrderdetailRestaurantState extends State<OrderdetailRestaurant> {
                   child: Text(
                     'Cancel this order',
                     style: TextStyle(color: Color(0xFFAF1F1F), fontSize: 16),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      
+      case 'waiting for payment':
+        return Column(
+          children: [
+            const SizedBox(height: 10),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.grey,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                elevation: 5,
+                shadowColor: Colors.black.withOpacity(0.3),
+              ),
+              onPressed: null,
+              child: const Padding(
+                padding: EdgeInsets.symmetric(vertical: 12),
+                child: Center(
+                  child: Text(
+                    'waiting for customer to upload a payment slip',
+                    style: TextStyle(color: Colors.white, fontSize: 16),
                   ),
                 ),
               ),
@@ -833,8 +899,7 @@ class _OrderdetailRestaurantState extends State<OrderdetailRestaurant> {
                                       
                                         ...addons.map((addon) => Padding(
                                           padding: const EdgeInsets.only(left: 20, bottom: 2),
-                                          child: Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                             children: [
                                       
                                               Row(
@@ -861,7 +926,7 @@ class _OrderdetailRestaurantState extends State<OrderdetailRestaurant> {
                                             ],
                                           ),
                                         ))
-                                                                              ];
+                                      ];
                                     }).toList(),
                                   ],
                                 ),

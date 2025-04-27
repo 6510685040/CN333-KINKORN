@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:kinkorn/customer/order_detail.dart';
 import 'package:kinkorn/template/curve_app_bar.dart';
@@ -162,6 +163,26 @@ class _OrderSummaryState extends State<OrderSummary> {
         'slipUrl': downloadUrl,
         'updatedAt': FieldValue.serverTimestamp(),
       });
+
+      await FirebaseFirestore.instance
+          .collection('restaurants')
+          .doc(widget.restaurantId)
+          .collection('orders')
+          .doc(widget.orderId)
+          .update({
+        'orderStatus': 'Waiting for payment confirmation',
+        'slipUrl': downloadUrl,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
+      await FirebaseFirestore.instance
+          .collection('orders')
+          .doc(widget.orderId)
+          .update({
+            'orderStatus': 'Waiting for payment confirmation',
+            'slipUrl': downloadUrl,
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
 
       // Navigate to OrderDetailPage
       if (!mounted) return;

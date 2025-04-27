@@ -19,13 +19,121 @@ class OrderDetailPage extends StatefulWidget {
 
 class _OrderDetailPageState extends State<OrderDetailPage> {
   late Future<Map<String, dynamic>> _orderData;
+  late Stream<Map<String, dynamic>> _orderStream;
 
   @override
   void initState() {
     super.initState();
-    _orderData = fetchOrderData();
+    _orderStream = streamOrderData();
+    //_orderData = fetchOrderData();
   }
 
+  Stream<Map<String, dynamic>> streamOrderData() async* {
+  final orderDocRef = FirebaseFirestore.instance
+      .collection('users')
+      .doc(widget.userId)
+      .collection('orders')
+      .doc(widget.orderId);
+
+  await for (var snapshot in orderDocRef.snapshots()) {
+    if (!snapshot.exists) {
+      throw Exception('Order not found');
+    }
+
+    final orderData = snapshot.data()!;
+    final orders = List<Map<String, dynamic>>.from(orderData['orders'] ?? []);
+    final customerId = orderData['customerId'];
+    final restaurantId = orders.isNotEmpty ? orders[0]['restaurantId'] ?? '' : '';
+
+    String canteenId = '';
+    if (restaurantId.isNotEmpty) {
+      final resDoc = await FirebaseFirestore.instance
+          .collection('restaurants')
+          .doc(restaurantId)
+          .get();
+      final resData = resDoc.data();
+      if (resData != null) {
+        canteenId = resData['canteenId'] ?? '';
+      }
+    }
+
+    String canteenName = '';
+    if (canteenId.isNotEmpty) {
+      final canteenDoc = await FirebaseFirestore.instance
+          .collection('canteens')
+          .doc(canteenId)
+          .get();
+      canteenName = canteenDoc.data()?['name'] ?? '';
+    }
+
+    String customerName = 'Unknown';
+    final customerDoc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(customerId)
+        .get();
+    if (customerDoc.exists) {
+      final userData = customerDoc.data()!;
+      customerName = '${userData['firstName'] ?? ''} ${userData['lastName'] ?? ''} ${userData['mobile'] ?? ''}';
+    }
+
+    String restaurantName = '';
+    final restaurantDoc = await FirebaseFirestore.instance
+        .collection('restaurants')
+        .doc(restaurantId)
+        .get();
+    if (restaurantDoc.exists) {
+      restaurantName = restaurantDoc.data()?['restaurantName'] ?? '';
+    }
+
+    Timestamp? createdAt = orderData['createdAt'];
+    String formattedOrderTime = createdAt != null
+        ? formatDateTime(createdAt.toDate())
+        : '';
+
+    Timestamp? pickupTime = orderData['pickupTime'];
+    String formattedPickupTime = pickupTime != null
+        ? formatDateTime(pickupTime.toDate())
+        : '';
+
+    yield {
+      'orderId': widget.orderId,
+      'customerName': customerName,
+      'restaurantName': restaurantName,
+      'canteenName': canteenName,
+      'orderTime': formattedOrderTime,
+      'pickupTime': formattedPickupTime,
+      'menuItems': orders.map((e) {
+        final List<Map<String, dynamic>> parsedAddons = [];
+        if (e['addons'] != null && e['addons'] is List) {
+          for (var addon in e['addons']) {
+            if (addon is Map<String, dynamic>) {
+              parsedAddons.add({
+                'name': addon['name'] ?? '',
+                'quantity': addon['quantity'] ?? 0,
+                'price': addon['price'] ?? 0,
+              });
+            }
+          }
+        }
+
+        return {
+          'name': e['name'],
+          'quantity': e['quantity'],
+          'price': e['price'],
+          'total': (e['price'] ?? 0) * (e['quantity'] ?? 0),
+          'addons': parsedAddons,
+        };
+      }).toList(),
+      'totalAmount': orderData['totalAmount'].toString(),
+      'statusText': orderData['orderStatus'],
+      'statusColor': getStatusColor(orderData['orderStatus']),
+      'timeAgo': timeAgoFromTimestamp(orderData['createdAt']),
+      'slipUrl': orderData['slipUrl'],
+    };
+  }
+}
+
+/*
   Future<Map<String, dynamic>> fetchOrderData() async {
   final orderDoc = await FirebaseFirestore.instance
       .collection('users')
@@ -135,6 +243,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
 };
 
 }
+*/
 
 String formatDateTime(DateTime dateTime) {
   String twoDigits(int n) => n.toString().padLeft(2, '0');
@@ -182,8 +291,9 @@ String formatDateTime(DateTime dateTime) {
 
     return Scaffold(
       backgroundColor: const Color(0xFFFCF9CA),
-      body: FutureBuilder<Map<String, dynamic>>(
-        future: _orderData,
+      body: StreamBuilder<Map<String, dynamic>>(
+        stream: _orderStream,
+        //future: _orderData,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());

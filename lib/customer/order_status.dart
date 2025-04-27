@@ -21,9 +21,11 @@ class _OrderStatusCustomerState extends State<OrderStatusCustomer> {
   DateTime _fromDate = DateTime.now();
   DateTime _tillDate = DateTime.now();
 
+/*
   // Noti
   final NotificationCus _notificationCus = NotificationCus();
   Set<String> _notifiedOrderIds = {};
+  */
 
   @override
   void initState() {
@@ -48,11 +50,12 @@ class _OrderStatusCustomerState extends State<OrderStatusCustomer> {
             final orderId = change.doc.id;
 
             final key = '$orderId|$orderStatus';
+            /*
             if (!_notifiedOrderIds.contains(key)) {
               _notificationCus.showNotification('สถานะออเดอร์อัปเดต', 'Your order is now : $orderStatus');
               _notifiedOrderIds.add(key);
             }
-            print('🔁 Order: $orderId | ➜ New: $orderStatus');
+            print('🔁 Order: $orderId | ➜ New: $orderStatus');*/
           }
         }
       });
@@ -187,6 +190,36 @@ class _OrderStatusCustomerState extends State<OrderStatusCustomer> {
   final startDate = DateTime(_fromDate.year, _fromDate.month, _fromDate.day);
   final endDate = DateTime(_tillDate.year, _tillDate.month, _tillDate.day + 1);
 
+  return StreamBuilder<QuerySnapshot>(
+  stream: FirebaseFirestore.instance
+      .collection('users')
+      .doc(userId)
+      .collection('orders')
+      .where('createdAt', isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
+      .where('createdAt', isLessThan: Timestamp.fromDate(endDate))
+      .orderBy('createdAt', descending: true)
+      .snapshots(),
+  builder: (context, snapshot) {
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (snapshot.hasError) {
+      return const Center(child: Text("เกิดข้อผิดพลาดในการโหลดออเดอร์"));
+    }
+
+    final ordersSnapshot = snapshot.data;
+    if (ordersSnapshot == null || ordersSnapshot.docs.isEmpty) {
+      return const Center(
+        child: Text(
+          "ไม่พบออเดอร์ในช่วงเวลาที่เลือก",
+          style: TextStyle(fontSize: 16, color: Colors.black54),
+        ),
+      );
+    }
+
+
+  /*
   return FutureBuilder<QuerySnapshot>(
     future: FirebaseFirestore.instance
         .collection('users')
@@ -213,7 +246,7 @@ class _OrderStatusCustomerState extends State<OrderStatusCustomer> {
             style: TextStyle(fontSize: 16, color: Colors.black54),
           ),
         );
-      }
+      }*/
 
       /*
       //no orders
