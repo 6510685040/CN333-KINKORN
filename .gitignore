@@ -493,3 +493,8 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+.flutter-plugins*
+.flutter-plugins-dependencies*
+ios/Flutter/Generated*.xcconfig
+ios/Flutter/flutter_export_environment*.sh
