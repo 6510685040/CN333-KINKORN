@@ -96,6 +96,15 @@ class _WaitingApproveState extends State<WaitingApprove> {
                   ),
                 ),
               );
+            } else if (orderStatus == "Canceled") {
+              _orderSubscription?.cancel();
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => OrderStatusCustomer(),
+                ),
+              );
+
             }
           }
         }, onError: (error) {
